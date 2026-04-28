@@ -1,0 +1,32 @@
+---
+description: DynamoDB operations — transactions, TTL, streams, read/write limits
+globs: infrastructure/**
+alwaysApply: false
+---
+
+# DynamoDB operations and limits
+
+## Transactions
+
+- Use **TransactWriteItems** / **TransactGetItems** for **small**, well-defined **atomic** updates across a few items (size and item count limits apply). Not a replacement for broad relational ACID; avoid for every request.
+
+## TTL
+
+- **TTL attribute** — Dynamo removes items when the time passes (best-effort timing). Use for expiring sessions, temp flags, or aging data; not for instant guarantees.
+
+## Streams
+
+- **DynamoDB Streams** — change feed for **Lambda triggers**, async fan-out, or syncing to other stores (e.g. search/analytics). Design idempotency in consumers.
+
+## Read/write capacity (on-demand)
+
+- On-demand (this project’s tables use it) still has **per-partition** throughput reality; **hot keys** can still cause throttling — fix the key design, not only capacity mode.
+
+## Application patterns
+
+- **BatchGetItem** / **BatchWriteItem** to reduce round-trips; respect **unprocessed keys** and partial failures.
+- **ConditionExpression** for optimistic control (e.g. “update only if version = N”).
+
+## Analytics and search
+
+- Dynamo is for **serving known access patterns** (OLTP-style). For ad-hoc reporting or full-text needs, use **export to S3**, a warehouse, or OpenSearch/Athena — not heavy `Scan` in production.

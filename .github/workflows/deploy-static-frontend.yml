@@ -1,0 +1,75 @@
+# Required repo secrets:
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION (same as other workflows)
+#   STATIC_SITE_BUCKET — S3 bucket name (CDK output SiteBucketName)
+#   CLOUDFRONT_DISTRIBUTION_ID — distribution to invalidate (CDK output CloudFrontDistributionId)
+#   VITE_API_URL — origin for the Java API (baked into the client bundle at build time).
+#   VITE_API_GATEWAY_URL — API Gateway base URL for Lambda HTTP API (FargopolisApi HttpApiUrl output).
+#   VITE_CLERK_PUBLISHABLE_KEY — Clerk publishable key for the static SPA bundle.
+
+name: Deploy static frontend (S3 + CloudFront)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fargopolis-web/**'
+      - '.github/workflows/deploy-static-frontend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-static-frontend
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: fargopolis-web/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: fargopolis-web
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        working-directory: fargopolis-web
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_GATEWAY_URL: ${{ secrets.VITE_API_GATEWAY_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+        run: pnpm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Sync to S3
+        env:
+          STATIC_SITE_BUCKET: ${{ secrets.STATIC_SITE_BUCKET }}
+        run: aws s3 sync fargopolis-web/dist "s3://${STATIC_SITE_BUCKET}" --delete
+
+      - name: Invalidate CloudFront
+        env:
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+            --paths "/*"

@@ -1,0 +1,23 @@
+{
+    "app": "npx ts-node --prefer-ts-exts bin/recipes-infra.ts",
+    "context": {
+        "clerk": {
+            "jwtIssuer": "https://direct-sawfly-53.clerk.accounts.dev"
+        }
+    },
+    "watch": {
+        "include": [
+            "**"
+        ],
+        "exclude": [
+            "README.md",
+            "cdk*.json",
+            "**/*.d.ts",
+            "**/*.js",
+            "tsconfig.json",
+            "package*.json",
+            "node_modules",
+            "cdk.out"
+        ]
+    }
+}

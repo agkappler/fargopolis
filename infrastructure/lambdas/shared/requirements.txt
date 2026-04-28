@@ -1,0 +1,5 @@
+# Installed into the Fargopolis Python shared Lambda layer (site-packages) alongside the `shared` package.
+# Pin 1.1.0: same `from ulid import ULID` API, pure Python (no native wheels) — see bounties handler notes in repo history.
+python-ulid==1.1.0
+# `shared.clerk_auth` (JWKS, RS256)
+PyJWT[crypto]==2.9.0

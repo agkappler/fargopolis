@@ -1,0 +1,2 @@
+# Per-function packages for the bounties Lambda zip (installed with `pip -t` during CDK bundling).
+# Shared modules and most wheels live in the Fargopolis Python shared layer (`shared/requirements.txt`).

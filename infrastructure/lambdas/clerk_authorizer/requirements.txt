@@ -1,0 +1,2 @@
+# Per-function packages for the Clerk authorizer Lambda zip (installed with `pip -t` during CDK bundling).
+# `shared` + PyJWT land on the Fargopolis Python shared layer (`shared/requirements.txt`).

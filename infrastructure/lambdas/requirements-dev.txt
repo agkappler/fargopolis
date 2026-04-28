@@ -1,0 +1,4 @@
+-r shared/requirements.txt
+-r bounties/requirements.txt
+-r clerk_authorizer/requirements.txt
+boto3

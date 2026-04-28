@@ -1,0 +1,38 @@
+---
+description: DynamoDB core concepts vs SQL — keys, query vs scan, indexes
+globs: infrastructure/**
+alwaysApply: false
+---
+
+# DynamoDB core (SQL mental model)
+
+## Mapping from relational DB
+
+- **Item** ≈ one row; attributes ≈ columns, but there is no fixed schema for every item.
+- **Table + partition key (PK)** is required. **Sort key (SK)** optional; if present, the primary key is composite `(PK, SK)`.
+- There are **no server-side JOINs**. Prefer denormalized attributes, or multiple reads + merge in the Lambda, or **GSI/LSI** to support another access path.
+
+## Design order
+
+1. List **concrete access patterns** (e.g. get bounty by id, list bounties by category, list open bounties).
+2. For each, decide: one **`Query`**, a **GSI** `Query`, or (rarely) `Scan`. Design PK/SK and GSI **from those patterns**, not from “tables” first.
+
+## Query vs scan
+
+- **`Query`**: use known PK (and optional SK conditions). This is the efficient default.
+- **`Scan`**: reads large portions of a table; use for admin/batch/ETL, not hot user paths. Prefer GSIs or key redesign if you find yourself scanning for production reads.
+
+## Indexes
+
+- **GSI**: alternate partition + optional sort key for a **different** access pattern. Eventual consistency; extra write/storage cost; add only when a pattern is proven.
+- **LSI**: same PK, **different SK** (sort within partition). Can only be defined at table creation; use when you need another ordering in the same partition.
+
+## Consistency
+
+- **Strongly consistent reads** on the base table when you must read an item immediately after a write; costs more in read capacity.
+- **GSI reads** are typically eventually consistent; account for that in UI/API contracts.
+
+## Do not
+
+- Do not model as normalized SQL with join expectations at read time; Dynamo will not do that for you.
+- Do not use a **single value** (e.g. one status) as PK for all hot writes — **hot partition** risk.

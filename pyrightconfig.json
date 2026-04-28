@@ -1,0 +1,18 @@
+{
+  "include": [
+    "infrastructure/lambdas"
+  ],
+  "extraPaths": [
+    "infrastructure/lambdas",
+    "infrastructure/lambdas/shared"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "infrastructure/lambdas",
+      "extraPaths": [
+        "infrastructure/lambdas",
+        "infrastructure/lambdas/shared"
+      ]
+    }
+  ]
+}

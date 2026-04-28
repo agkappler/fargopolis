@@ -1,0 +1,30 @@
+---
+description: DynamoDB data modeling — denormalize, 1:N, single-table, hot keys
+globs: infrastructure/**
+alwaysApply: false
+---
+
+# DynamoDB data modeling
+
+## From SQL habits
+
+- **Denormalize on purpose** — store what you need to render a screen or list in the item (or in a GSI projection), not only foreign keys, because you cannot `JOIN` at query time.
+- **1:N in one partition** — parent as PK, children with a known SK pattern (e.g. `BOUNTY#<id>`, `METADATA`, `CHILD#<childId>`) so one `Query` returns the group.
+- **Composite sort keys** — e.g. `date#<id>` or `TYPE#<id>` to support range or prefix access within a partition: `begins_with`, `between` on SK.
+
+## Single-table design
+
+- One table can hold **multiple entity types** with a naming convention for PK/SK (e.g. `USER#<id>`, `ORDER#<id>` as SK under a user partition). Add only when access patterns and operational clarity support it; multi-table is fine for simpler verticals (e.g. separate tables with related IDs in items).
+
+## Hot partitions and write spikes
+
+- Avoid PK values that **concentrate** all traffic (e.g. a global “counter” or “all pending jobs” in one key).
+- For hot counters or serial writes, use **sharding** (e.g. `counter#0` … `counter#N` and sum in app) or other patterns; don’t default to unbounded `ADD` on one item without analysis.
+
+## Item size and blobs
+
+- Keep items **well under 400 KB**; put large files in **S3**, store only keys/URLs in Dynamo.
+
+## Migrations in this repo
+
+- Prefer explicit **Postgres → Dynamo backfill** when cutting over a vertical; new writes to Dynamo alone are not enough for parity if legacy data must move.
