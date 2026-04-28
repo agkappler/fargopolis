@@ -15,6 +15,8 @@ import { DndConstruct } from '../constructs/dnd-construct';
 import { DndGlossaryConstruct } from '../constructs/dnd-glossary-construct';
 import { DndGlossaryApiRoutesConstruct } from '../constructs/dnd-glossary-api-routes-construct';
 import { DndApiRoutesConstruct } from '../constructs/dnd-api-routes-construct';
+import { GithubActionsApiDeployRoleConstruct } from '../constructs/github-actions-api-deploy-role-construct';
+import { resolveGithubActionsOidcProviderArn } from '../github-actions-oidc';
 
 /**
  * Serverless API resources (Lambda, API Gateway, DynamoDB, etc.).
@@ -98,6 +100,24 @@ export class FargopolisApiStack extends cdk.Stack {
             subclassTable: this.dndGlossary.subclassTable,
         });
 
+        const githubActions = (this.node.tryGetContext('githubActions') ?? {}) as {
+            owner?: string;
+            repo?: string;
+            branch?: string;
+            oidcProviderArn?: string;
+            createOidcProvider?: boolean;
+        };
+        const githubOwner = githubActions.owner ?? 'akappler';
+        const githubRepo = githubActions.repo ?? 'fargopolis';
+        const githubBranch = githubActions.branch ?? 'main';
+        const githubOidcProviderArn = resolveGithubActionsOidcProviderArn(cdk.Stack.of(this), githubActions);
+        const githubApiDeployRole = new GithubActionsApiDeployRoleConstruct(this, 'GithubActionsApiDeploy', {
+            owner: githubOwner,
+            repo: githubRepo,
+            branch: githubBranch,
+            oidcProviderArn: githubOidcProviderArn,
+        });
+
         new cdk.CfnOutput(this, 'BountyCategoriesTableName', {
             description: 'DynamoDB table for bounty categories',
             value: this.bounties.categoryTable.tableName,
@@ -133,6 +153,10 @@ export class FargopolisApiStack extends cdk.Stack {
         new cdk.CfnOutput(this, 'HttpApiUrl', {
             description: 'Shared HTTP API base URL (all Lambda routes; use with /api/... paths)',
             value: this.httpApiGateway.httpApi.apiEndpoint,
+        });
+        new cdk.CfnOutput(this, 'GithubActionsApiDeployRoleArn', {
+            description: `Role ARN for GitHub Actions OIDC CDK deploys (${githubOwner}/${githubRepo}@${githubBranch})`,
+            value: githubApiDeployRole.role.roleArn,
         });
     }
 }

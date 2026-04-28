@@ -3,6 +3,11 @@
     "context": {
         "clerk": {
             "jwtIssuer": "https://direct-sawfly-53.clerk.accounts.dev"
+        },
+        "githubActions": {
+            "owner": "akappler",
+            "repo": "fargopolis",
+            "branch": "main"
         }
     },
     "watch": {

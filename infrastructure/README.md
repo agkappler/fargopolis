@@ -49,6 +49,29 @@ Per-function assets live under `infrastructure/lambdas/`. Shared packaging logic
 
 **[`FrontendStack`](lib/stacks/frontend-stack.ts)** — SPA hosting only. After deploy, sync `fargopolis-web/dist` to the output bucket and invalidate CloudFront (see repo root [README.md](../README.md) and [`.github/workflows/deploy-static-frontend.yml`](../.github/workflows/deploy-static-frontend.yml)).
 
+### GitHub Actions OIDC roles
+
+Both stacks read `context.githubActions` (see [`cdk.json`](cdk.json)): `owner`, `repo`, `branch`.
+
+**OIDC provider**: By default, both stacks **import** `arn:aws:iam::<account>:oidc-provider/token.actions.githubusercontent.com` (see [`lib/github-actions-oidc.ts`](lib/github-actions-oidc.ts)) so only one physical provider per account is needed. Optional overrides:
+
+- `githubActions.oidcProviderArn` — use a specific provider ARN instead of the default.
+- `githubActions.createOidcProvider` — set to `true` on a **bootstrap** deploy when that provider does not exist yet (`npx cdk deploy FargopolisApi -c githubActions='{"createOidcProvider":true,"owner":"…","repo":"…","branch":"main"}'`). After the provider exists in IAM, remove `createOidcProvider` (or set `false`) so later deploys stay import-only.
+
+When a construct does create the GitHub OIDC provider, it sets `RemovalPolicy.RETAIN` on the provider so it survives stack changes more predictably.
+
+**Frontend** (`FargopolisFrontend`) outputs:
+
+- `GithubActionsDeployRoleArn` → GitHub secret `AWS_ROLE_TO_ASSUME`
+- `SiteBucketName` → `STATIC_SITE_BUCKET`
+- `CloudFrontDistributionId` → `CLOUDFRONT_DISTRIBUTION_ID`
+
+**API** (`FargopolisApi`) outputs:
+
+- `GithubActionsApiDeployRoleArn` → GitHub secret `AWS_API_DEPLOY_ROLE_TO_ASSUME`
+
+API deploy workflow: [`.github/workflows/deploy-api-stack.yml`](../.github/workflows/deploy-api-stack.yml).
+
 ## Bootstrap and deploy
 
 From `infrastructure/` (after `npm ci`).

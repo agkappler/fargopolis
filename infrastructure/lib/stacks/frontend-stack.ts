@@ -3,6 +3,8 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import { GithubActionsFrontendDeployRoleConstruct } from '../constructs/github-actions-frontend-deploy-role-construct';
+import { resolveGithubActionsOidcProviderArn } from '../github-actions-oidc';
 
 /**
  * Static site hosting: private S3 bucket + CloudFront with Origin Access Control.
@@ -58,6 +60,26 @@ export class FrontendStack extends cdk.Stack {
             ],
         });
 
+        const githubActions = (this.node.tryGetContext('githubActions') ?? {}) as {
+            owner?: string;
+            repo?: string;
+            branch?: string;
+            oidcProviderArn?: string;
+            createOidcProvider?: boolean;
+        };
+        const githubOwner = githubActions.owner ?? 'akappler';
+        const githubRepo = githubActions.repo ?? 'fargopolis';
+        const githubBranch = githubActions.branch ?? 'main';
+        const githubOidcProviderArn = resolveGithubActionsOidcProviderArn(cdk.Stack.of(this), githubActions);
+        const githubDeployRole = new GithubActionsFrontendDeployRoleConstruct(this, 'GithubActionsFrontendDeploy', {
+            owner: githubOwner,
+            repo: githubRepo,
+            branch: githubBranch,
+            siteBucket: this.bucket,
+            distribution: this.distribution,
+            oidcProviderArn: githubOidcProviderArn,
+        });
+
         new cdk.CfnOutput(this, 'SiteBucketName', {
             description: 'Upload static assets here (e.g. aws s3 sync ./dist s3://...)',
             value: this.bucket.bucketName,
@@ -69,6 +91,10 @@ export class FrontendStack extends cdk.Stack {
         new cdk.CfnOutput(this, 'SiteUrl', {
             description: 'CloudFront URL until custom domain is attached',
             value: `https://${this.distribution.distributionDomainName}`,
+        });
+        new cdk.CfnOutput(this, 'GithubActionsDeployRoleArn', {
+            description: `Role ARN for GitHub Actions OIDC deploys (${githubOwner}/${githubRepo}@${githubBranch})`,
+            value: githubDeployRole.role.roleArn,
         });
     }
 }

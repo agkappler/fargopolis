@@ -1,5 +1,6 @@
 # Required repo secrets:
-#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION (same as other workflows)
+#   AWS_REGION
+#   AWS_ROLE_TO_ASSUME — IAM role ARN trusted for GitHub OIDC (example: arn:aws:iam::123456789012:role/github-actions-fargopolis-frontend-deploy)
 #   STATIC_SITE_BUCKET — S3 bucket name (CDK output SiteBucketName)
 #   CLOUDFRONT_DISTRIBUTION_ID — distribution to invalidate (CDK output CloudFrontDistributionId)
 #   VITE_API_URL — API Gateway base URL for Lambda HTTP API (FargopolisApi HttpApiUrl output).
@@ -24,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout
@@ -55,8 +57,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: github-actions-fargopolis-frontend-deploy
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Sync to S3

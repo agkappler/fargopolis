@@ -1,0 +1,54 @@
+# Required repo secrets:
+#   AWS_REGION
+#   AWS_API_DEPLOY_ROLE_TO_ASSUME — IAM role ARN from FargopolisApi output GithubActionsApiDeployRoleArn
+#
+# This workflow deploys the CDK API stack (FargopolisApi) via GitHub OIDC.
+
+name: Deploy API stack (CDK)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/deploy-api-stack.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api-stack
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    defaults:
+      run:
+        working-directory: infrastructure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: infrastructure/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_API_DEPLOY_ROLE_TO_ASSUME }}
+          role-session-name: github-actions-fargopolis-api-deploy
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: CDK deploy FargopolisApi
+        run: npx cdk deploy FargopolisApi --require-approval never

@@ -117,3 +117,10 @@ npx cdk deploy --profile YOUR_PROFILE
 ```
 
 After a successful deploy, note the CloudFormation **Outputs**: **SiteBucketName**, **CloudFrontDistributionId**, and **SiteUrl**. Upload the Vite build to the bucket and invalidate CloudFront (see `.github/workflows/deploy-static-frontend.yml` for the CI workflow using repo secrets).
+
+## CI/CD notes (OIDC)
+
+GitHub Actions AWS auth is managed with CDK-provisioned OIDC roles (no long-lived AWS access keys in repo secrets):
+- Frontend static deploy workflow uses `AWS_ROLE_TO_ASSUME` (from `FargopolisFrontend` output `GithubActionsDeployRoleArn`).
+- API CDK deploy workflow uses `AWS_API_DEPLOY_ROLE_TO_ASSUME` (from `FargopolisApi` output `GithubActionsApiDeployRoleArn`).
+- Both workflows also use `AWS_REGION`.
