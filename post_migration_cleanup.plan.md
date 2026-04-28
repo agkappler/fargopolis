@@ -9,13 +9,13 @@ todos:
     content: "Migrate recipes-web and java-recipes to a new archive repository (preserve git history via filter-repo/subtree or documented copy); add README explaining frozen reference status; remove or submodule from main Recipes repo and fix any docs/CI pointers"
     status: pending
   - id: spa-request-layer-cleanup
-    content: "fargopolis-web: collapse dual-base RequestManager (VITE_API_URL cookie-session get/post vs VITE_API_GATEWAY_URL *Gateway* helpers) to gateway-only where Java routes are gone; trim vite-env, .env.example, README; remove dead callers and any providers/bootstrap still assuming two API bases"
+    content: "fargopolis-web: collapse dual-base RequestManager (legacy cookie-session get/post vs gateway helpers) to gateway-only where Java routes are gone; trim vite-env, .env.example, README; remove dead callers and any providers/bootstrap still assuming two API bases"
     status: pending
   - id: api-custom-domain
-    content: "Attach stable hostname to shared HttpApi (e.g. api.fargopolis.com) — ACM in API region, DomainName + ApiMapping, Route 53; update fargopolis-web + CI VITE_API_GATEWAY_URL from execute-api URL"
+    content: "Attach stable hostname to shared HttpApi (e.g. api.fargopolis.com) — ACM in API region, DomainName + ApiMapping, Route 53; update fargopolis-web + CI VITE_API_URL from execute-api URL"
     status: pending
   - id: local-dev-iteration
-    content: "Document dev AWS profile + VITE_API_GATEWAY_URL; optional local API mirror (FastAPI) for handler iteration; optional moto/pytest / DynamoDB Local; keep periodic cdk deploy to dev for packaging and IAM truth"
+    content: "Document dev AWS profile + VITE_API_URL; optional local API mirror (FastAPI) for handler iteration; optional moto/pytest / DynamoDB Local; keep periodic cdk deploy to dev for packaging and IAM truth"
     status: pending
   - id: migration-leftovers
     content: "Remove migration-era fallback logic (e.g. mixed-client transitions); optionally enforce optimistic concurrency (version) on every mutable write path in Lambdas"
@@ -57,7 +57,7 @@ When the monorepo no longer needs day-to-day work on the old SPA and Spring API,
 
 ## SPA: request methods and API-facing app configuration
 
-Today the SPA carries **two** API bases (`VITE_API_URL` for Java + cookies vs `VITE_API_GATEWAY_URL` for Lambdas + Clerk bearer) and parallel helpers in [`fargopolis-web/src/helpers/RequestManager.ts`](fargopolis-web/src/helpers/RequestManager.ts) (`get` / `post` vs `getGateway` / `postGatewayWithAuth`, etc.). Once remaining traffic is on the gateway:
+Today the SPA carries **two** API bases (legacy Java + cookies vs Lambdas + Clerk bearer) and parallel helpers in [`fargopolis-web/src/helpers/RequestManager.ts`](fargopolis-web/src/helpers/RequestManager.ts) (`get` / `post` vs `getGateway` / `postGatewayWithAuth`, etc.). Once remaining traffic is on the gateway:
 
 - **Route callers** through a single base URL and one set of HTTP helpers (or a thin wrapper that always targets the gateway).
 - **Remove** obsolete `VITE_API_URL` usage from components, env examples, and CI where every consumed route is Lambda-backed.
@@ -72,14 +72,14 @@ While Java still owns a hostname you might want to reuse, keep using the **`exec
 
 - **CDK:** `aws_apigatewayv2.DomainName` + `ApiMapping` on the existing shared `HttpApi`; **ACM** in the **same region** as the API.
 - **DNS:** Route 53 (or your DNS) alias to the API Gateway custom domain target.
-- **App + CI:** set **`VITE_API_GATEWAY_URL`** to `https://api…` (no trailing slash) in env and CI secrets. Paths remain **`/api/...`**.
+- **App + CI:** set **`VITE_API_URL`** to `https://api…` (no trailing slash) in env and CI secrets. Paths remain **`/api/...`**.
 
 **Todo:** `api-custom-domain`.
 
 ## Local development
 
 - **Profile:** named **`AWS_PROFILE`** / SSO so prod deploys are never accidental (see [`infrastructure/README.md`](infrastructure/README.md)).
-- **SPA against real dev API:** `VITE_API_GATEWAY_URL` = dev stack **`HttpApiUrl`** — exercises CORS, Clerk authorizer, and real API Gateway.
+- **SPA against real dev API:** `VITE_API_URL` = dev stack **`HttpApiUrl`** — exercises CORS, Clerk authorizer, and real API Gateway.
 - **Optional:** small local server mirroring `/api/...` routes for faster handler iteration; **pytest** + **moto** or DynamoDB Local for offline tests.
 - **Reality check:** periodic **`cdk deploy`** to dev so Lambda packaging and IAM stay aligned with laptop-only workflows.
 

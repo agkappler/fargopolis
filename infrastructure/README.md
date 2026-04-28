@@ -26,7 +26,7 @@ List stacks: `npx cdk list`. Deploy one stack: `npx cdk deploy FargopolisApi` (o
   - **[`DndApiRoutesConstruct`](lib/constructs/dnd-api-routes-construct.ts)** — DnD Lambda + parity routes for characters/resources/abilities/weapons/known spells.
 - **[`FargopolisBucketConstruct`](lib/constructs/fargopolis-bucket-construct.ts)** — private **user-uploads S3** (recipe avatars, DnD files, etc.). Not the Vite/CloudFront site bucket. CDK **creates** the bucket (S3-managed encryption, block public access, CORS for browser presigned PUT/GET, `RemovalPolicy.RETAIN`). Optional **`uploadsBucket.corsAllowedOrigins`** in context; default `['*']`.
 
-**Outputs (CloudFormation):** `HttpApiUrl`, `BountyCategoriesTableName`, `BountiesTableName`, `RecipesTableName`, `DndCharactersTableName`, `FilesTableName`, **`FargopolisBucket`** — the SPA and CI set `VITE_API_GATEWAY_URL` to `HttpApiUrl` for strangler traffic to Lambdas.
+**Outputs (CloudFormation):** `HttpApiUrl`, `BountyCategoriesTableName`, `BountiesTableName`, `RecipesTableName`, `DndCharactersTableName`, `FilesTableName`, **`FargopolisBucket`** — the SPA and CI set `VITE_API_URL` to `HttpApiUrl` for strangler traffic to Lambdas.
 
 ### User-uploads bucket: IAM and presigned URLs
 

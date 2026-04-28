@@ -1,6 +1,5 @@
 import { FileRole } from "@/constants/FileRole";
 import FileMetadata from "@/models/FileMetadata";
-import User from "@/models/User";
 
 interface PresignPutResponse extends FileMetadata {
     uploadUrl: string;
@@ -10,14 +9,8 @@ interface PresignPutResponse extends FileMetadata {
 }
 
 export default class RequestManager {
-    private static baseUrl = import.meta.env.VITE_API_URL ?? "";
-    private static apiUrl = `${this.baseUrl}/api`;
-    private static baseGatewayUrl = import.meta.env.VITE_API_GATEWAY_URL ?? "";
+    private static baseGatewayUrl = import.meta.env.VITE_API_URL ?? "";
     private static gatewayApiUrl = `${this.baseGatewayUrl}/api`;
-
-    static async get<T = unknown>(url: string): Promise<T> {
-        return this.getWithBase<T>(this.apiUrl, url);
-    }
 
     /** Bounty read routes — public GET when using API Gateway + Lambda. */
     static async getGateway<T = unknown>(url: string): Promise<T> {
@@ -105,7 +98,7 @@ export default class RequestManager {
     private static async getWithBase<T>(
         urlBase: string,
         path: string,
-        credentials: RequestCredentials = "include",
+        credentials: RequestCredentials = "omit",
         headers?: HeadersInit,
     ): Promise<T> {
         const response = await fetch(urlBase + path, {
@@ -117,21 +110,12 @@ export default class RequestManager {
         return await this.handleResponse(response);
     }
 
-    static async post<TRequest = unknown, TResponse = unknown>(
-        url: string,
-        data: TRequest,
-        customHeaders?: HeadersInit
-    ): Promise<TResponse> {
-        return this.postWithBase<TRequest, TResponse>(this.apiUrl, url, data, customHeaders);
-    }
-
-
     private static async postWithBase<TRequest = unknown, TResponse = unknown>(
         urlBase: string,
         path: string,
         data: TRequest,
         customHeaders?: HeadersInit,
-        credentials: RequestCredentials = "include",
+        credentials: RequestCredentials = "omit",
     ): Promise<TResponse> {
         const response = await fetch(urlBase + path, {
             method: "POST",
@@ -170,56 +154,6 @@ export default class RequestManager {
             throw new Error("Failed to upload file to S3.");
         }
         return presign;
-    }
-
-    static async put<T = unknown>(url: string, data: T): Promise<T> {
-        const response = await fetch(this.apiUrl + url, {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-        });
-
-        return await this.handleResponse(response);
-    }
-
-    static async delete<T = unknown>(url: string): Promise<T> {
-        const response = await fetch(this.apiUrl + url, {
-            method: "DELETE",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        return await this.handleResponse(response);
-    }
-
-    static async authenticateUser(email: string, password: string): Promise<{ user: User }> {
-        const response = await fetch(this.baseUrl + `/authentication/authenticateUser`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-        });
-
-        return await this.handleResponse(response);
-    }
-
-    static async logout(): Promise<{ message: string }> {
-        const response = await fetch(this.baseUrl + `/authentication/logout`, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        return await this.handleResponse(response);
     }
 
     private static async handleResponse<T = unknown>(response: Response): Promise<T> {

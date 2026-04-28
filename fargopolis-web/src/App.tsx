@@ -1,4 +1,3 @@
-import { AppProvider } from "@/components/AppContext";
 import { Footer } from "@/components/navigation/Footer";
 import { Navbar } from "@/components/navigation/Navbar";
 import { SwrConfigWrapper } from "@/components/SwrConfigWrapper";
@@ -23,34 +22,32 @@ import { ToastContainer } from "react-toastify";
 
 function AppShell() {
   return (
-    <AppProvider>
-      <SwrConfigWrapper>
-        <ThemeRegistry>
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/bounties" element={<BountiesPage />} />
-              <Route path="/split-check" element={<SplitCheckPage />} />
-              <Route path="/dnd" element={<DndPage />} />
-              <Route path="/dnd/glossary" element={<DndGlossaryPage />} />
-              <Route path="/dnd/glossary/classes" element={<DndGlossaryClassesPage />} />
-              <Route path="/dnd/glossary/races" element={<DndGlossaryRacesPage />} />
-              <Route path="/dnd/:id" element={<CharacterDetailPage />} />
-              <Route path="/dnd/:id/actions" element={<CharacterActionsPage />} />
-              <Route path="/recipes" element={<RecipesPage />} />
-              <Route path="/recipes/:id" element={<RecipeDetailPage />} />
-              <Route path="/projects" element={<ProjectsPage />} />
-              <Route path="/projects/:id" element={<ProjectDetailPage />} />
-            </Routes>
-          </main>
-          <Footer />
-        </ThemeRegistry>
-      </SwrConfigWrapper>
+    <SwrConfigWrapper>
+      <ThemeRegistry>
+        <Navbar />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/bounties" element={<BountiesPage />} />
+            <Route path="/split-check" element={<SplitCheckPage />} />
+            <Route path="/dnd" element={<DndPage />} />
+            <Route path="/dnd/glossary" element={<DndGlossaryPage />} />
+            <Route path="/dnd/glossary/classes" element={<DndGlossaryClassesPage />} />
+            <Route path="/dnd/glossary/races" element={<DndGlossaryRacesPage />} />
+            <Route path="/dnd/:id" element={<CharacterDetailPage />} />
+            <Route path="/dnd/:id/actions" element={<CharacterActionsPage />} />
+            <Route path="/recipes" element={<RecipesPage />} />
+            <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailPage />} />
+          </Routes>
+        </main>
+        <Footer />
+      </ThemeRegistry>
       <ToastContainer />
-    </AppProvider>
+    </SwrConfigWrapper>
   );
 }
 

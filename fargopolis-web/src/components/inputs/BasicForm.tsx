@@ -2,7 +2,6 @@ import { useAuth } from "@clerk/react";
 import { Box, Button } from "@mui/material";
 import { PropsWithChildren, useState } from "react";
 import { DefaultValues, FieldValues, FormProvider, useForm } from "react-hook-form";
-import { useAppContext } from "../AppContext";
 import { ErrorMessage } from "../ui/ErrorMessage";
 
 interface BasicFormProps<T> extends PropsWithChildren {
@@ -19,13 +18,12 @@ export const BasicForm = <T extends FieldValues,>({
     errorMessage,
     onSubmit,
     onDelete,
-    isClerkForm = false,
+    isClerkForm,
 }: BasicFormProps<T>) => {
     const methods = useForm<T>({ defaultValues: defaultValues as DefaultValues<T> });
-    const { isAuthenticated } = useAppContext();
     const { isLoaded, isSignedIn } = useAuth();
-    /** Clerk-only gate for serverless mutations; legacy session auth when `isClerkForm` is false. */
-    const canWrite = isClerkForm ? isLoaded && isSignedIn : isAuthenticated;
+    void isClerkForm;
+    const canWrite = isLoaded && isSignedIn;
     const [isLoading, setIsLoading] = useState(false);
     const awaitSubmit = async (data: T) => {
         setIsLoading(true);
