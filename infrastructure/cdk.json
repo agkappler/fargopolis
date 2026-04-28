@@ -5,7 +5,7 @@
             "jwtIssuer": "https://direct-sawfly-53.clerk.accounts.dev"
         },
         "githubActions": {
-            "owner": "akappler",
+            "owner": "agkappler",
             "repo": "fargopolis",
             "branch": "main"
         }

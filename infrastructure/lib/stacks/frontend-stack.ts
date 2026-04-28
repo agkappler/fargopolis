@@ -67,7 +67,7 @@ export class FrontendStack extends cdk.Stack {
             oidcProviderArn?: string;
             createOidcProvider?: boolean;
         };
-        const githubOwner = githubActions.owner ?? 'akappler';
+        const githubOwner = githubActions.owner ?? 'agkappler';
         const githubRepo = githubActions.repo ?? 'fargopolis';
         const githubBranch = githubActions.branch ?? 'main';
         const githubOidcProviderArn = resolveGithubActionsOidcProviderArn(cdk.Stack.of(this), githubActions);
