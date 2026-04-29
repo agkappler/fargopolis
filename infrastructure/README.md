@@ -53,7 +53,7 @@ Per-function assets live under `infrastructure/lambdas/`. Shared packaging logic
 
 Both stacks read `context.githubActions` (see [`cdk.json`](cdk.json)): `owner`, `repo`, `branch`.
 
-**Trust must match GitHub exactly:** the JWT `sub` claim looks like `repo:OWNER/REPO:ref:refs/heads/<branch>`, where `OWNER/REPO` is the repository slug on GitHub (user or org name, case-sensitive). If `sts:AssumeRoleWithWebIdentity` is denied, fix `owner` / `repo` / `branch` in context, redeploy both stacks, then update any `AWS_*_ROLE_TO_ASSUME` secrets to the new role ARNs.
+**Trust:** deploy roles trust `repo:OWNER/REPO:*` (IAM `StringLike` on JWT `sub`), where `OWNER/REPO` must match GitHub exactly. Narrow `sub` matchers (exact ref only) commonly fail `sts:AssumeRoleWithWebIdentity` for `workflow_dispatch` or subtle claim differences; if AssumeRole stays denied after fixing the slug, redeploy the stack that owns the role and confirm GitHub secrets use the matching `GithubActions*DeployRoleArn` output.
 
 **OIDC provider**: By default, both stacks **import** `arn:aws:iam::<account>:oidc-provider/token.actions.githubusercontent.com` (see [`lib/github-actions-oidc.ts`](lib/github-actions-oidc.ts)) so only one physical provider per account is needed. Optional overrides:
 

@@ -7,7 +7,6 @@ import { Construct } from 'constructs';
 export type GithubActionsFrontendDeployRoleConstructProps = {
     owner: string;
     repo: string;
-    branch?: string;
     siteBucket: s3.IBucket;
     distribution: cloudfront.IDistribution;
     /**
@@ -26,8 +25,9 @@ export class GithubActionsFrontendDeployRoleConstruct extends Construct {
     constructor(scope: Construct, id: string, props: GithubActionsFrontendDeployRoleConstructProps) {
         super(scope, id);
 
-        const branch = props.branch ?? 'main';
-        const subject = `repo:${props.owner}/${props.repo}:ref:refs/heads/${branch}`;
+        // Match any JWT `sub` for this repo (push, workflow_dispatch, etc.) — GitHub emits
+        // `repo:OWNER/REPO:ref:...` or env-scoped variants; exact ref-only strings often fail STS.
+        const subjectLike = `repo:${props.owner}/${props.repo}:*`;
 
         const oidcProvider = props.oidcProviderArn
             ? iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
@@ -48,7 +48,7 @@ export class GithubActionsFrontendDeployRoleConstruct extends Construct {
                     'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
                 },
                 StringLike: {
-                    'token.actions.githubusercontent.com:sub': subject,
+                    'token.actions.githubusercontent.com:sub': subjectLike,
                 },
             }),
         });

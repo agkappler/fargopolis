@@ -114,7 +114,6 @@ export class FargopolisApiStack extends cdk.Stack {
         const githubApiDeployRole = new GithubActionsApiDeployRoleConstruct(this, 'GithubActionsApiDeploy', {
             owner: githubOwner,
             repo: githubRepo,
-            branch: githubBranch,
             oidcProviderArn: githubOidcProviderArn,
         });
 

@@ -74,7 +74,6 @@ export class FrontendStack extends cdk.Stack {
         const githubDeployRole = new GithubActionsFrontendDeployRoleConstruct(this, 'GithubActionsFrontendDeploy', {
             owner: githubOwner,
             repo: githubRepo,
-            branch: githubBranch,
             siteBucket: this.bucket,
             distribution: this.distribution,
             oidcProviderArn: githubOidcProviderArn,

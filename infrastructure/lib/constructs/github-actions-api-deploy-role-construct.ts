@@ -5,7 +5,6 @@ import { Construct } from 'constructs';
 export type GithubActionsApiDeployRoleConstructProps = {
     owner: string;
     repo: string;
-    branch?: string;
     /**
      * Optional existing OIDC provider ARN.
      * If omitted, this construct creates the standard GitHub OIDC provider.
@@ -22,8 +21,7 @@ export class GithubActionsApiDeployRoleConstruct extends Construct {
     constructor(scope: Construct, id: string, props: GithubActionsApiDeployRoleConstructProps) {
         super(scope, id);
 
-        const branch = props.branch ?? 'main';
-        const subject = `repo:${props.owner}/${props.repo}:ref:refs/heads/${branch}`;
+        const subjectLike = `repo:${props.owner}/${props.repo}:*`;
 
         const oidcProvider = props.oidcProviderArn
             ? iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
@@ -44,7 +42,7 @@ export class GithubActionsApiDeployRoleConstruct extends Construct {
                     'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
                 },
                 StringLike: {
-                    'token.actions.githubusercontent.com:sub': subject,
+                    'token.actions.githubusercontent.com:sub': subjectLike,
                 },
             }),
         });
