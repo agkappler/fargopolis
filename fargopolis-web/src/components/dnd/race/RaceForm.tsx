@@ -32,7 +32,7 @@ export const RaceForm: React.FC<RaceFormProps> = ({ isOpen, onClose, dndRace, up
             if (isEdit) {
                 // await RequestManager.post("/updateBounty", data);
             } else {
-                await RequestManager.postGatewayWithAuth("/createRace", data, getToken);
+                await RequestManager.post("/createRace", data, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));

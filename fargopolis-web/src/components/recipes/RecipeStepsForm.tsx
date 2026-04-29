@@ -27,7 +27,7 @@ export const RecipeStepsForm: React.FC<RecipeStepsFormProps> = ({ isOpen, onClos
     const onSubmit = async (data: RecipeStepsFormData) => {
         data.steps.forEach((step, idx) => step.stepNumber = idx + 1);
         try {
-            await RequestManager.postGatewayWithAuth(`/updateStepsForRecipe/${recipeId}`, data.steps, getToken);
+            await RequestManager.post(`/updateStepsForRecipe/${recipeId}`, data.steps, getToken);
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));
             return;

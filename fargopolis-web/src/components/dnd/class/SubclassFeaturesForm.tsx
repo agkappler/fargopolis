@@ -26,12 +26,12 @@ export const SubclassFeaturesForm: React.FC<SubclassFeaturesFormProps> = ({ isOp
     const { getToken } = useAuth();
     const { data: subclassFeatures, isLoading, mutate: updateFeatures } = useSWR(
         isOpen && subclassId ? ([`/gateway/subclasses`, subclassId, "features"] as const) : null,
-        () => RequestManager.getGateway<SubclassFeature[]>(`/subclasses/${subclassId}/features`),
+        () => RequestManager.get<SubclassFeature[]>(`/subclasses/${subclassId}/features`),
     );
     const [errorMessage, setErrorMessage] = useState<string>();
     const onSubmit = async (data: SubclassFeaturesFormData) => {
         try {
-            await RequestManager.postGatewayWithAuth(`/subclasses/${subclassId}/updateFeatures`, data.features, getToken);
+            await RequestManager.post(`/subclasses/${subclassId}/updateFeatures`, data.features, getToken);
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));
             return;

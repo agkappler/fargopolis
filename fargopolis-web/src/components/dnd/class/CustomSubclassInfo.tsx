@@ -12,7 +12,7 @@ interface CustomSubclassInfoProps {
 export const CustomSubclassInfo: React.FC<CustomSubclassInfoProps> = ({ subclassId }) => {
     const { data: subclassFeatures, isLoading } = useSWR(
         subclassId ? ([`/gateway/subclasses`, subclassId, "features"] as const) : null,
-        () => RequestManager.getGateway<SubclassFeature[]>(`/subclasses/${subclassId}/features`),
+        () => RequestManager.get<SubclassFeature[]>(`/subclasses/${subclassId}/features`),
     );
 
     if (!subclassId) {

@@ -19,11 +19,11 @@ export const CustomRaceTraits: React.FC<CustomRaceTraitsProps> = ({ raceId }) =>
     const { getToken, isLoaded, isSignedIn } = useAuth();
     const { data: race, isLoading: isLoadingRace, mutate: mutateRace } = useSWR(
         raceId ? `/gateway/races/${raceId}` : null,
-        () => RequestManager.getGatewayWithAuth<CustomDndRace | null>(`/races/${raceId}`, getToken),
+        () => RequestManager.get<CustomDndRace | null>(`/races/${raceId}`, getToken),
     );
     const { data: racialTraits, isLoading, mutate: updateTraits } = useSWR(
         raceId ? `/gateway/races/${raceId}/traits` : null,
-        () => RequestManager.getGateway<RacialTrait[]>(`/races/${raceId}/traits`),
+        () => RequestManager.get<RacialTrait[]>(`/races/${raceId}/traits`),
     );
     const [isRaceFormOpen, setIsRaceFormOpen] = useState<boolean>(false);
     const [isTraitsFormOpen, setIsTraitsFormOpen] = useState<boolean>(false);

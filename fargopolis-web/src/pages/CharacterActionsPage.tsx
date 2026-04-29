@@ -11,30 +11,30 @@ import useSWR from "swr";
 import { useParams } from "react-router-dom";
 
 export function CharacterActionsPage() {
-  const { id } = useParams();
-  const { data: character, isLoading: isLoadingCharacter, error } = useSWR<Character>(
-    id ? `/character/${id}` : null,
-    () => RequestManager.getGateway<Character>(`/character/${id}`),
-  );
+    const { id } = useParams();
+    const { data: character, isLoading: isLoadingCharacter, error } = useSWR<Character>(
+        id ? `/character/${id}` : null,
+        () => RequestManager.get<Character>(`/character/${id}`),
+    );
 
-  if (!id) return <ErrorMessage errorMessage="Missing character id." />;
-  if (error) return <ErrorMessage errorMessage={error.message} />;
+    if (!id) return <ErrorMessage errorMessage="Missing character id." />;
+    if (error) return <ErrorMessage errorMessage={error.message} />;
 
-  return (
-    <LoadingWrapper isLoading={isLoadingCharacter}>
-      <PageHeader
-        title={character?.name}
-        leftContainer={<LinkButton label="Back to Character" url={`/dnd/${id}`} isForward={false} />}
-      />
-      {character && (
-        <>
-          {character.avatarId && <ImageBox fileId={character.avatarId} altText="Character avatar" />}
-          <Typography variant="h6" textAlign="center" fontWeight="light" color="textSecondary">
-            {`${capitalize(character.race)}, Level ${character.level} ${capitalize(character.className)}`}
-          </Typography>
-          <ActionInfo characterId={character.characterId} className={character.className} />
-        </>
-      )}
-    </LoadingWrapper>
-  );
+    return (
+        <LoadingWrapper isLoading={isLoadingCharacter}>
+            <PageHeader
+                title={character?.name}
+                leftContainer={<LinkButton label="Back to Character" url={`/dnd/${id}`} isForward={false} />}
+            />
+            {character && (
+                <>
+                    {character.avatarId && <ImageBox fileId={character.avatarId} altText="Character avatar" />}
+                    <Typography variant="h6" textAlign="center" fontWeight="light" color="textSecondary">
+                        {`${capitalize(character.race)}, Level ${character.level} ${capitalize(character.className)}`}
+                    </Typography>
+                    <ActionInfo characterId={character.characterId} className={character.className} />
+                </>
+            )}
+        </LoadingWrapper>
+    );
 }

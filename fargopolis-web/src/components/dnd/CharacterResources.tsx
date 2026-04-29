@@ -16,10 +16,10 @@ export const CharacterResources: React.FC<CharacterResourcesProps> = ({ characte
     const { getToken } = useAuth();
     const { data, isLoading, mutate } = useSWR<(string | number)[]>(
         `/character/${characterId}/resourceIds`,
-        () => RequestManager.getGateway<(string | number)[]>(`/character/${characterId}/resourceIds`),
+        () => RequestManager.get<(string | number)[]>(`/character/${characterId}/resourceIds`),
     );
     const onUpload = async (fileMetadata: FileMetadata) => {
-        await RequestManager.postGatewayWithAuth(
+        await RequestManager.post(
             `/character/addResource?characterId=${characterId}&fileId=${fileMetadata.fileId}`,
             {},
             getToken,

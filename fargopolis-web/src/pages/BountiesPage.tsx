@@ -34,7 +34,7 @@ export function BountiesPage() {
 
     const { data: bounties, error: bountiesError, isLoading: isLoadingBounties, mutate } = useSWR<Bounty[]>(
         "/bounties",
-        () => RequestManager.getGateway<Bounty[]>("/bounties"),
+        () => RequestManager.get<Bounty[]>("/bounties"),
     );
     const {
         data: bountyCategories,
@@ -42,7 +42,7 @@ export function BountiesPage() {
         isLoading: isLoadingBountyCategories,
         mutate: mutateCategories,
     } = useSWR<BountyCategory[]>("/bountyCategories", () =>
-        RequestManager.getGateway<BountyCategory[]>("/bountyCategories"),
+        RequestManager.get<BountyCategory[]>("/bountyCategories"),
     );
     if (bountiesError || bountyCategoriesError) {
         return <ErrorMessage errorMessage={(bountiesError ?? bountyCategoriesError)?.message} />;

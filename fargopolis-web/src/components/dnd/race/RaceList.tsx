@@ -13,7 +13,7 @@ export const RaceList: React.FC = () => {
     const { data: apiRaceResults, isLoading: isLoadingApi } = useSWR<BaseDndResponse>('/races', () => getRaces());
     const { data: customRaces, isLoading: isLoadingCustomRaces } = useSWR(
         isLoaded ? (['customRacesGateway', isSignedIn] as const) : null,
-        () => RequestManager.getGatewayWithAuth<CustomDndRace[]>('/races', getToken),
+        () => RequestManager.get<CustomDndRace[]>('/races', getToken),
     );
     const races = [...(apiRaceResults?.results ?? []), ...(customRaces ?? [])].sort((a, b) => a.name.localeCompare(b.name));
     return <>

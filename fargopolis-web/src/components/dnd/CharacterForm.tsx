@@ -36,7 +36,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
     const { data: races } = useSWR<{ results: DndItem[] }>("/races", () => getRaces());
     const { data: customRaces } = useSWR(
         isLoaded ? (["customRacesGateway", isSignedIn] as const) : null,
-        () => RequestManager.getGatewayWithAuth<CustomDndRace[]>("/races", getToken),
+        () => RequestManager.get<CustomDndRace[]>("/races", getToken),
     );
 
     // Combine API and custom data
@@ -49,9 +49,9 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
     const onSubmit = async (data: Character) => {
         try {
             if (isEdit) {
-                await RequestManager.postGatewayWithAuth("/updateCharacter", data, getToken);
+                await RequestManager.post("/updateCharacter", data, getToken);
             } else {
-                await RequestManager.postGatewayWithAuth("/createCharacter", data, getToken);
+                await RequestManager.post("/createCharacter", data, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));
@@ -63,7 +63,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
     }
 
     const onUpload = async (fileMetadata: FileMetadata) => {
-        await RequestManager.postGatewayWithAuth(
+        await RequestManager.post(
             `/updateAvatar?characterId=${character?.characterId}&fileId=${fileMetadata.fileId}`,
             {},
             getToken,

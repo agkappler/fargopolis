@@ -26,7 +26,7 @@ export const RacialTraitsForm: React.FC<RacialTraitsFormProps> = ({ isOpen, onCl
     const [errorMessage, setErrorMessage] = useState<string>();
     const onSubmit = async (data: RacialTraitsFormData) => {
         try {
-            await RequestManager.postGatewayWithAuth(`/races/${raceId}/updateTraits`, data.traits, getToken);
+            await RequestManager.post(`/races/${raceId}/updateTraits`, data.traits, getToken);
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));
             return;

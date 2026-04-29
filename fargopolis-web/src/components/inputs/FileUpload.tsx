@@ -26,7 +26,7 @@ export const FileUpload: React.FC<FileUploadButtonProps> = ({
     const { getToken, isLoaded, isSignedIn } = useAuth();
     const canUpload = isLoaded && isSignedIn;
     const uploadFile = async (file: File) => {
-        const fileMetadata: FileMetadata = await RequestManager.uploadFileGatewayWithAuth(file, fileRole, getToken);
+        const fileMetadata: FileMetadata = await RequestManager.uploadFile(file, fileRole, getToken);
         if (onUpload) await onUpload(fileMetadata);
 
         return fileMetadata.url ?? "";
@@ -35,7 +35,7 @@ export const FileUpload: React.FC<FileUploadButtonProps> = ({
     const { data: currentAvatarUrl } = useSWR<FileMetadata | undefined>(
         `gw/fileUrl/${currentAvatarId}`,
         currentAvatarId !== undefined
-            ? () => RequestManager.getGateway<FileMetadata>(`/fileUrl/${currentAvatarId}`)
+            ? () => RequestManager.get<FileMetadata>(`/fileUrl/${currentAvatarId}`)
             : () => Promise.resolve(undefined),
         { onSuccess: (data) => setImageUrl(data?.url) }
     );

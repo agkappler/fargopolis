@@ -37,9 +37,9 @@ export const BountyForm: FC<BountyFormProps> = ({
     const onSubmit = async (data: Bounty) => {
         try {
             if (isEdit) {
-                await RequestManager.postGatewayWithAuth("/updateBounty", data, getToken);
+                await RequestManager.post("/updateBounty", data, getToken);
             } else {
-                await RequestManager.postGatewayWithAuth("/createBounty", data, getToken);
+                await RequestManager.post("/createBounty", data, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));

@@ -32,7 +32,7 @@ export const SpellDetailsModal: React.FC<SpllDetailsModalProps> = ({
 
     const handleAddSpell = async () => {
         if (characterId && spellDetails) {
-            await RequestManager.postGatewayWithAuth(
+            await RequestManager.post(
                 `/character/${characterId}/addKnownSpell`,
                 {
                     characterId,
@@ -49,7 +49,7 @@ export const SpellDetailsModal: React.FC<SpllDetailsModalProps> = ({
 
     const handleRemoveSpell = async () => {
         if (characterId && spellDetails) {
-            await RequestManager.deleteGatewayWithAuth(
+            await RequestManager.delete(
                 `/character/${characterId}/deleteKnownSpell?spellKey=${spellDetails.index}`,
                 getToken,
             );

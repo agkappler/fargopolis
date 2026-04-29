@@ -22,7 +22,7 @@ export const Subclasses: React.FC<SubclassesProps> = ({ classIndex }) => {
     const { data: apiSubclassResults, isLoading: isLoadingApi } = useSWR<BaseDndResponse>(`/classes/${classIndex}/subclasses`, () => getSubclasses(classIndex));
     const { data: customSubclasses, isLoading: isLoadingCustomSubclasses, mutate: mutateCustomSubclasses } = useSWR(
         [`/gateway/subclasses/class`, classIndex] as const,
-        () => RequestManager.getGateway<Subclass[]>(`/subclasses/class/${classIndex}`),
+        () => RequestManager.get<Subclass[]>(`/subclasses/class/${classIndex}`),
     );
     const subclasses = [...(apiSubclassResults?.results ?? []), ...(customSubclasses ?? [])].sort((a, b) => a.name.localeCompare(b.name));
     const [selectedSubclass, setSelectedSubclass] = useState<string>("");

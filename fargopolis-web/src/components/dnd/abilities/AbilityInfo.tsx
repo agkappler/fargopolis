@@ -20,7 +20,7 @@ export const AbilityInfo: React.FC<AbilityInfoProps> = ({ characterId, canEdit =
 
     const { data: abilities, isLoading, mutate } = useSWR<Ability[]>(
         `/characterAbilities/${characterId}`,
-        () => RequestManager.getGateway<Ability[]>(`/characterAbilities/${characterId}`),
+        () => RequestManager.get<Ability[]>(`/characterAbilities/${characterId}`),
     );
 
     const sortAbilitiesByType = (abilities: Ability[]) => {

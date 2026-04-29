@@ -19,7 +19,7 @@ export const WeaponInfo: React.FC<WeaponInfoProps> = ({ characterId, canEdit = t
 
     const { data: weapons, isLoading, mutate } = useSWR<Weapon[]>(
         `/characterWeapons/${characterId}`,
-        () => RequestManager.getGateway<Weapon[]>(`/characterWeapons/${characterId}`),
+        () => RequestManager.get<Weapon[]>(`/characterWeapons/${characterId}`),
     );
 
     const onClose = () => {

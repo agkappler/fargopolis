@@ -9,32 +9,25 @@ interface PresignPutResponse extends FileMetadata {
 }
 
 export default class RequestManager {
-    private static baseGatewayUrl = import.meta.env.VITE_API_URL ?? "";
-    private static gatewayApiUrl = `${this.baseGatewayUrl}/api`;
-
-    /** Bounty read routes — public GET when using API Gateway + Lambda. */
-    static async getGateway<T = unknown>(url: string): Promise<T> {
-        return this.getWithBase<T>(this.gatewayApiUrl, url, "omit", { "Content-Type": "application/json" });
-    }
+    private static baseUrl = import.meta.env.VITE_API_URL ?? "";
+    private static apiUrl = `${this.baseUrl}/api`;
 
     /**
-     * Authenticated GET on the API Gateway (sends Clerk Bearer when a token is available).
-     * Use for routes that return user-specific data when signed in (e.g. custom DnD races).
+     * Authenticated GET (sends Clerk Bearer when a token is available).
      */
-    static async getGatewayWithAuth<T = unknown>(url: string, getToken: () => Promise<string | null>): Promise<T> {
-        const token = await getToken();
+    static async get<T = unknown>(url: string, getToken?: () => Promise<string | null>): Promise<T> {
+        const token = await getToken?.() ?? undefined;
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         if (token) {
             headers.Authorization = `Bearer ${token}`;
         }
-        return this.getWithBase<T>(this.gatewayApiUrl, url, "omit", headers);
+        return this.getWithBase<T>(this.apiUrl, url, "omit", headers);
     }
 
     /**
-     * Bounty mutations — sends Clerk session JWT (`Authorization: Bearer`).
-     * Requires `VITE_CLERK_PUBLISHABLE_KEY` (Clerk SPA) and a signed-in user.
+     * Post, requires a signed-in user.
      */
-    static async postGatewayWithAuth<TRequest = unknown, TResponse = unknown>(
+    static async post<TRequest = unknown, TResponse = unknown>(
         url: string,
         data: TRequest,
         getToken: () => Promise<string | null>,
@@ -44,7 +37,7 @@ export default class RequestManager {
             throw new Error("Sign in to perform this action.");
         }
         return this.postWithBase<TRequest, TResponse>(
-            this.gatewayApiUrl,
+            this.apiUrl,
             url,
             data,
             {
@@ -55,7 +48,10 @@ export default class RequestManager {
         );
     }
 
-    static async putGatewayWithAuth<TRequest = unknown, TResponse = unknown>(
+    /**
+     * Put, requires a signed-in user.
+     */
+    static async put<TRequest = unknown, TResponse = unknown>(
         url: string,
         data: TRequest,
         getToken: () => Promise<string | null>,
@@ -64,7 +60,7 @@ export default class RequestManager {
         if (!token) {
             throw new Error("Sign in to perform this action.");
         }
-        const response = await fetch(this.gatewayApiUrl + url, {
+        const response = await fetch(this.apiUrl + url, {
             method: "PUT",
             credentials: "omit",
             headers: {
@@ -76,7 +72,10 @@ export default class RequestManager {
         return await this.handleResponse<TResponse>(response);
     }
 
-    static async deleteGatewayWithAuth<TResponse = unknown>(
+    /**
+     * Delete, requires a signed-in user.
+     */
+    static async delete<TResponse = unknown>(
         url: string,
         getToken: () => Promise<string | null>,
     ): Promise<TResponse> {
@@ -84,7 +83,7 @@ export default class RequestManager {
         if (!token) {
             throw new Error("Sign in to perform this action.");
         }
-        const response = await fetch(this.gatewayApiUrl + url, {
+        const response = await fetch(this.apiUrl + url, {
             method: "DELETE",
             credentials: "omit",
             headers: {
@@ -129,7 +128,10 @@ export default class RequestManager {
         return await this.handleResponse<TResponse>(response);
     }
 
-    static async uploadFileGatewayWithAuth(
+    /**
+     * Upload a file to S3.
+     */
+    static async uploadFile(
         file: File,
         fileRole: FileRole,
         getToken: () => Promise<string | null>,
@@ -140,7 +142,7 @@ export default class RequestManager {
             sizeBytes: file.size,
             fileRole,
         };
-        const presign = await this.postGatewayWithAuth<typeof payload, PresignPutResponse>(
+        const presign = await this.post<typeof payload, PresignPutResponse>(
             "/files/presignPut",
             payload,
             getToken

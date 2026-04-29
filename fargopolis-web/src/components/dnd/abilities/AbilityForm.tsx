@@ -67,9 +67,9 @@ export const AbilityForm: React.FC<AbilityFormProps> = ({
             };
 
             if (isEdit) {
-                await RequestManager.putGatewayWithAuth(`/updateAbility/${ability.abilityId}`, abilityData, getToken);
+                await RequestManager.put(`/updateAbility/${ability.abilityId}`, abilityData, getToken);
             } else {
-                await RequestManager.postGatewayWithAuth(`/addAbility/${characterId}`, abilityData, getToken);
+                await RequestManager.post(`/addAbility/${characterId}`, abilityData, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));
@@ -84,7 +84,7 @@ export const AbilityForm: React.FC<AbilityFormProps> = ({
         if (!ability || !characterId) return;
 
         try {
-            await RequestManager.deleteGatewayWithAuth(`/deleteAbility/${ability.abilityId}`, getToken);
+            await RequestManager.delete(`/deleteAbility/${ability.abilityId}`, getToken);
             onAbilityUpdate?.();
             closeForm();
         } catch (error: unknown) {

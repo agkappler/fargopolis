@@ -40,9 +40,9 @@ export const WeaponForm: React.FC<WeaponFormProps> = ({
             };
 
             if (isEdit) {
-                await RequestManager.putGatewayWithAuth(`/updateWeapon/${weapon.weaponId}`, weaponData, getToken);
+                await RequestManager.put(`/updateWeapon/${weapon.weaponId}`, weaponData, getToken);
             } else {
-                await RequestManager.postGatewayWithAuth(`/addWeapon`, weaponData, getToken);
+                await RequestManager.post(`/addWeapon`, weaponData, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));

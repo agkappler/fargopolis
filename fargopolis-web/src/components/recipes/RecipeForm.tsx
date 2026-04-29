@@ -26,9 +26,9 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({ isOpen, onClose, recipeD
     const onSubmit = async (data: Recipe) => {
         try {
             if (isEdit) {
-                await RequestManager.postGatewayWithAuth("/updateRecipe", data, getToken);
+                await RequestManager.post("/updateRecipe", data, getToken);
             } else {
-                await RequestManager.postGatewayWithAuth("/createRecipe", data, getToken);
+                await RequestManager.post("/createRecipe", data, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));
@@ -40,7 +40,7 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({ isOpen, onClose, recipeD
     }
 
     const onUpload = async (fileMetadata: FileMetadata) => {
-        await RequestManager.postGatewayWithAuth(
+        await RequestManager.post(
             `/updateRecipeAvatar?recipeId=${recipeData?.recipeId}&fileId=${fileMetadata.fileId}`,
             {},
             getToken

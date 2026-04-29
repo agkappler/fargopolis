@@ -20,7 +20,7 @@ export const SpellInfo: React.FC<SpellInfoProps> = ({ levelInfos, currentLevel, 
     const { data: spellData, isLoading } = useSWR<BaseDndResponse>(`/spells/${className}`, () => getSpellsForClass(className));
     const { data: knownSpells, mutate } = useSWR<Record<string, KnownSpell>>(
         `/character/${characterId}/knownSpells`,
-        () => RequestManager.getGateway<Record<string, KnownSpell>>(`/character/${characterId}/knownSpells`),
+        () => RequestManager.get<Record<string, KnownSpell>>(`/character/${characterId}/knownSpells`),
     );
 
     if (levelInfos === undefined) return <ErrorMessage errorMessage="Missing level data." />;

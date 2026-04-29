@@ -28,9 +28,9 @@ export const SubclassForm: React.FC<SubclassFormProps> = ({ isOpen, onClose, sub
     const onSubmit = async (data: Subclass) => {
         try {
             if (isEdit) {
-                await RequestManager.putGatewayWithAuth(`/subclasses/updateSubclass/${data.subclassId}`, data, getToken);
+                await RequestManager.put(`/subclasses/updateSubclass/${data.subclassId}`, data, getToken);
             } else {
-                await RequestManager.postGatewayWithAuth("/subclasses/createSubclass", data, getToken);
+                await RequestManager.post("/subclasses/createSubclass", data, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));

@@ -12,7 +12,7 @@ interface FileWrapperProps {
 export const FileWrapper: React.FC<FileWrapperProps> = ({ fileId }) => {
     const { data: fileMetadata, isLoading } = useSWR<FileMetadata>(
         `gw/fileUrl/${fileId}`,
-        () => RequestManager.getGateway<FileMetadata>(`/fileUrl/${fileId}`)
+        () => RequestManager.get<FileMetadata>(`/fileUrl/${fileId}`)
     );
     const isImage = (filename: string) => ["jpg", "jpeg", "png", "gif", "webp"].includes(filename.split('.').pop()?.toLowerCase() || "");
 

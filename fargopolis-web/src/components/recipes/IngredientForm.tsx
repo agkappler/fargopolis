@@ -25,13 +25,13 @@ export const IngredientForm: React.FC<IngredientFormProps> = ({ isOpen, onClose,
     const onSubmit = async (data: Ingredient) => {
         try {
             if (isEdit) {
-                await RequestManager.postGatewayWithAuth(
+                await RequestManager.post(
                     "/updateIngredient",
                     { ...data, recipeId },
                     getToken
                 );
             } else {
-                await RequestManager.postGatewayWithAuth(`/addIngredientToRecipe/${recipeId}`, data, getToken);
+                await RequestManager.post(`/addIngredientToRecipe/${recipeId}`, data, getToken);
             }
         } catch (error: unknown) {
             setErrorMessage(getErrorMessage(error));
