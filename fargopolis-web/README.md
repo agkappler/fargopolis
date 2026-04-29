@@ -7,10 +7,10 @@ Main client for Fargopolis. Dev server: `pnpm dev` (port **3000**; see `vite.con
 Copy `[.env.example](.env.example)` to `.env` or `.env.local`.
 
 
-| Variable                         | Role                                                                                                                                                                                                                          |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `**VITE_API_URL`**               | Base URL of the **API Gateway** HTTP API (no trailing slash) — **Lambda** handlers (bounties, Recipes, in-scope DnD, files). **Production/CI:** set the same value to the `HttpApiUrl` output from `FargopolisApi`. |
-| `**VITE_CLERK_PUBLISHABLE_KEY`** | Clerk publishable key (browser-only). Bounty **writes** send a session JWT; verification uses `context.clerk.jwtIssuer` on the **authorizer Lambda** in CDK, not the client.                                                  |
+| Variable | Role |
+| -------- | ----- |
+| `VITE_API_URL` | Base URL of the HTTP API (no trailing slash) — `HttpApiUrl` from `FargopolisApi` in production/CI. |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (browser-only). Mutations send a session JWT; issuer is `context.clerk.jwtIssuer` on the authorizer Lambda. |
 
 
 ## Which API am I calling?

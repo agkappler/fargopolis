@@ -118,9 +118,15 @@ npx cdk deploy --profile YOUR_PROFILE
 
 After a successful deploy, note the CloudFormation **Outputs**: **SiteBucketName**, **CloudFrontDistributionId**, and **SiteUrl**. Upload the Vite build to the bucket and invalidate CloudFront (see `.github/workflows/deploy-static-frontend.yml` for the CI workflow using repo secrets).
 
-## CI/CD notes (OIDC)
+## CI/CD (GitHub Actions)
 
-GitHub Actions AWS auth is managed with CDK-provisioned OIDC roles (no long-lived AWS access keys in repo secrets):
-- Frontend static deploy workflow uses `AWS_ROLE_TO_ASSUME` (from `FargopolisFrontend` output `GithubActionsDeployRoleArn`).
-- API CDK deploy workflow uses `AWS_API_DEPLOY_ROLE_TO_ASSUME` (from `FargopolisApi` output `GithubActionsApiDeployRoleArn`).
-- Both workflows also use `AWS_REGION`.
+Deploys use **IAM OIDC** via CDK-created roles.
+
+| Workflow | Secrets | Stack outputs to copy from |
+| -------- | ------- | --------------------------- |
+| [`.github/workflows/deploy-static-frontend.yml`](.github/workflows/deploy-static-frontend.yml) | `AWS_REGION`, `AWS_ROLE_TO_ASSUME`, `STATIC_SITE_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`, `VITE_API_URL` (same value as `HttpApiUrl`), `VITE_CLERK_PUBLISHABLE_KEY` | `FargopolisFrontend`, `FargopolisApi` |
+| [`.github/workflows/deploy-api-stack.yml`](.github/workflows/deploy-api-stack.yml) | `AWS_REGION`, `AWS_API_DEPLOY_ROLE_TO_ASSUME` | `FargopolisApi` |
+
+Two **different** role ARNs are normal: `AWS_ROLE_TO_ASSUME` = frontend deploy role; `AWS_API_DEPLOY_ROLE_TO_ASSUME` = API CDK deploy role.
+
+OIDC bootstrap and troubleshooting: **[`infrastructure/README.md`](infrastructure/README.md)** (sections *GitHub Actions OIDC roles* and *Debugging*).

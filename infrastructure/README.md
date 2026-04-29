@@ -22,19 +22,18 @@ List stacks: `npx cdk list`. Deploy one stack: `npx cdk deploy FargopolisApi` (o
   - **[`FargopolisHttpApiConstruct`](lib/constructs/fargopolis-http-api-construct.ts)** — shared **HTTP API** with CORS; all Lambda-backed routes use this same base URL.
   - **[`BountiesApiRoutesConstruct`](lib/constructs/bounties-api-routes-construct.ts)** — bounties Lambda and routes (reference pattern for the next verticals).
   - **[`FilesApiRoutesConstruct`](lib/constructs/files-api-routes-construct.ts)** — dedicated files/uploads Lambda for S3 presigned PUT + file URL reads (`GET /api/fileUrl/{fileId}`, `POST /api/files/presignPut`).
-  - **[`RecipesApiRoutesConstruct`](lib/constructs/recipes-api-routes-construct.ts)** — recipes Lambda + parity routes from legacy Spring.
+  - **[`RecipesApiRoutesConstruct`](lib/constructs/recipes-api-routes-construct.ts)** — recipes Lambda + HTTP routes for recipe CRUD and related reads.
   - **[`DndApiRoutesConstruct`](lib/constructs/dnd-api-routes-construct.ts)** — DnD Lambda + parity routes for characters/resources/abilities/weapons/known spells.
 - **[`FargopolisBucketConstruct`](lib/constructs/fargopolis-bucket-construct.ts)** — private **user-uploads S3** (recipe avatars, DnD files, etc.). Not the Vite/CloudFront site bucket. CDK **creates** the bucket (S3-managed encryption, block public access, CORS for browser presigned PUT/GET, `RemovalPolicy.RETAIN`). Optional **`uploadsBucket.corsAllowedOrigins`** in context; default `['*']`.
 
-**Outputs (CloudFormation):** `HttpApiUrl`, `BountyCategoriesTableName`, `BountiesTableName`, `RecipesTableName`, `DndCharactersTableName`, `FilesTableName`, **`FargopolisBucket`** — the SPA and CI set `VITE_API_URL` to `HttpApiUrl` for strangler traffic to Lambdas.
+**Outputs (CloudFormation):** `HttpApiUrl`, `BountyCategoriesTableName`, `BountiesTableName`, `RecipesTableName`, `DndCharactersTableName`, `FilesTableName`, **`FargopolisBucket`**. The SPA and CI bake **`VITE_API_URL`** = `HttpApiUrl` (no trailing slash) for Lambda API calls.
 
 ### User-uploads bucket: IAM and presigned URLs
 
 - **Name in AWS / CI:** stack output **`FargopolisBucket`** (the bucket name string).
-- **Lambdas** that mint presigned URLs or manage upload metadata should set **`UPLOADS_BUCKET_ENV_NAME`** (the env var name pointer, e.g. `FARGOPOLIS_UPLOADS_BUCKET_NAME`) and set that concrete env var to `props.uploadsBucket.bucket.bucketName`; then call **`userUploads.grantReadWrite(lambdaFunction)`** for object permissions. Default GET presign TTL is **15 minutes**, matching Java `S3Facade`.
-- **Object keys:** use **`{uuId}_{filename}`** (same as the legacy app) so existing objects and Dynamo metadata stay aligned.
+- **Lambdas** that mint presigned URLs or manage upload metadata should set **`UPLOADS_BUCKET_ENV_NAME`** (the env var name pointer, e.g. `FARGOPOLIS_UPLOADS_BUCKET_NAME`) and set that concrete env var to `props.uploadsBucket.bucket.bucketName`; then call **`userUploads.grantReadWrite(lambdaFunction)`** for object permissions. Default GET presign TTL is **15 minutes**.
+- **Object keys:** use **`{uuId}_{filename}`** so existing objects and Dynamo metadata stay aligned.
 - **Browser upload flow:** API returns a presigned **PUT** URL and `Content-Type`; the SPA **`PUT`**s the file to S3 with **exactly** that `Content-Type` (required for SigV4). Downloads use a presigned **GET** URL.
-- **Java overlap:** while Spring still handles some routes, attach IAM on the task/instance role allowing `s3:GetObject`, `s3:PutObject` on `arn:aws:s3:::<FargopolisBucketOutput>/*` (tighten ARNs if you use a prefix).
 - **Dedicated files Lambda:** S3 IAM is intentionally concentrated in [`FilesApiRoutesConstruct`](lib/constructs/files-api-routes-construct.ts); recipe/dnd handlers can stay bucket-agnostic and call files routes instead.
 
 ### Clerk JWT issuer
@@ -55,12 +54,23 @@ Both stacks read `context.githubActions` (see [`cdk.json`](cdk.json)): `owner`, 
 
 **Trust:** deploy roles trust `repo:OWNER/REPO:*` (IAM `StringLike` on JWT `sub`), where `OWNER/REPO` must match GitHub exactly. Narrow `sub` matchers (exact ref only) commonly fail `sts:AssumeRoleWithWebIdentity` for `workflow_dispatch` or subtle claim differences; if AssumeRole stays denied after fixing the slug, redeploy the stack that owns the role and confirm GitHub secrets use the matching `GithubActions*DeployRoleArn` output.
 
-**OIDC provider**: By default, both stacks **import** `arn:aws:iam::<account>:oidc-provider/token.actions.githubusercontent.com` (see [`lib/github-actions-oidc.ts`](lib/github-actions-oidc.ts)) so only one physical provider per account is needed. Optional overrides:
+**OIDC provider**: By default both stacks **import** `arn:aws:iam::<account>:oidc-provider/token.actions.githubusercontent.com` (see [`lib/github-actions-oidc.ts`](lib/github-actions-oidc.ts)).
 
-- `githubActions.oidcProviderArn` — use a specific provider ARN instead of the default.
-- `githubActions.createOidcProvider` — set to `true` on a **bootstrap** deploy when that provider does not exist yet (`npx cdk deploy FargopolisApi -c githubActions='{"createOidcProvider":true,"owner":"…","repo":"…","branch":"main"}'`). After the provider exists in IAM, remove `createOidcProvider` (or set `false`) so later deploys stay import-only.
+- **Only `FargopolisApiStack`** may **create** the physical IAM OIDC IdP resource on demand; **`FargopolisFrontend` always imports** (so we never try to create the same provider twice in two stacks).
+- Optional overrides: `githubActions.oidcProviderArn` — custom provider ARN.
+- **Bootstrap** (IAM has no GitHub IdP yet — error *“No OpenIDConnect provider … token.actions.githubusercontent.com”*, or STS will not trust the JWT): deploy **`FargopolisApi`** **once** with bootstrap, then omit the flag afterward:
 
-When a construct does create the GitHub OIDC provider, it sets `RemovalPolicy.RETAIN` on the provider so it survives stack changes more predictably.
+```bash
+cd infrastructure
+npx cdk diff FargopolisApi --profile YOUR_PROFILE -c bootstrapGithubActionsOidcProvider=true   # verify OIDC resources appear
+npx cdk deploy FargopolisApi --profile YOUR_PROFILE -c bootstrapGithubActionsOidcProvider=true
+```
+
+Prefer **`-c bootstrapGithubActionsOidcProvider=true`** over nested `-c githubActions='{...}'` — nested JSON sometimes fails to apply in shells, which produces **`(no changes)`** during bootstrap. Alternate nested form: `'{"owner":"OWNER","repo":"REPO","branch":"main","createOidcProvider":true}'`.
+
+After **[IAM identity providers](https://console.aws.amazon.com/iam/home#/identity_providers)** lists `token.actions.githubusercontent.com`, use normal deploys without the bootstrap flag. Or add the IdP [manually per GitHub/AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services).
+
+When CDK creates the IdP resource, **`RemovalPolicy.RETAIN`** is set on the IdP construct.
 
 **Frontend** (`FargopolisFrontend`) outputs:
 
