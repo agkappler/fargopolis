@@ -16,7 +16,7 @@ import { DndGlossaryConstruct } from '../constructs/dnd-glossary-construct';
 import { DndGlossaryApiRoutesConstruct } from '../constructs/dnd-glossary-api-routes-construct';
 import { DndApiRoutesConstruct } from '../constructs/dnd-api-routes-construct';
 import { GithubActionsApiDeployRoleConstruct } from '../constructs/github-actions-api-deploy-role-construct';
-import { resolveGithubActionsOidcProviderArn } from '../github-actions-oidc';
+import { resolveApiGithubDeployOidcProviderArn } from '../github-actions-oidc';
 
 /**
  * Serverless API resources (Lambda, API Gateway, DynamoDB, etc.).
@@ -105,12 +105,12 @@ export class FargopolisApiStack extends cdk.Stack {
             repo?: string;
             branch?: string;
             oidcProviderArn?: string;
-            createOidcProvider?: boolean;
+            createOidcProvider?: boolean | string;
         };
         const githubOwner = githubActions.owner ?? 'agkappler';
         const githubRepo = githubActions.repo ?? 'fargopolis';
         const githubBranch = githubActions.branch ?? 'main';
-        const githubOidcProviderArn = resolveGithubActionsOidcProviderArn(cdk.Stack.of(this), githubActions);
+        const githubOidcProviderArn = resolveApiGithubDeployOidcProviderArn(cdk.Stack.of(this), githubActions);
         const githubApiDeployRole = new GithubActionsApiDeployRoleConstruct(this, 'GithubActionsApiDeploy', {
             owner: githubOwner,
             repo: githubRepo,

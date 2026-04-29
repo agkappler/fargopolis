@@ -4,7 +4,7 @@ import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { GithubActionsFrontendDeployRoleConstruct } from '../constructs/github-actions-frontend-deploy-role-construct';
-import { resolveGithubActionsOidcProviderArn } from '../github-actions-oidc';
+import { resolveImportedGithubActionsOidcProviderArn } from '../github-actions-oidc';
 
 /**
  * Static site hosting: private S3 bucket + CloudFront with Origin Access Control.
@@ -65,12 +65,13 @@ export class FrontendStack extends cdk.Stack {
             repo?: string;
             branch?: string;
             oidcProviderArn?: string;
-            createOidcProvider?: boolean;
+            createOidcProvider?: boolean | string;
         };
         const githubOwner = githubActions.owner ?? 'agkappler';
         const githubRepo = githubActions.repo ?? 'fargopolis';
         const githubBranch = githubActions.branch ?? 'main';
-        const githubOidcProviderArn = resolveGithubActionsOidcProviderArn(cdk.Stack.of(this), githubActions);
+        // Frontend stack never creates IAM OIDC IdP resources (avoid duplicate-provider conflicts); API bootstrap does.
+        const githubOidcProviderArn = resolveImportedGithubActionsOidcProviderArn(cdk.Stack.of(this), githubActions);
         const githubDeployRole = new GithubActionsFrontendDeployRoleConstruct(this, 'GithubActionsFrontendDeploy', {
             owner: githubOwner,
             repo: githubRepo,
