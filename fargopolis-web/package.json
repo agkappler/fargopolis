@@ -13,6 +13,7 @@
         "ts-lint": "tsc --noEmit && eslint . --fix"
     },
     "dependencies": {
+        "@chakra-ui/react": "^3.35.0",
         "@clerk/react": "^6.4.2",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
