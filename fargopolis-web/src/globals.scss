@@ -2,37 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: Inter, sans-serif;
+/*
+ * CSS custom properties for the Fargopolis design system.
+ * These act as a bridge so any non-Chakra code (Tailwind utilities,
+ * third-party widgets) can still reference the same token values.
+ * Component styling lives in chakra-theme.ts, not here.
+ */
+:root {
+  --fp-ink-900: #1c1a17;
+  --fp-ink-800: #2a2620;
+  --fp-ink-700: #3a352c;
+  --fp-ink-600: #564e42;
+  --fp-ink-500: #6f6658;
+
+  --fp-stone-400: #8a847b;
+  --fp-stone-300: #a8a297;
+  --fp-stone-200: #c5beb1;
+  --fp-stone-100: #ddd6c8;
+  --fp-stone-50:  #ece5d4;
+
+  --fp-parchment-100: #f4ede0;
+  --fp-parchment-50:  #faf6ed;
+  --fp-parchment-0:   #fdfbf6;
+
+  --fp-pine-900: #1f3328;
+  --fp-pine-700: #2c4a3a;
+  --fp-pine-500: #4a6e54;
+  --fp-pine-300: #7a9a7e;
+  --fp-pine-100: #d3dccd;
+
+  --fp-ember-900: #6b321a;
+  --fp-ember-700: #a04a26;
+  --fp-ember-500: #c25a30;
+  --fp-ember-400: #d97a4a;
+  --fp-ember-200: #e9b594;
+  --fp-ember-100: #f4d8c4;
+
+  --fp-slate-700: #364856;
+  --fp-slate-500: #4a5d6a;
+  --fp-slate-300: #7a8b96;
+
+  --fp-font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --fp-font-body:    "Inter", "Helvetica Neue", system-ui, sans-serif;
+  --fp-font-mono:    "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  --fp-container:        1180px;
+  --fp-container-narrow: 720px;
+  --fp-nav-height:       64px;
+
+  --fp-ease:     cubic-bezier(0.32, 0.72, 0.30, 1.00);
+  --fp-dur:      200ms;
+  --fp-dur-fast: 120ms;
+  --fp-dur-slow: 320ms;
 }
-
-#root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-} */
-
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-} */
-
-// body {
-//   color: rgb(var(--foreground-rgb));
-//   background: linear-gradient(
-//       to bottom,
-//       transparent,
-//       rgb(var(--background-end-rgb))
-//     )
-//     rgb(var(--background-start-rgb));
-// }
