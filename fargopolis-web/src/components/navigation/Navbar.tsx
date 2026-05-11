@@ -1,100 +1,175 @@
-import { NAVBAR_BREAK } from "@/constants/Media";
 import { Show, UserButton } from "@clerk/react";
 import { Menu } from "@mui/icons-material";
-import { Box, Button, Drawer, IconButton, List, ListItem, ListItemButton, ListItemText, Tab, Tabs, useMediaQuery } from "@mui/material";
+import { IconButton } from "@mui/material";
+import { Box, Drawer, Flex, Link, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
 import { SimpleDialog } from "../ui/SimpleDialog";
+import { NAVBAR_BREAK } from "@/constants/Media";
+import { useMediaQuery } from "@mui/material";
+
+const NAV_ITEMS = [
+    { label: "Recipe Box",   path: "/recipes" },
+    { label: "Bounties",     path: "/bounties" },
+    { label: "DnD",          path: "/dnd" },
+    { label: "About",        path: "/about" },
+    { label: "Split Check",  path: "/split-check" },
+    { label: "Login",        path: "/login" },
+];
 
 export const Navbar: React.FC = () => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-
     const isMobile = useMediaQuery(`(max-width:${NAVBAR_BREAK})`);
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [loginOpen, setLoginOpen] = useState(false);
 
-    const [isOpen, setIsOpen] = useState(false);
+    const isActive = (path: string) => pathname.startsWith(path);
 
-    const navItems = [
-        { label: "Recipes", path: "/recipes" },
-        { label: "Bounties", path: "/bounties" },
-        { label: "DnD", path: "/dnd" },
-        { label: "About", path: "/about" },
-        { label: "Split Check", path: "/split-check" },
-        { label: "Login", path: "/login" },
-    ];
-
-    const getTabValue = () => {
-        if (pathname.startsWith("/recipes")) return 0;
-        if (pathname.startsWith("/bounties")) return 1;
-        if (pathname.startsWith("/dnd")) return 2;
-        if (pathname.startsWith("/about")) return 3;
-        if (pathname.startsWith("/split-check")) return 4;
-        if (pathname.startsWith("/login")) return 5;
-        return false;
-    };
-
-    const handleTabClick = (path: string) => {
+    const handleNav = (path: string) => {
         if (!isMobile && path === "/login") {
-            setIsOpen(true);
+            setLoginOpen(true);
         } else {
             navigate(path);
         }
     };
 
     return (
-        <nav className="bg-white shadow-md sticky top-0 z-10">
-            <Box className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-                <Button
-                    variant="text"
-                    onClick={() => navigate("/")}
-                    startIcon={<img src="/mtn.png" alt="" width={25} height={25} />}
-                >
-                    Fargopolis
-                </Button>
-                {isMobile ? (
-                    <>
-                        <Box display="flex" alignItems="center" gap={1}>
-                            <Show when="signed-in">
-                                <UserButton />
-                            </Show>
-                            <IconButton onClick={() => setDrawerOpen(true)} size="large">
-                                <Menu />
-                            </IconButton>
-                        </Box>
-                        <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-                            <Box sx={{ width: 200 }} role="presentation" onClick={() => setDrawerOpen(false)}>
-                                <List>
-                                    {navItems.map((item) => (
-                                        <ListItem key={item.label} disablePadding>
-                                            <ListItemButton onClick={() => handleTabClick(item.path)}>
-                                                <ListItemText primary={item.label} />
-                                            </ListItemButton>
-                                        </ListItem>
-                                    ))}
-                                </List>
-                            </Box>
-                        </Drawer>
-                    </>
-                ) : (
-                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" justifyContent="flex-end">
-                        <Tabs value={getTabValue()} style={{ display: "flex", flexWrap: "wrap" }} textColor="primary" indicatorColor="primary">
-                            {navItems.map((item) => (
-                                <Tab key={item.label} label={item.label} onClick={() => handleTabClick(item.path)} />
-                            ))}
-                        </Tabs>
+        <Flex
+            as="nav"
+            position="sticky"
+            top="0"
+            zIndex="10"
+            bg="bg.raised"
+            borderBottom="1px solid"
+            borderBottomColor="border.DEFAULT"
+            h="var(--fp-nav-height)"
+            px="6"
+            gap="6"
+            align="center"
+            boxShadow="xs"
+        >
+            {/* Brand */}
+            <Flex
+                as="button"
+                align="center"
+                gap="2"
+                bg="transparent"
+                border="none"
+                cursor="pointer"
+                onClick={() => navigate("/")}
+                fontFamily="display"
+                fontSize="lg"
+                fontWeight="500"
+                color="fg.DEFAULT"
+                p="0"
+                style={{ fontVariationSettings: '"opsz" 14, "SOFT" 80, "WONK" 1' }}
+            >
+                <img src="/mtn.png" alt="" style={{ width: 24, height: 24 }} />
+                <Text>Fargopolis</Text>
+            </Flex>
 
-                        <Show when="signed-in">
-                            <UserButton />
-                        </Show>
-                    </Box>
-                )}
-            </Box>
-            <SimpleDialog isOpen={isOpen} onClose={() => setIsOpen(false)} maxWidth="md">
-                <LoginForm onLogin={() => setIsOpen(false)} />
+            {isMobile ? (
+                <>
+                    <Flex ml="auto" align="center" gap="2">
+                        <Show when="signed-in"><UserButton /></Show>
+                        <IconButton onClick={() => setDrawerOpen(true)} size="large">
+                            <Menu />
+                        </IconButton>
+                    </Flex>
+
+                    <Drawer.Root
+                        open={drawerOpen}
+                        onOpenChange={(e) => setDrawerOpen(e.open)}
+                        placement="end"
+                    >
+                        <Drawer.Backdrop />
+                        <Drawer.Positioner>
+                            <Drawer.Content bg="bg.raised" maxW="220px">
+                                <Drawer.CloseTrigger />
+                                <Drawer.Body pt="8" px="0">
+                                    {NAV_ITEMS.map((item) => (
+                                        <Box
+                                            key={item.path}
+                                            as="button"
+                                            w="full"
+                                            textAlign="left"
+                                            px="5"
+                                            py="3"
+                                            bg="transparent"
+                                            border="none"
+                                            cursor="pointer"
+                                            fontFamily="body"
+                                            fontWeight={isActive(item.path) ? "600" : "400"}
+                                            color={isActive(item.path) ? "brand.DEFAULT" : "fg.secondary"}
+                                            _hover={{ color: "fg.DEFAULT", bg: "bg.sunk" }}
+                                            onClick={() => {
+                                                setDrawerOpen(false);
+                                                handleNav(item.path);
+                                            }}
+                                        >
+                                            {item.label}
+                                        </Box>
+                                    ))}
+                                </Drawer.Body>
+                            </Drawer.Content>
+                        </Drawer.Positioner>
+                    </Drawer.Root>
+                </>
+            ) : (
+                <>
+                    <Flex ml="auto" gap="0.5" align="center">
+                        {NAV_ITEMS.map((item) => (
+                            <Box
+                                key={item.path}
+                                as="button"
+                                bg="transparent"
+                                border="none"
+                                borderBottom="2px solid"
+                                borderBottomColor={isActive(item.path) ? "ember.500" : "transparent"}
+                                color={isActive(item.path) ? "brand.DEFAULT" : "fg.secondary"}
+                                fontFamily="body"
+                                fontSize="xs"
+                                fontWeight="500"
+                                letterSpacing="0.02em"
+                                px="3"
+                                h="var(--fp-nav-height)"
+                                whiteSpace="nowrap"
+                                cursor="pointer"
+                                transition="color 200ms"
+                                _hover={{ color: "fg.DEFAULT" }}
+                                onClick={() => handleNav(item.path)}
+                            >
+                                {item.label}
+                            </Box>
+                        ))}
+                    </Flex>
+                    <Show when="signed-in"><UserButton /></Show>
+                    <Show when="signed-out">
+                        <Flex
+                            w="8"
+                            h="8"
+                            borderRadius="full"
+                            bg="pine.500"
+                            color="white"
+                            align="center"
+                            justify="center"
+                            fontFamily="mono"
+                            fontSize="xs"
+                            fontWeight="600"
+                            flexShrink="0"
+                        >
+                            AK
+                        </Flex>
+                    </Show>
+                </>
+            )}
+
+            <SimpleDialog isOpen={loginOpen} onClose={() => setLoginOpen(false)} maxWidth="md">
+                <LoginForm onLogin={() => setLoginOpen(false)} />
             </SimpleDialog>
-        </nav>
+        </Flex>
     );
 };
 
