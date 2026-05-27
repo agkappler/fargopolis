@@ -268,6 +268,34 @@ const config = defineConfig({
                 },
             },
         },
+        textStyles: {
+            /** Mono uppercase label — nav metadata, chips, category tags */
+            label: {
+                value: {
+                    fontFamily: "mono",
+                    fontSize: "2xs",
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                },
+            },
+            /** Eyebrow above a hero title */
+            eyebrow: {
+                value: {
+                    fontFamily: "mono",
+                    fontSize: "2xs",
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                },
+            },
+            /** Display / Fraunces heading — pair with fontSize override per context */
+            "display-title": {
+                value: {
+                    fontFamily: "display",
+                    fontWeight: "500",
+                    lineHeight: "1.1",
+                },
+            },
+        },
         recipes: {
             badge:  badgeRecipe,
             button: buttonRecipe,
