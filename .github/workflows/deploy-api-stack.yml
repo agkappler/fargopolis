@@ -2,6 +2,10 @@
 #   AWS_REGION
 #   AWS_API_DEPLOY_ROLE_TO_ASSUME — IAM role ARN from FargopolisApi output GithubActionsApiDeployRoleArn
 #
+# Optional repo secret (for custom API Gateway domain mapping; omit for execute-api URLs only):
+#   CDK_API_DOMAIN_JSON — single-line/minified JSON matching context.apiDomain
+#     (domainName, hostedZoneDomain, hostedZoneId, certificateArn, createDnsRecord).
+#
 # This workflow deploys the CDK API stack (FargopolisApi) via GitHub OIDC.
 
 name: Deploy API stack (CDK)
@@ -50,5 +54,14 @@ jobs:
           role-session-name: github-actions-fargopolis-api-deploy
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # Pass apiDomain JSON without shell-quote bugs (JSON contains "); use Python subprocess argv.
       - name: CDK deploy FargopolisApi
-        run: npx cdk deploy FargopolisApi --require-approval never
+        env:
+          CDK_API_DOMAIN_JSON: ${{ secrets.CDK_API_DOMAIN_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -n "${CDK_API_DOMAIN_JSON:-}" ]; then
+            python3 -c "import json,os,subprocess;d=json.loads(os.environ['CDK_API_DOMAIN_JSON']);subprocess.check_call(['npx','cdk','deploy','FargopolisApi','--require-approval','never','-c','apiDomain='+json.dumps(d)])"
+          else
+            npx cdk deploy FargopolisApi --require-approval never
+          fi

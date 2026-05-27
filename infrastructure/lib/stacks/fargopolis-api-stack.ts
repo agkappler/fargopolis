@@ -1,4 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import * as targets from 'aws-cdk-lib/aws-route53-targets';
+import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { BountiesApiRoutesConstruct } from '../constructs/bounties-api-routes-construct';
@@ -41,6 +45,7 @@ export class FargopolisApiStack extends cdk.Stack {
     public readonly dndGlossary: DndGlossaryConstruct;
     public readonly dndGlossaryApi: DndGlossaryApiRoutesConstruct;
     public readonly dndApi: DndApiRoutesConstruct;
+    public readonly customDomain?: apigwv2.DomainName;
 
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
@@ -117,6 +122,56 @@ export class FargopolisApiStack extends cdk.Stack {
             oidcProviderArn: githubOidcProviderArn,
         });
 
+        const apiDomain = (this.node.tryGetContext('apiDomain') ?? {}) as {
+            domainName?: string;
+            hostedZoneDomain?: string;
+            hostedZoneId?: string;
+            certificateArn?: string;
+            createDnsRecord?: boolean | string;
+        };
+        const shouldCreateDnsRecord = `${apiDomain.createDnsRecord ?? true}`.toLowerCase() !== 'false';
+        const hasDomainConfig =
+            (apiDomain.domainName ?? '').trim().length > 0 &&
+            (apiDomain.certificateArn ?? '').trim().length > 0 &&
+            (!shouldCreateDnsRecord ||
+                ((apiDomain.hostedZoneDomain ?? '').trim().length > 0 &&
+                    (apiDomain.hostedZoneId ?? '').trim().length > 0));
+
+        if (hasDomainConfig) {
+            const certificate = acm.Certificate.fromCertificateArn(
+                this,
+                'HttpApiCustomDomainCert',
+                apiDomain.certificateArn ?? '',
+            );
+
+            this.customDomain = new apigwv2.DomainName(this, 'HttpApiCustomDomain', {
+                domainName: apiDomain.domainName ?? '',
+                certificate,
+            });
+            new apigwv2.ApiMapping(this, 'HttpApiCustomDomainMapping', {
+                api: this.httpApiGateway.httpApi,
+                domainName: this.customDomain,
+                stage: this.httpApiGateway.httpApi.defaultStage,
+            });
+
+            if (shouldCreateDnsRecord) {
+                const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HttpApiHostedZone', {
+                    hostedZoneId: apiDomain.hostedZoneId ?? '',
+                    zoneName: apiDomain.hostedZoneDomain ?? '',
+                });
+                new route53.ARecord(this, 'HttpApiCustomDomainAliasRecord', {
+                    zone: hostedZone,
+                    recordName: apiDomain.domainName ?? '',
+                    target: route53.RecordTarget.fromAlias(
+                        new targets.ApiGatewayv2DomainProperties(
+                            this.customDomain.regionalDomainName,
+                            this.customDomain.regionalHostedZoneId,
+                        ),
+                    ),
+                });
+            }
+        }
+
         new cdk.CfnOutput(this, 'BountyCategoriesTableName', {
             description: 'DynamoDB table for bounty categories',
             value: this.bounties.categoryTable.tableName,
@@ -157,5 +212,11 @@ export class FargopolisApiStack extends cdk.Stack {
             description: `Role ARN for GitHub Actions OIDC CDK deploys (${githubOwner}/${githubRepo}@${githubBranch})`,
             value: githubApiDeployRole.role.roleArn,
         });
+        if (this.customDomain) {
+            new cdk.CfnOutput(this, 'HttpApiCustomDomainOutput', {
+                description: 'Custom domain for the shared HTTP API',
+                value: this.customDomain.name,
+            });
+        }
     }
 }

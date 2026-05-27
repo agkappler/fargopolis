@@ -1,7 +1,7 @@
 {
     "app": "npx ts-node --prefer-ts-exts bin/recipes-infra.ts",
     "context": {
-        "clerk": {
+"clerk": {
             "jwtIssuer": "https://direct-sawfly-53.clerk.accounts.dev"
         },
         "githubActions": {
