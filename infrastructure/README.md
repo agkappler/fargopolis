@@ -40,6 +40,46 @@ List stacks: `npx cdk list`. Deploy one stack: `npx cdk deploy FargopolisApi` (o
 
 JWT verification for **mutations** is configured in [`cdk.json`](cdk.json) under `context.clerk.jwtIssuer` (Clerk “Frontend API URL” / issuer). The authorizer Lambda receives this at deploy time. Update the value when you change Clerk instances; then redeploy `FargopolisApi`.
 
+### API custom domain
+
+`FargopolisApiStack` provisions a custom domain from CDK **`context.apiDomain`**. The field is optional — omit it and the stack deploys without a custom domain, using the raw `execute-api` URL.
+
+Config is intentionally **not committed** to [`cdk.json`](cdk.json) (contains account IDs / ARNs). Supply it one of three ways:
+
+| Where | Format | When to use |
+| ----- | ------ | ----------- |
+| **`cdk.context.json`** (gitignored) | `{ "apiDomain": { … } }` | Local deploys |
+| **`CDK_API_DOMAIN_JSON`** GitHub secret | Single-line JSON of the inner object | CI / GitHub Actions |
+| **`-c` flag** | `-c ‘apiDomain={"domainName":…}’` | One-off or scripted runs |
+
+**`cdk.context.json`** shape (top-level key, no `"context"` wrapper):
+
+```json
+{
+  "apiDomain": {
+    "domainName": "api.example.com",
+    "hostedZoneDomain": "example.com",
+    "hostedZoneId": "Z1234567890ABC",
+    "certificateArn": "arn:aws:acm:us-east-2:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "createDnsRecord": true
+  }
+}
+```
+
+**`CDK_API_DOMAIN_JSON`** secret value (inner object only, single line):
+
+```
+{"domainName":"api.example.com","hostedZoneDomain":"example.com","hostedZoneId":"Z1234567890ABC","certificateArn":"arn:aws:acm:us-east-2:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx","createDnsRecord":true}
+```
+
+Field notes:
+
+- `certificateArn` must be in the **same region** as the HTTP API (`FargopolisApi` stack region).
+- `domainName` is the API hostname clients use.
+- `hostedZoneDomain` is the Route 53 public zone root (e.g. `example.com`).
+- `hostedZoneId` is that zone’s ID (from Route 53 or `list-hosted-zones-by-name`). Required when `createDnsRecord` is true.
+- Set `createDnsRecord: false` if DNS is managed outside Route 53 (CDK still creates API Gateway domain + mapping).
+
 ### Python Lambda bundling
 
 Per-function assets live under `infrastructure/lambdas/`. Shared packaging logic: [`lib/python-lambda-bundling.ts`](lib/python-lambda-bundling.ts) (picks a local Python 3.10+ for `pip install`, or Docker as fallback).
@@ -81,6 +121,8 @@ When CDK creates the IdP resource, **`RemovalPolicy.RETAIN`** is set on the IdP 
 **API** (`FargopolisApi`) outputs:
 
 - `GithubActionsApiDeployRoleArn` → GitHub secret `AWS_API_DEPLOY_ROLE_TO_ASSUME`
+
+**Optional:** **`CDK_API_DOMAIN_JSON`** repository secret — single-line JSON with `domainName`, `hostedZoneDomain`, `hostedZoneId`, `certificateArn`, `createDnsRecord`. If set, the [`deploy-api-stack` workflow](../.github/workflows/deploy-api-stack.yml) passes it via `cdk deploy -c`; if unset, the workflow deploys without a custom domain (`apiDomain` is absent from committed [`cdk.json`](cdk.json) and `cdk.context.json` is gitignored).
 
 API deploy workflow: [`.github/workflows/deploy-api-stack.yml`](../.github/workflows/deploy-api-stack.yml).
 
