@@ -1,27 +1,31 @@
 import { Card, Text } from "@chakra-ui/react";
-import { PropsWithChildren } from "react";
+import React from "react";
 
-interface ModelCardProps extends PropsWithChildren {
-    title: string;
-    onClick?: () => void;
-}
+type ModelCardProps = React.ComponentProps<typeof Card.Root> & {
+    title?: string;
+};
 
-export const ModelCard: React.FC<ModelCardProps> = ({ title, onClick, children }) => {
+export const ModelCard: React.FC<ModelCardProps> = ({ title, onClick, children, ...rest }) => {
     return (
         <Card.Root
-            role={onClick ? "button" : undefined}
-            onClick={onClick}
+            alignItems="stretch"
+            textAlign="start"
             cursor={onClick ? "pointer" : undefined}
+            {...rest}
+            onClick={onClick}
         >
-            <Card.Header>
-                <Text fontFamily="display" fontWeight="500" fontSize="md" color="fg.DEFAULT"
-                    style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}>
+            {title && (
+                <Text
+                    fontFamily="display"
+                    fontWeight="500"
+                    fontSize="md"
+                    color="fg.DEFAULT"
+                    style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
+                >
                     {title}
                 </Text>
-            </Card.Header>
-            <Card.Body>
-                {children}
-            </Card.Body>
+            )}
+            {children}
         </Card.Root>
     );
 };

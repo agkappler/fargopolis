@@ -1,7 +1,8 @@
 import { BountyStatus, getColorForBountyStatus, getLabelForBountyStatus } from "@/constants/Status";
 import Bounty from "@/models/Bounty";
 import BountyCategory from "@/models/BountyCategory";
-import { Box, Text } from "@chakra-ui/react";
+import { Text } from "@chakra-ui/react";
+import { ModelCard } from "../ui/ModelCard";
 import { StatusChip } from "../ui/StatusChip";
 
 interface BountyCardProps {
@@ -12,21 +13,7 @@ interface BountyCardProps {
 
 export const BountyCard: React.FC<BountyCardProps> = ({ bounty, onClick, category }) => {
     return (
-        <Box
-            bg="bg.raised"
-            border="1px solid"
-            borderColor="border.DEFAULT"
-            borderRadius="md"
-            p="4"
-            display="flex"
-            flexDir="column"
-            gap="2.5"
-            boxShadow="sm"
-            cursor="pointer"
-            transition="all 200ms"
-            _hover={{ boxShadow: "md", transform: "translateY(-1px)" }}
-            onClick={onClick}
-        >
+        <ModelCard gap="2.5" onClick={onClick}>
             <StatusChip
                 label={getLabelForBountyStatus(bounty.status)}
                 color={getColorForBountyStatus(bounty.status)}
@@ -53,6 +40,6 @@ export const BountyCard: React.FC<BountyCardProps> = ({ bounty, onClick, categor
                     {category.name}
                 </Text>
             )}
-        </Box>
+        </ModelCard>
     );
 }

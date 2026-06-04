@@ -60,8 +60,8 @@ export function RecipesPage() {
                     </Box>
 
                     {/* Recipe index cards */}
-                    {recipes.map((r, i) => (
-                        <RecipeCard key={r.recipeId} recipeData={r} index={i} />
+                    {recipes.map((r) => (
+                        <RecipeCard key={r.recipeId} recipeData={r} />
                     ))}
                 </Grid>
             </Box>
