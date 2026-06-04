@@ -9,7 +9,7 @@ interface SectionDividerProps {
 export const SectionDivider: React.FC<SectionDividerProps> = ({ label, mt, mb = "4" }) => (
     <Flex align="center" gap="3" mt={mt} mb={mb}>
         <Box textStyle="label" color="fg.muted" flexShrink="0">{label}</Box>
-        <Box flex="1" h="1px" bg="border.DEFAULT" />
+        <Box flex="1" h="1px" bg="ember.500" />
         <Box w="8px" h="8px" borderRadius="full" bg="ember.500" flexShrink="0" />
     </Flex>
 );
