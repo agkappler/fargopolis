@@ -10,7 +10,7 @@ import { Box, Flex, Grid, Text } from "@chakra-ui/react";
 const INTERESTS = [
     {
         title: "Reading",
-        body: "I've always been a big reader and I recently finished working my way through everything in the Cosmere from Brandon Sanderson with my highlight being everything from The Stormlight Archive.",
+        body: "I've always been a big reader and I recently finished working my way through the Cosmere from Brandon Sanderson with my highlight being everything from The Stormlight Archive.",
     },
     {
         title: "Sports",
