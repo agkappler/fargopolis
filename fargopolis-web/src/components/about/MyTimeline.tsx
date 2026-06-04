@@ -15,7 +15,7 @@ export const MyTimeline: React.FC = () => {
             <TimelineItem sx={{ "::before": { display: "none" } }}>
                 <TimelineOppositeContent display="flex" flexDirection="row-reverse" alignItems="center" gap={2} color="text.secondary">
                     <Typography variant="body1">2015</Typography>
-                    <img src="/colgate_c.png" alt="Colgate C" width={100} height={100} style={imageStyle} />
+                    <img src="/colgate_c.png" alt="Colgate C" width={100} height={100} style={{ ...imageStyle, mixBlendMode: 'darken' }} />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                     <TimelineConnector />
@@ -30,7 +30,7 @@ export const MyTimeline: React.FC = () => {
             <TimelineItem>
                 <TimelineOppositeContent display="flex" alignItems="center" gap={2} color="text.secondary">
                     <Typography variant="body1">2018</Typography>
-                    <img src="/sciencelogic_logo.png" alt="ScienceLogic Logo" width={200} height={100} style={imageStyle} />
+                    <img src="/sciencelogic_logo.png" alt="ScienceLogic Logo" width={200} height={100} style={{ ...imageStyle, mixBlendMode: 'darken' }} />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                     <TimelineConnector />
@@ -45,7 +45,7 @@ export const MyTimeline: React.FC = () => {
             <TimelineItem>
                 <TimelineOppositeContent display="flex" flexDirection="row-reverse" alignItems="center" gap={2} color="text.secondary">
                     <Typography variant="body1">2019</Typography>
-                    <img src="/colgate_crest.png" alt="Colgate Crest" width={100} height={100} style={imageStyle} />
+                    <img src="/colgate_crest.png" alt="Colgate Crest" width={100} height={100} style={{ ...imageStyle, mixBlendMode: 'darken' }} />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                     <TimelineConnector />
@@ -60,7 +60,7 @@ export const MyTimeline: React.FC = () => {
             <TimelineItem>
                 <TimelineOppositeContent display="flex" alignItems="center" gap={2} color="text.secondary">
                     <Typography variant="body1">2019</Typography>
-                    <img src="/alarm_logo.png" alt="Alarm.com Logo" width={100} height={100} style={{ ...imageStyle, width: "120px" }} />
+                    <img src="/alarm_logo.png" alt="Alarm.com Logo" width={100} height={100} style={{ ...imageStyle, width: "120px", mixBlendMode: 'darken' }} />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                     <TimelineConnector />
@@ -75,7 +75,7 @@ export const MyTimeline: React.FC = () => {
             <TimelineItem>
                 <TimelineOppositeContent display="flex" flexDirection="row-reverse" alignItems="center" gap={2} color="text.secondary">
                     <Typography variant="body1">2024</Typography>
-                    <img src="/wealthteamwork_logo.jpeg" alt="WealtTeamWork Logo" width={110} height={100} style={{ ...imageStyle, }} />
+                    <img src="/wealthteamwork_logo.jpeg" alt="WealtTeamWork Logo" width={110} height={100} style={{ ...imageStyle, mixBlendMode: 'darken' }} />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                     <TimelineConnector />
@@ -90,7 +90,7 @@ export const MyTimeline: React.FC = () => {
             <TimelineItem>
                 <TimelineOppositeContent display="flex" alignItems="center" gap={2} color="text.secondary">
                     <Typography variant="body1">2025</Typography>
-                    <img src="/logo.png" alt="Fargopolis Logo" width={200} height={100} style={{ ...imageStyle }} />
+                    <img src="/logo.png" alt="Fargopolis Logo" width={200} height={100} style={{ ...imageStyle, mixBlendMode: 'darken' }} />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                     <TimelineConnector />
