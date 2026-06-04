@@ -47,8 +47,8 @@ export function BountiesPage() {
     }
 
     const bountyCategoryMap = (bountyCategories ?? []).reduce(
-        (map, cat) => {
-            map[cat.categoryId] = cat;
+        (map, category) => {
+            map[category.categoryId] = category;
             return map;
         },
         {} as Record<string, BountyCategory>
@@ -86,55 +86,51 @@ export function BountiesPage() {
                     <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />
                 </Box>
 
-                {bounties?.map((bounty) => {
-                    const isDone = bounty.status === BountyStatus.Complete;
-                    return (
-                        <Box
-                            key={bounty.bountyId}
-                            bg="bg.raised"
-                            border="1px solid"
-                            borderColor="border.DEFAULT"
-                            borderRadius="md"
-                            p="4"
-                            display="flex"
-                            flexDir="column"
-                            gap="2.5"
-                            boxShadow="sm"
-                            cursor="pointer"
-                            opacity={isDone ? 0.72 : 1}
-                            transition="all 200ms"
-                            _hover={{ boxShadow: "md", transform: "translateY(-1px)" }}
-                            onClick={() => onBountyClick(bounty)}
+                {bounties?.map((bounty) => (
+                    <Box
+                        key={bounty.bountyId}
+                        bg="bg.raised"
+                        border="1px solid"
+                        borderColor="border.DEFAULT"
+                        borderRadius="md"
+                        p="4"
+                        display="flex"
+                        flexDir="column"
+                        gap="2.5"
+                        boxShadow="sm"
+                        cursor="pointer"
+                        transition="all 200ms"
+                        _hover={{ boxShadow: "md", transform: "translateY(-1px)" }}
+                        onClick={() => onBountyClick(bounty)}
+                    >
+                        <StatusChip
+                            label={getLabelForBountyStatus(bounty.status)}
+                            color={getColorForBountyStatus(bounty.status)}
+                        />
+                        <Text
+                            as="h3"
+                            m="0"
+                            textStyle="display-title"
+                            fontSize="md"
+                            color="fg.DEFAULT"
+                            style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
+                            textDecoration={bounty.status === BountyStatus.Complete ? "line-through" : "none"}
+                            textDecorationColor="pine.500"
                         >
-                            <StatusChip
-                                label={getLabelForBountyStatus(bounty.status)}
-                                color={getColorForBountyStatus(bounty.status)}
-                            />
-                            <Text
-                                as="h3"
-                                m="0"
-                                textStyle="display-title"
-                                fontSize="md"
-                                color="fg.DEFAULT"
-                                style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
-                                textDecoration={isDone ? "line-through" : "none"}
-                                textDecorationColor="pine.500"
-                            >
-                                {bounty.title}
+                            {bounty.title}
+                        </Text>
+                        {bounty.description && (
+                            <Text fontSize="xs" color="fg.secondary" lineHeight="1.45" flex="1">
+                                {bounty.description}
                             </Text>
-                            {bounty.description && (
-                                <Text fontSize="xs" color="fg.secondary" lineHeight="1.45" flex="1">
-                                    {bounty.description}
-                                </Text>
-                            )}
-                            {bountyCategoryMap[bounty.categoryId] && (
-                                <Text textStyle="label" color="fg.muted">
-                                    {bountyCategoryMap[bounty.categoryId].name}
-                                </Text>
-                            )}
-                        </Box>
-                    );
-                })}
+                        )}
+                        {bountyCategoryMap[bounty.categoryId] && (
+                            <Text textStyle="label" color="fg.muted">
+                                {bountyCategoryMap[bounty.categoryId].name}
+                            </Text>
+                        )}
+                    </Box>
+                ))}
             </Grid>
         </LoadingWrapper>
 
