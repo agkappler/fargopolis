@@ -1,5 +1,6 @@
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { RecipeForm } from "@/components/recipes/RecipeForm";
+import { AddModelCard } from "@/components/ui/AddModelCard";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -7,7 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Project } from "@/constants/Projects";
 import RequestManager from "@/helpers/RequestManager";
 import Recipe from "@/models/Recipe";
-import { Box, Grid, Text } from "@chakra-ui/react";
+import { Box, Grid } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -35,29 +36,7 @@ export function RecipesPage() {
                     templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
                     gap="4"
                 >
-                    {/* Add card */}
-                    <Box
-                        as="button"
-                        minH="158px"
-                        border="2px dashed"
-                        borderColor="border.strong"
-                        borderRadius="md"
-                        bg="transparent"
-                        color="brand.DEFAULT"
-                        textStyle="label"
-                        display="flex"
-                        flexDir="column"
-                        alignItems="center"
-                        justifyContent="center"
-                        gap="2"
-                        cursor="pointer"
-                        transition="all 200ms"
-                        _hover={{ borderColor: "ember.500", color: "accent.hover", transform: "translateY(-2px)" }}
-                        onClick={() => setIsOpen(true)}
-                    >
-                        <Text fontSize="xl" lineHeight="1">+</Text>
-                        <Text>Slip a new card in</Text>
-                    </Box>
+                    <AddModelCard onClick={() => setIsOpen(true)} title="Slip a new card in" />
 
                     {/* Recipe index cards */}
                     {recipes.map((r) => (

@@ -1,5 +1,5 @@
-import { BountyCategoryForm } from "@/components/bounties/BountyCategoryForm";
 import { BountyCard } from "@/components/bounties/BountyCard";
+import { BountyCategoryForm } from "@/components/bounties/BountyCategoryForm";
 import { BountyForm } from "@/components/bounties/BountyForm";
 import { AddModelCard } from "@/components/ui/AddModelCard";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
@@ -10,7 +10,7 @@ import { Project } from "@/constants/Projects";
 import RequestManager from "@/helpers/RequestManager";
 import Bounty from "@/models/Bounty";
 import BountyCategory from "@/models/BountyCategory";
-import { Badge, Box, Flex, Grid } from "@chakra-ui/react";
+import { Badge, Flex, Grid } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -81,9 +81,7 @@ export function BountiesPage() {
                 maxW="var(--fp-container)"
                 mx="auto"
             >
-                <Box>
-                    <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />
-                </Box>
+                <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />
 
                 {bounties?.map((bounty) => (
                     <BountyCard

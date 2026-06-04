@@ -10,9 +10,9 @@ export const ModelCard: React.FC<ModelCardProps> = ({ title, onClick, children, 
         <Card.Root
             alignItems="stretch"
             textAlign="start"
-            cursor={onClick ? "pointer" : undefined}
-            {...rest}
+            role="button"
             onClick={onClick}
+            {...rest}
         >
             {title && (
                 <Text
