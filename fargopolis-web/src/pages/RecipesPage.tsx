@@ -8,40 +8,44 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Project } from "@/constants/Projects";
 import RequestManager from "@/helpers/RequestManager";
 import Recipe from "@/models/Recipe";
-import { Box, Grid } from "@mui/material";
+import { Box, Grid } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
 export function RecipesPage() {
     const [isOpen, setIsOpen] = useState(false);
-    const onClose = () => {
-        setIsOpen(false);
-    };
 
-    const { data: recipes, error, isLoading, mutate } = useSWR<Recipe[]>("/recipes", () => RequestManager.get<Recipe[]>("/recipes"));
-    if (isLoading) {
-        return <LoadingSpinner message="Loading recipes..." />;
-    }
+    const { data: recipes, error, isLoading, mutate } = useSWR<Recipe[]>(
+        "/recipes",
+        () => RequestManager.get<Recipe[]>("/recipes"),
+    );
+
+    if (isLoading) return <LoadingSpinner message="Loading recipes..." />;
     if (error || recipes === undefined) {
         return <ErrorMessage errorMessage={error?.message ?? "Failed to load recipes."} />;
     }
 
     return (
         <>
-            <PageHeader title="All Recipes" rightContainer={<LinkButton url={`/projects/${Project.Recipes}`} label="Project Details" />} />
-            <Box className="px-2">
-                <Grid container spacing={1}>
-                    <Grid size={{ sm: 4, xs: 12 }}>
-                        <AddModelCard onClick={() => setIsOpen(true)} title={"Add Recipe"} />
-                    </Grid>
+            <PageHeader
+                title="Recipe Box"
+                rightContainer={<LinkButton url={`/projects/${Project.Recipes}`} label="Project Details" />}
+            />
+            <Box maxW="var(--fp-container)" mx="auto" px="6" py="8">
+                <Grid
+                    templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+                    gap="4"
+                >
+                    <AddModelCard onClick={() => setIsOpen(true)} title="Slip a new card in" />
+
+                    {/* Recipe index cards */}
                     {recipes.map((r) => (
-                        <Grid size={{ sm: 4, xs: 12 }} key={r.recipeId}>
-                            <RecipeCard recipeData={r} />
-                        </Grid>
+                        <RecipeCard key={r.recipeId} recipeData={r} />
                     ))}
                 </Grid>
             </Box>
-            <RecipeForm isOpen={isOpen} onClose={onClose} recipeData={undefined} updateRecipe={mutate} />
+
+            <RecipeForm isOpen={isOpen} onClose={() => setIsOpen(false)} recipeData={undefined} updateRecipe={mutate} />
         </>
     );
 }

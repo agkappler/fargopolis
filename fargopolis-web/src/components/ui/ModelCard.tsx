@@ -1,19 +1,31 @@
-import { Paper, Typography } from "@mui/material";
-import { PropsWithChildren } from "react";
+import { Card, Text } from "@chakra-ui/react";
+import React from "react";
 
-interface ModelCardProps extends PropsWithChildren {
-    title: string;
-    onClick?: () => void;
-}
+type ModelCardProps = React.ComponentProps<typeof Card.Root> & {
+    title?: string;
+};
 
-export const ModelCard: React.FC<ModelCardProps> = ({ title, onClick, children }) => {
-    return <Paper
-        elevation={3}
-        className="p-2 h-full flex flex-col text-center items-center"
-        role={onClick ? "button" : undefined}
-        onClick={onClick}
-    >
-        <Typography variant="h6">{title}</Typography>
-        {children}
-    </Paper>
-}
+export const ModelCard: React.FC<ModelCardProps> = ({ title, onClick, children, ...rest }) => {
+    return (
+        <Card.Root
+            alignItems="stretch"
+            textAlign="start"
+            role="button"
+            onClick={onClick}
+            {...rest}
+        >
+            {title && (
+                <Text
+                    fontFamily="display"
+                    fontWeight="500"
+                    fontSize="md"
+                    color="fg.DEFAULT"
+                    style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
+                >
+                    {title}
+                </Text>
+            )}
+            {children}
+        </Card.Root>
+    );
+};

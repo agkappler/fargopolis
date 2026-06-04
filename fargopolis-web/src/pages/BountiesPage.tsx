@@ -10,12 +10,12 @@ import { Project } from "@/constants/Projects";
 import RequestManager from "@/helpers/RequestManager";
 import Bounty from "@/models/Bounty";
 import BountyCategory from "@/models/BountyCategory";
-import { Add } from "@mui/icons-material";
-import { Box, Chip, Grid } from "@mui/material";
+import { Badge, Flex, Grid } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
 export function BountiesPage() {
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const onClose = () => {
         setIsOpen(false);
@@ -27,11 +27,6 @@ export function BountiesPage() {
         setIsOpen(true);
     };
 
-    const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-    const onCategoryClose = () => {
-        setIsCategoryOpen(false);
-    };
-
     const { data: bounties, error: bountiesError, isLoading: isLoadingBounties, mutate } = useSWR<Bounty[]>(
         "/bounties",
         () => RequestManager.get<Bounty[]>("/bounties"),
@@ -40,13 +35,16 @@ export function BountiesPage() {
         data: bountyCategories,
         error: bountyCategoriesError,
         isLoading: isLoadingBountyCategories,
-        mutate: mutateCategories,
-    } = useSWR<BountyCategory[]>("/bountyCategories", () =>
-        RequestManager.get<BountyCategory[]>("/bountyCategories"),
+        mutate: mutateCategories
+    } = useSWR<BountyCategory[]>(
+        "/bountyCategories",
+        () => RequestManager.get<BountyCategory[]>("/bountyCategories")
     );
+
     if (bountiesError || bountyCategoriesError) {
         return <ErrorMessage errorMessage={(bountiesError ?? bountyCategoriesError)?.message} />;
     }
+
     const bountyCategoryMap = (bountyCategories ?? []).reduce(
         (map, category) => {
             map[category.categoryId] = category;
@@ -55,40 +53,48 @@ export function BountiesPage() {
         {} as Record<string, BountyCategory>
     );
 
-    return (
-        <>
-            <PageHeader
-                title="Bounty Board"
-                rightContainer={<LinkButton url={`/projects/${Project.Bounties}`} label="Project Details" />}
-            />
-            <Box display="flex" justifyContent="center" flexWrap="wrap" gap={2} marginBottom={2}>
-                <LoadingWrapper isLoading={isLoadingBountyCategories} size={20}>
-                    <Chip label="Add Category" icon={<Add />} onClick={() => setIsCategoryOpen(true)} />
-                    {bountyCategories?.map((category) => (
-                        <Chip key={category.categoryId} label={category.name} />
-                    ))}
-                </LoadingWrapper>
-            </Box>
-            <Grid container spacing={1} className="mx-2">
-                <LoadingWrapper isLoading={isLoadingBounties}>
-                    <Grid size={{ sm: 3, xs: 12 }}>
-                        <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />
-                    </Grid>
-                    {bounties?.map((bounty) => (
-                        <Grid size={{ sm: 3, xs: 12 }} key={bounty.bountyId}>
-                            <BountyCard bounty={bounty} onClick={() => onBountyClick(bounty)} category={bountyCategoryMap[bounty.categoryId]} />
-                        </Grid>
-                    ))}
-                </LoadingWrapper>
+    return (<>
+        <PageHeader
+            title="Bounty Board"
+            rightContainer={
+                <LinkButton url={`/projects/${Project.Bounties}`} label="Project Details" />
+            }
+        />
+
+        <LoadingWrapper isLoading={isLoadingBountyCategories}>
+            <Flex gap="2" align="center" wrap="wrap" px="4" py="2" width="100%" justifyContent="center">
+                <Badge role="button" onClick={() => setIsCategoryOpen(true)}>
+                    + Category
+                </Badge>
+                {bountyCategories?.map((category) => (
+                    <Badge key={category.categoryId}>{category.name}</Badge>
+                ))}
+            </Flex>
+        </LoadingWrapper>
+
+        <LoadingWrapper isLoading={isLoadingBounties}>
+            <Grid
+                templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }}
+                gap="4"
+                px="4"
+                py="6"
+                maxW="var(--fp-container)"
+                mx="auto"
+            >
+                <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />
+
+                {bounties?.map((bounty) => (
+                    <BountyCard
+                        key={bounty.bountyId}
+                        bounty={bounty}
+                        onClick={() => onBountyClick(bounty)}
+                        category={bountyCategoryMap[bounty.categoryId]}
+                    />
+                ))}
             </Grid>
-            <BountyForm
-                isOpen={isOpen}
-                onClose={onClose}
-                updateBounties={mutate}
-                bountyCategories={bountyCategories ?? []}
-                bounty={selectedBounty}
-            />
-            <BountyCategoryForm isOpen={isCategoryOpen} onClose={onCategoryClose} updateBountyCategories={mutateCategories} />
-        </>
-    );
+        </LoadingWrapper>
+
+        <BountyForm isOpen={isOpen} onClose={onClose} updateBounties={mutate} bountyCategories={bountyCategories ?? []} bounty={selectedBounty} />
+        <BountyCategoryForm isOpen={isCategoryOpen} onClose={() => setIsCategoryOpen(false)} updateBountyCategories={mutateCategories} />
+    </>);
 }

@@ -12,7 +12,7 @@ interface CharacterCardProps {
 
 export const CharacterCard: React.FC<CharacterCardProps> = ({ character }) => {
     const navigate = useNavigate();
-    return <ModelCard title={character.name} onClick={() => navigate(`/dnd/${character.characterId}`)}>
+    return <ModelCard title={character.name} alignItems="center" onClick={() => navigate(`/dnd/${character.characterId}`)}>
         {character.avatarId && <>
             <ImageBox fileId={character.avatarId} altText="Character avatar" />
         </>}

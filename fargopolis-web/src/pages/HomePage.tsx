@@ -1,62 +1,82 @@
 import { Carousel } from "@/components/ui/Carousel";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
-import { MOBILE_BREAK } from "@/constants/Media";
 import { FARGOPOLIS_BLURB, PROJECTS } from "@/constants/Projects";
 import { ProjectCardContents } from "@/components/home/ProjectCardContents";
-import { Box, Link as MuiLink, Typography } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Box, Flex, Text } from "@chakra-ui/react";
 
 export function HomePage() {
-  return (
-    <>
-      <Box textAlign="center">
-        <Box
-          sx={{
-            background: "linear-gradient(to right, #6a11cb, #2575fc)",
-            color: "white",
-            padding: "2rem 1rem",
-            marginTop: 2,
-          }}
-        >
-          <Typography variant="h4">Welcome!</Typography>
-        </Box>
-        <Box marginX="auto" marginTop={2} className="w-full">
-          <img src="/logo.png" alt="Fargopolis Logo" width={300} height={150} className="m-auto" />
-        </Box>
-        <Typography variant="body1" marginTop={1} maxWidth={MOBILE_BREAK} marginX="auto" padding={1}>
-          {FARGOPOLIS_BLURB}
-        </Typography>
-        <Typography variant="body1" marginTop={1} marginX="auto">
-          You can find out more about me{" "}
-          <MuiLink component={RouterLink} to="/about" color="inherit">
-            here
-          </MuiLink>
-          .
-        </Typography>
-      </Box>
+    return (
+        <>
+            {/* Hero */}
+            <Box
+                as="section"
+                bg="pine.900"
+                color="fg.onDark"
+                py="16"
+                px="6"
+                textAlign="center"
+                position="relative"
+                overflow="hidden"
+                borderBottom="3px solid"
+                borderBottomColor="ember.500"
+                _before={{
+                    content: '""',
+                    position: "absolute",
+                    inset: "0",
+                    backgroundImage:
+                        "radial-gradient(circle at 18% 80%, rgba(74,110,84,.45) 0, transparent 55%), radial-gradient(circle at 82% 20%, rgba(194,90,48,.18) 0, transparent 45%)",
+                    opacity: 0.9,
+                }}
+            >
+                <Flex
+                    direction="column"
+                    align="center"
+                    maxW="var(--fp-container-narrow)"
+                    mx="auto"
+                    position="relative"
+                >
+                    <Text
+                        fontFamily="mono"
+                        fontSize="2xs"
+                        letterSpacing="0.18em"
+                        textTransform="uppercase"
+                        color="ember.200"
+                        mb="4"
+                    >
+                        Personal projects · Established 2025
+                    </Text>
+                    <img
+                        src="/logo.png"
+                        alt="Fargopolis"
+                        style={{
+                            maxWidth: 380,
+                            width: "80%",
+                            filter: "invert(1) brightness(1.05) contrast(.95)",
+                        }}
+                    />
+                    <Text
+                        fontSize="xs"
+                        lineHeight="1.55"
+                        maxW="520px"
+                        color="stone.200"
+                        mt="4"
+                    >
+                        {FARGOPOLIS_BLURB}
+                    </Text>
+                </Flex>
+            </Box>
 
-      <Box marginTop={2}>
-        <Box
-          sx={{
-            background: "linear-gradient(to right, #6a11cb, #2575fc)",
-            color: "white",
-            padding: "2rem 1rem",
-            marginBottom: 4,
-          }}
-        >
-          <Typography variant="h5" textAlign="center">
-            Explore My Projects
-          </Typography>
-        </Box>
-        <Carousel
-          cardContents={PROJECTS.map((project, index) => (
-            <ProjectCardContents project={project} index={index} key={index} />
-          ))}
-        />
-        <Box justifyContent="center" display="flex" marginTop={2}>
-          <LinkButton url="/projects" label="View All Projects" />
-        </Box>
-      </Box>
-    </>
-  );
+            {/* Project carousel */}
+            <Box mt="8" mb="4">
+                <Carousel
+                    cardContents={PROJECTS.map((project, index) => (
+                        <ProjectCardContents project={project} index={index} key={index} />
+                    ))}
+                />
+                <Flex justify="center" mt="4">
+                    <LinkButton url="/projects" label="View All Projects" />
+                </Flex>
+            </Box>
+        </>
+    );
 }

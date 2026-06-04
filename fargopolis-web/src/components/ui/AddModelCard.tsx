@@ -1,5 +1,4 @@
-import { Add } from "@mui/icons-material";
-import { Box, Typography } from "@mui/material";
+import { Box, Text } from "@chakra-ui/react";
 
 interface AddModelCardProps {
     onClick: () => void;
@@ -7,17 +6,28 @@ interface AddModelCardProps {
 }
 
 export const AddModelCard: React.FC<AddModelCardProps> = ({ onClick, title }) => {
-    return <Box
-        border="dashed"
-        borderColor="primary.main"
-        borderRadius="4px"
-        className="p-2 flex h-full shadow-md hover:shadow-lg"
-        justifyContent="center"
-        alignItems="center"
-        role="button"
-        onClick={onClick}
-    >
-        <Add color="primary" />
-        <Typography variant="subtitle1" color="primary">{title}</Typography>
-    </Box>
-}
+    return (
+        <Box
+            as="button"
+            w="full"
+            h="full"
+            border="2px dashed"
+            borderColor="border.strong"
+            borderRadius="md"
+            bg="transparent"
+            color="brand.DEFAULT"
+            textStyle="label"
+            display="flex"
+            flexDir="column"
+            alignItems="center"
+            justifyContent="center"
+            gap="2"
+            transition="all 200ms"
+            _hover={{ borderColor: "ember.500", color: "accent.hover", transform: "translateY(-2px)" }}
+            onClick={onClick}
+        >
+            <Text fontSize="xl" lineHeight="1">+</Text>
+            <Text>{title}</Text>
+        </Box>
+    );
+};
