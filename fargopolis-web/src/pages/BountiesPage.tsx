@@ -1,17 +1,16 @@
-import { BountyForm } from "@/components/bounties/BountyForm";
 import { BountyCategoryForm } from "@/components/bounties/BountyCategoryForm";
+import { BountyCard } from "@/components/bounties/BountyCard";
+import { BountyForm } from "@/components/bounties/BountyForm";
 import { AddModelCard } from "@/components/ui/AddModelCard";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { StatusChip } from "@/components/ui/StatusChip";
 import { Project } from "@/constants/Projects";
-import { BountyStatus, getColorForBountyStatus, getLabelForBountyStatus } from "@/constants/Status";
 import RequestManager from "@/helpers/RequestManager";
 import Bounty from "@/models/Bounty";
 import BountyCategory from "@/models/BountyCategory";
-import { Badge, Box, Flex, Grid, Text } from "@chakra-ui/react";
+import { Badge, Box, Flex, Grid } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -87,49 +86,12 @@ export function BountiesPage() {
                 </Box>
 
                 {bounties?.map((bounty) => (
-                    <Box
+                    <BountyCard
                         key={bounty.bountyId}
-                        bg="bg.raised"
-                        border="1px solid"
-                        borderColor="border.DEFAULT"
-                        borderRadius="md"
-                        p="4"
-                        display="flex"
-                        flexDir="column"
-                        gap="2.5"
-                        boxShadow="sm"
-                        cursor="pointer"
-                        transition="all 200ms"
-                        _hover={{ boxShadow: "md", transform: "translateY(-1px)" }}
+                        bounty={bounty}
                         onClick={() => onBountyClick(bounty)}
-                    >
-                        <StatusChip
-                            label={getLabelForBountyStatus(bounty.status)}
-                            color={getColorForBountyStatus(bounty.status)}
-                        />
-                        <Text
-                            as="h3"
-                            m="0"
-                            textStyle="display-title"
-                            fontSize="md"
-                            color="fg.DEFAULT"
-                            style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
-                            textDecoration={bounty.status === BountyStatus.Complete ? "line-through" : "none"}
-                            textDecorationColor="pine.500"
-                        >
-                            {bounty.title}
-                        </Text>
-                        {bounty.description && (
-                            <Text fontSize="xs" color="fg.secondary" lineHeight="1.45" flex="1">
-                                {bounty.description}
-                            </Text>
-                        )}
-                        {bountyCategoryMap[bounty.categoryId] && (
-                            <Text textStyle="label" color="fg.muted">
-                                {bountyCategoryMap[bounty.categoryId].name}
-                            </Text>
-                        )}
-                    </Box>
+                        category={bountyCategoryMap[bounty.categoryId]}
+                    />
                 ))}
             </Grid>
         </LoadingWrapper>
