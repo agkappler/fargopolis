@@ -68,12 +68,12 @@ Keep each component's public props identical; change internals only.
 
 ## 7. Verticals: dnd core
 
-- [ ] 7.1 `src/components/dnd/CharacterCard.tsx`, `CharacterResources.tsx`, `OptionsList.tsx` — primitives + icons (`Casino` → `Dice5`, `Edit` → `Pencil`).
-- [ ] 7.2 `src/components/dnd/DescriptionList.tsx` — `List`/`ListItem`/`ListItemIcon`/`ListItemText`/`Circle` → `List.Root`/`List.Item`/`List.Indicator` (or `Stack` of `Flex`).
-- [ ] 7.3 `src/components/dnd/OptionCell.tsx` — `TableCell` → `Table.Cell`.
-- [ ] 7.4 `src/components/dnd/CharacterFormFields.tsx` — `Box`/`MenuItem`/`Select`/`Typography` → Chakra `Select` via `createListCollection` (follow `inputs/DropdownInput.tsx`).
-- [ ] 7.5 `src/components/dnd/CharacterInfo.tsx` + `ActionInfo.tsx` — `@mui/lab` `TabContext`/`TabList`/`TabPanel` + `Tab` → `Tabs.*`; `Select`+`MenuItem` → Chakra `Select`; `useMediaQuery` → `useBreakpointValue`.
-- [ ] 7.6 `pnpm build` + `pnpm lint` + visual check + commit.
+- [x] 7.1 `CharacterCard.tsx` (`Text`, `color="textSecondary"` → `fg.secondary`); `CharacterResources.tsx` (`Box`/`Text`); `OptionsList.tsx` (`Table.*` + `Text`; `subOptions: any` left as pre-existing lint).
+- [x] 7.2 `DescriptionList.tsx` — `Typography` → `Text` (component just maps text rows; `List.*` not needed).
+- [x] 7.3 `OptionCell.tsx` — `TableCell` → `Table.Cell`.
+- [x] 7.4 `CharacterFormFields.tsx` — only used MUI `Grid`; → `Grid`/`GridItem` pattern. (No Select here — plan note was off.)
+- [x] 7.5 `CharacterInfo.tsx` + `ActionInfo.tsx` — `@mui/lab` Tabs → Chakra `Tabs.Root`/`Tabs.List`/`Tabs.Trigger`/`Tabs.Content`; mobile `Select`+`MenuItem` → `NativeSelect.Root`/`Field`/`Indicator`; `useMediaQuery` → Chakra `useMediaQuery([q],{fallback})`; dropped `SyntheticEvent` handler.
+- [x] 7.6 `pnpm build` passes; `pnpm lint` 5 pre-existing, no new. `dnd/` root MUI-free. Committed.
 
 ## 8. Verticals: dnd/race
 

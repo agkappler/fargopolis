@@ -1,7 +1,7 @@
-import { Typography } from "@mui/material"
+import { Text } from "@chakra-ui/react"
 
 export const DescriptionList: React.FC<{ descriptions: string[] }> = ({ descriptions }) => {
     return descriptions.map((description, index) => (
-        <Typography key={index} variant="body1" textAlign="center">{description}</Typography>
+        <Text key={index} textAlign="center">{description}</Text>
     ));
 }
