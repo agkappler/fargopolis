@@ -24,7 +24,7 @@ export const FeatureItem: React.FC<FeatureItemProps> = ({ name, level, descripti
 
     return (
         <>
-            <Box my={2} p={2} pt={3} borderTopWidth="1px" borderColor="border.DEFAULT">
+            <Box my={2} p={2} pt={3} borderTopWidth="1px" borderColor="border">
                 <Grid templateColumns="repeat(12, 1fr)">
                     <GridItem colSpan={3}>
                         <Text fontWeight="light" textAlign="left">Level {level}</Text>

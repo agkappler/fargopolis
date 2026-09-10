@@ -20,7 +20,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ title, onClick, children, 
                     fontFamily="display"
                     fontWeight="500"
                     fontSize="md"
-                    color="fg.DEFAULT"
+                    color="fg"
                     style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
                 >
                     {title}

@@ -22,7 +22,7 @@ export const ActionInfo: React.FC<ActionInfoProps> = ({ characterId, className }
 
     return (
         <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
-            <Box borderBottomWidth="1px" borderColor="border.DEFAULT" display="flex" justifyContent="center">
+            <Box borderBottomWidth="1px" borderColor="border" display="flex" justifyContent="center">
                 {isMobile ? (
                     <NativeSelect.Root>
                         <NativeSelect.Field value={value} onChange={(e) => setValue(e.target.value)}>

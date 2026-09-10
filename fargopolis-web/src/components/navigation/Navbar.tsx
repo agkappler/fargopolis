@@ -41,7 +41,7 @@ export const Navbar: React.FC = () => {
             zIndex="10"
             bg="bg.raised"
             borderBottom="1px solid"
-            borderBottomColor="border.DEFAULT"
+            borderBottomColor="border"
             h="fp.nav"
             px="6"
             gap="6"
@@ -60,7 +60,7 @@ export const Navbar: React.FC = () => {
                 fontFamily="display"
                 fontSize="lg"
                 fontWeight="500"
-                color="fg.DEFAULT"
+                color="fg"
                 p="0"
                 style={{ fontVariationSettings: '"opsz" 14, "SOFT" 80, "WONK" 1' }}
             >
@@ -102,8 +102,8 @@ export const Navbar: React.FC = () => {
                                             cursor="pointer"
                                             fontFamily="body"
                                             fontWeight={isActive(item.path) ? "600" : "400"}
-                                            color={isActive(item.path) ? "brand.DEFAULT" : "fg.secondary"}
-                                            _hover={{ color: "fg.DEFAULT", bg: "bg.sunk" }}
+                                            color={isActive(item.path) ? "brand" : "fg.secondary"}
+                                            _hover={{ color: "fg", bg: "bg.sunk" }}
                                             onClick={() => {
                                                 setDrawerOpen(false);
                                                 handleNav(item.path);
@@ -128,7 +128,7 @@ export const Navbar: React.FC = () => {
                                 border="none"
                                 borderBottom="2px solid"
                                 borderBottomColor={isActive(item.path) ? "ember.500" : "transparent"}
-                                color={isActive(item.path) ? "brand.DEFAULT" : "fg.secondary"}
+                                color={isActive(item.path) ? "brand" : "fg.secondary"}
                                 fontFamily="body"
                                 fontSize="xs"
                                 fontWeight="500"
@@ -138,7 +138,7 @@ export const Navbar: React.FC = () => {
                                 whiteSpace="nowrap"
                                 cursor="pointer"
                                 transition="color 200ms"
-                                _hover={{ color: "fg.DEFAULT" }}
+                                _hover={{ color: "fg" }}
                                 onClick={() => handleNav(item.path)}
                             >
                                 {item.label}

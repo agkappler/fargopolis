@@ -12,7 +12,7 @@ export const surfaceBorderProps = {
     bg: "bg.raised",
     borderWidth: "1px",
     borderStyle: "solid",
-    borderColor: "border.DEFAULT",
+    borderColor: "border",
     borderRadius: "md",
 } as const;
 

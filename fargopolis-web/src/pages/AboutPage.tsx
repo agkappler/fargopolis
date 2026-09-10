@@ -32,7 +32,7 @@ export function AboutPage() {
                 direction={{ base: "column", md: "row" }}
                 bg="bg.raised"
                 border="1px solid"
-                borderColor="border.DEFAULT"
+                borderColor="border"
                 borderLeft="4px solid"
                 borderLeftColor="pine.500"
                 borderRadius="md"
@@ -63,7 +63,7 @@ export function AboutPage() {
                         mb="1"
                         textStyle="display-title"
                         fontSize={{ base: "2xl", md: "3xl" }}
-                        color="fg.DEFAULT"
+                        color="fg"
                         style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
                     >
                         Alex Kappler
@@ -97,7 +97,7 @@ export function AboutPage() {
                         key={title}
                         bg="bg.sunk"
                         border="1px solid"
-                        borderColor="border.DEFAULT"
+                        borderColor="border"
                         borderRadius="md"
                         p="5"
                     >
@@ -107,7 +107,7 @@ export function AboutPage() {
                             mb="2"
                             textStyle="display-title"
                             fontSize="md"
-                            color="fg.DEFAULT"
+                            color="fg"
                             style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
                         >
                             {title}

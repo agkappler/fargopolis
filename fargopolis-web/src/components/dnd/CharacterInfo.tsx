@@ -31,7 +31,7 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
 
     return <LoadingWrapper isLoading={isLoadingClassInfo}>
         <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
-            <Box borderBottomWidth="1px" borderColor="border.DEFAULT" display="flex" justifyContent="center">
+            <Box borderBottomWidth="1px" borderColor="border" display="flex" justifyContent="center">
                 {isMobile
                     ? <NativeSelect.Root>
                         <NativeSelect.Field value={value} onChange={(e) => setValue(e.target.value)}>

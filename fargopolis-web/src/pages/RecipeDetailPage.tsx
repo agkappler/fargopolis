@@ -60,7 +60,7 @@ export function RecipeDetailPage() {
                     <Badge>{`Quantity: ${recipeData.quantity ?? "TBD"}`}</Badge>
                 </Box>
                 {recipeData.description && (
-                    <Box borderWidth="1px" borderColor="border.DEFAULT" padding={2} borderRadius="md">
+                    <Box borderWidth="1px" borderColor="border" padding={2} borderRadius="md">
                         <Heading size="md" textAlign="center">
                             Description
                         </Heading>

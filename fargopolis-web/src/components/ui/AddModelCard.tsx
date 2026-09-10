@@ -15,7 +15,7 @@ export const AddModelCard: React.FC<AddModelCardProps> = ({ onClick, title }) =>
             borderColor="border.strong"
             borderRadius="md"
             bg="transparent"
-            color="brand.DEFAULT"
+            color="brand"
             textStyle="label"
             display="flex"
             flexDir="column"

@@ -26,7 +26,7 @@ export const RacialTraitCard: React.FC<RacialTraitCardProps> = ({ trait, charact
 
     return (
         <>
-            <Box my={2} p={2} pt={3} borderTopWidth="1px" borderColor="border.DEFAULT">
+            <Box my={2} p={2} pt={3} borderTopWidth="1px" borderColor="border">
                 <Text fontWeight="bold" textAlign="center">{trait.name}</Text>
                 <LoadingWrapper isLoading={isLoading} size={20}>
                     {traitInfo && <>

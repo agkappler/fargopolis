@@ -23,7 +23,7 @@ export const BountyCard: React.FC<BountyCardProps> = ({ bounty, onClick, categor
                 m="0"
                 textStyle="display-title"
                 fontSize="md"
-                color="fg.DEFAULT"
+                color="fg"
                 style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
                 textDecoration={bounty.status === BountyStatus.Complete ? "line-through" : "none"}
                 textDecorationColor="pine.500"

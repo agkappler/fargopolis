@@ -61,7 +61,7 @@ export function DndGlossaryClassesPage() {
           </NativeSelect.Root>
         </Box>
         <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
-          <Box borderBottomWidth="1px" borderColor="border.DEFAULT" display="flex" justifyContent="center">
+          <Box borderBottomWidth="1px" borderColor="border" display="flex" justifyContent="center">
             <Tabs.List aria-label="Character info tabs">
               <Tabs.Trigger value="1">Class Info</Tabs.Trigger>
               <Tabs.Trigger value="2">Subclasses</Tabs.Trigger>

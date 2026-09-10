@@ -62,15 +62,8 @@ const ENTRIES: TimelineEntry[] = [
     },
 ];
 
-const OppositeContent: React.FC<{ entry: TimelineEntry; align: "start" | "end" }> = ({ entry, align }) => (
-    <Flex
-        flexDirection={align === "end" ? "row" : "row-reverse"}
-        alignItems="center"
-        justifyContent={align === "end" ? "flex-end" : "flex-start"}
-        gap={2}
-        color="fg.secondary"
-    >
-        <Text>{entry.year}</Text>
+const OppositeContent: React.FC<{ entry: TimelineEntry; align: "start" | "end" }> = ({ entry, align }) => {
+    const img = (
         <img
             src={entry.img}
             alt={entry.imgAlt}
@@ -78,13 +71,25 @@ const OppositeContent: React.FC<{ entry: TimelineEntry; align: "start" | "end" }
             height={100}
             style={{ height: "100px", width: `${entry.imgWidth}px`, mixBlendMode: "darken" }}
         />
-    </Flex>
-);
+    );
+    const year = <Text>{entry.year}</Text>;
+    return (
+        <Flex
+            alignItems="center"
+            justifyContent={align === "end" ? "flex-end" : "flex-start"}
+            gap={2}
+            color="fg.secondary"
+        >
+            {/* left side: [year][image] flush to rail; right side: [image][year] flush to rail */}
+            {align === "end" ? <>{year}{img}</> : <>{img}{year}</>}
+        </Flex>
+    );
+};
 
 const Rail: React.FC = () => (
     <Flex direction="column" alignItems="center" alignSelf="stretch">
         <Box flex="1" w="2px" bg="border.strong" />
-        <Box boxSize="12px" borderRadius="full" bg="brand.DEFAULT" my={1} flexShrink="0" />
+        <Box boxSize="12px" borderRadius="full" bg="brand" my={1} flexShrink="0" />
         <Box flex="1" w="2px" bg="border.strong" />
     </Flex>
 );

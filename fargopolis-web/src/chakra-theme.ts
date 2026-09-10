@@ -43,7 +43,7 @@ const cardSlotRecipe = defineSlotRecipe({
         root: {
             bg: "bg.raised",
             border: "1px solid",
-            borderColor: "border.DEFAULT",
+            borderColor: "border",
             borderTopWidth: "2px",
             borderTopColor: "pine.500",
             borderRadius: "md",
@@ -313,8 +313,8 @@ const config = defineConfig({
     },
     globalCss: {
         body: {
-            bg: "bg.DEFAULT",
-            color: "fg.DEFAULT",
+            bg: "bg",
+            color: "fg",
             fontFamily: "body",
             margin: "0",
         },
