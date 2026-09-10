@@ -31,7 +31,7 @@ export function RecipesPage() {
                 title="Recipe Box"
                 rightContainer={<LinkButton url={`/projects/${Project.Recipes}`} label="Project Details" />}
             />
-            <Box maxW="var(--fp-container)" mx="auto" px="6" py="8">
+            <Box maxW="fp.container" mx="auto" px="6" py="8">
                 <Grid
                     templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
                     gap="4"

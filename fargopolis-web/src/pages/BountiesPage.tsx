@@ -78,7 +78,7 @@ export function BountiesPage() {
                 gap="4"
                 px="4"
                 py="6"
-                maxW="var(--fp-container)"
+                maxW="fp.container"
                 mx="auto"
             >
                 <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />

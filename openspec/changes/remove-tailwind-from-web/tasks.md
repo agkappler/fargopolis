@@ -7,18 +7,17 @@ then a commit. Gate: build passes, no lint errors beyond the 5 pre-existing
 
 ## 1. Layout tokens + `--fp-*` var call sites
 
-- [ ] 1.1 Add `sizes` tokens to `chakra-theme.ts` `theme.tokens`: `fp.container` = `1180px`, `fp.container-narrow` = `720px`, `fp.nav` = `64px`.
-- [ ] 1.2 Replace `var(--fp-container)` → `"fp.container"` in `components/ui/PageHeader.tsx`, `pages/AboutPage.tsx`, `pages/BountiesPage.tsx`, `pages/RecipesPage.tsx`.
-- [ ] 1.3 Replace `var(--fp-container-narrow)` → `"fp.container-narrow"` in `pages/HomePage.tsx`.
-- [ ] 1.4 Replace `var(--fp-nav-height)` → `"fp.nav"` in `components/navigation/Navbar.tsx` (2 sites).
-- [ ] 1.5 `pnpm build` (runs `chakra:typegen`) + `pnpm lint` + commit. If a hyphenated token name is rejected, switch to nested `sizes.fp.{container,containerNarrow,nav}` and re-point.
+- [x] 1.1 Added nested `sizes.fp` tokens to `chakra-theme.ts` — `fp.container` = `1180px`, `fp.containerNarrow` = `720px`, `fp.nav` = `64px` (nested form chosen over hyphenated key names).
+- [x] 1.2 `var(--fp-container)` → `"fp.container"` in `PageHeader.tsx`, `AboutPage.tsx`, `BountiesPage.tsx`, `RecipesPage.tsx`.
+- [x] 1.3 `var(--fp-container-narrow)` → `"fp.containerNarrow"` in `HomePage.tsx`.
+- [x] 1.4 `var(--fp-nav-height)` → `"fp.nav"` in `Navbar.tsx` (2 sites).
+- [x] 1.5 `pnpm build` passes (typegen picked up the tokens). Committed.
 
-## 2. Delete `globals.scss` + drop `sass`
+> **Order note:** `className` conversions (groups 3–5) run *before* deleting
+> `globals.scss` (group 2, now folded into group 6), so no intermediate commit
+> ships components whose Tailwind utilities have stopped being emitted.
 
-- [ ] 2.1 Delete `fargopolis-web/src/globals.scss`.
-- [ ] 2.2 Remove `import "./globals.scss";` from `src/main.tsx`.
-- [ ] 2.3 Remove `sass` from `package.json` dependencies; `pnpm install`.
-- [ ] 2.4 `pnpm build` + `pnpm lint` + `pnpm dev` smoke check (app shell renders, nav height correct, page max-width correct) + commit.
+## 2. _(moved into group 6 — teardown)_
 
 ## 3. `className` → style props: `constants/` + `App.tsx` + shared
 
@@ -42,13 +41,14 @@ then a commit. Gate: build passes, no lint errors beyond the 5 pre-existing
 - [ ] 5.4 `pages/DndGlossaryPage.tsx` (2 × `px-2 mt-2`), `pages/DndPage.tsx` (`px-2`, `mt-2`), `pages/RecipeDetailPage.tsx` (`p-2`), `pages/SplitCheckPage.tsx` (`m-2 p-2`, `flex items-center`, `p-2`).
 - [ ] 5.5 `rg 'className=' fargopolis-web/src` → confirm zero matches. `pnpm build` + `pnpm lint` + commit.
 
-## 6. Remove Tailwind tooling
+## 6. Remove Tailwind tooling + `globals.scss`
 
-- [ ] 6.1 Delete `fargopolis-web/tailwind.config.ts`.
-- [ ] 6.2 Edit `postcss.config.js` — remove the `tailwindcss: {}` plugin entry, keep `autoprefixer: {}`.
-- [ ] 6.3 Remove `tailwindcss` from `package.json` devDependencies; `pnpm install`.
-- [ ] 6.4 `rg -i 'tailwind' fargopolis-web` → confirm zero matches (src, configs, lockfile).
-- [ ] 6.5 Full `pnpm build` + `pnpm lint` + `pnpm dev` smoke check of About (timeline), a form modal, a card grid, Navbar → commit.
+- [ ] 6.1 Delete `fargopolis-web/src/globals.scss` and remove its `import "./globals.scss";` from `src/main.tsx`.
+- [ ] 6.2 Delete `fargopolis-web/tailwind.config.ts`.
+- [ ] 6.3 Edit `postcss.config.js` — remove the `tailwindcss: {}` plugin entry, keep `autoprefixer: {}`.
+- [ ] 6.4 Remove `tailwindcss` (devDep) and `sass` (dep) from `package.json`; `pnpm install`.
+- [ ] 6.5 `rg -i 'tailwind' fargopolis-web` and `rg 'className=' fargopolis-web/src` → confirm zero matches (src, configs, lockfile).
+- [ ] 6.6 Full `pnpm build` + `pnpm lint` + `pnpm dev` smoke check of About (timeline), a form modal, a card grid, Navbar → commit.
 
 ## 7. Wrap-up
 

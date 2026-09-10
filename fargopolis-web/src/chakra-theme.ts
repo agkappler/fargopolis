@@ -237,6 +237,13 @@ const config = defineConfig({
                 normal: { value: "200ms" },
                 slow:   { value: "320ms" },
             },
+            sizes: {
+                fp: {
+                    container:       { value: "1180px" },
+                    containerNarrow: { value: "720px" },
+                    nav:             { value: "64px" },
+                },
+            },
         },
         semanticTokens: {
             colors: {

@@ -38,7 +38,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             borderBottomColor="border.DEFAULT"
         >
             <Box
-                maxW="var(--fp-container)"
+                maxW="fp.container"
                 mx="auto"
                 px="6"
                 pt="4"

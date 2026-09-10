@@ -24,7 +24,7 @@ const INTERESTS = [
 
 export function AboutPage() {
     return (
-        <Box maxW="var(--fp-container)" mx="auto" px="6" py="8">
+        <Box maxW="fp.container" mx="auto" px="6" py="8">
             {/* Hero card */}
             <Flex
                 gap="6"
