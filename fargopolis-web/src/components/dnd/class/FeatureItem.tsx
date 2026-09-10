@@ -1,6 +1,6 @@
 import { AbilitySource } from "@/constants/Abilities";
-import { Add } from "@mui/icons-material";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Plus } from "lucide-react";
+import { Box, Button, Grid, GridItem, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { AbilityForm } from "../abilities/AbilityForm";
 import { DescriptionList } from "../DescriptionList";
@@ -24,26 +24,26 @@ export const FeatureItem: React.FC<FeatureItemProps> = ({ name, level, descripti
 
     return (
         <>
-            <Box className="my-2 p-2 pt-3" borderTop={1} borderColor="divider">
-                <Grid container>
-                    <Grid size={3}>
-                        <Typography variant="body1" fontWeight="light" textAlign="left">Level {level}</Typography>
-                    </Grid>
-                    <Grid size={6}>
-                        <Typography variant="subtitle1" fontWeight="bold" textAlign="center">{name}</Typography>
-                    </Grid>
-                    <Grid size={3} display="flex" justifyContent="flex-end">
+            <Box className="my-2 p-2 pt-3" borderTopWidth="1px" borderColor="border.DEFAULT">
+                <Grid templateColumns="repeat(12, 1fr)">
+                    <GridItem colSpan={3}>
+                        <Text fontWeight="light" textAlign="left">Level {level}</Text>
+                    </GridItem>
+                    <GridItem colSpan={6}>
+                        <Text fontWeight="bold" textAlign="center">{name}</Text>
+                    </GridItem>
+                    <GridItem colSpan={3} display="flex" justifyContent="flex-end">
                         {characterId && (
                             <Button
-                                variant="text"
-                                size="small"
-                                startIcon={<Add />}
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setIsAbilityFormOpen(true)}
                             >
+                                <Plus size={16} />
                                 Create Ability
                             </Button>
                         )}
-                    </Grid>
+                    </GridItem>
                 </Grid>
                 <DescriptionList descriptions={descriptions} />
                 {children}

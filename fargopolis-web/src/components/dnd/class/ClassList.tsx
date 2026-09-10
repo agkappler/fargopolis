@@ -1,8 +1,9 @@
 import { BaseDndResponse, DndItem, getClasses } from "@/api/dnd5eapi";
-import { Grid, Paper, Typography } from "@mui/material";
+import { Box, Grid, GridItem, Heading } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
+import { surfaceCardProps } from "../../ui/surfaceStyle";
 
 export const ClassList: React.FC = () => {
     const navigate = useNavigate();
@@ -11,14 +12,14 @@ export const ClassList: React.FC = () => {
         isLoadingCustomClasses = false;
     const classes = [...(apiClassResults?.results ?? []), ...customClasses].sort((a, b) => a.name.localeCompare(b.name));
     return <>
-        <Typography variant="h5" textAlign="center">Classes</Typography>
+        <Heading size="lg" textAlign="center">Classes</Heading>
         <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomClasses}>
-            <Grid container spacing={2} textAlign="center">
-                {classes.map((c, index) => (<Grid key={index} size={{ xs: 12, sm: 4 }}>
-                    <Paper elevation={3} className="p-2" role="button" onClick={() => navigate(`/dnd/glossary/classes?class=${c.index}`)}>
-                        <Typography variant="h6">{c.name}</Typography>
-                    </Paper>
-                </Grid>))}
+            <Grid templateColumns="repeat(12, 1fr)" gap={4} textAlign="center">
+                {classes.map((c, index) => (<GridItem key={index} colSpan={{ base: 12, sm: 4 }}>
+                    <Box {...surfaceCardProps} boxShadow="md" className="p-2" role="button" cursor="pointer" onClick={() => navigate(`/dnd/glossary/classes?class=${c.index}`)}>
+                        <Heading size="md">{c.name}</Heading>
+                    </Box>
+                </GridItem>))}
             </Grid>
         </LoadingWrapper>
     </>

@@ -84,10 +84,10 @@ Keep each component's public props identical; change internals only.
 
 ## 9. Verticals: dnd/class
 
-- [ ] 9.1 `src/components/dnd/class/ClassList.tsx`, `Subclasses.tsx`, `SubclassForm.tsx`, `SubclassFeaturesForm.tsx` — primitives + icons.
-- [ ] 9.2 `src/components/dnd/class/ClassFeatures.tsx`, `FeatureItem.tsx`, `ClassSpecificInfo.tsx`, `CustomSubclassInfo.tsx` — primitives.
-- [ ] 9.3 `src/components/dnd/class/class-specific/CreatingSpellSlotsTable.tsx` — MUI `Table*` → `Table.*`; migrate `sx`.
-- [ ] 9.4 `pnpm build` + `pnpm lint` + visual check + commit.
+- [x] 9.1 `ClassList.tsx` (`Grid`/`GridItem` + `surfaceCardProps` + `Heading`); `Subclasses.tsx` (`Grid`/`GridItem`, `Select` → `NativeSelect`, lucide `Plus`/`Pencil`/`Wrench`); `SubclassForm.tsx` + `SubclassFeaturesForm.tsx` (`Grid`/`GridItem`).
+- [x] 9.2 `ClassFeatures.tsx` (`Heading`); `FeatureItem.tsx` (`Grid`/`GridItem`/`Text`/`Button variant="ghost"`, `borderTop`→`borderTopWidth`, lucide `Plus`); `ClassSpecificInfo.tsx` (`Chip`→`Badge`; removed dead `InfoOutlineSharp` guard); `CustomSubclassInfo.tsx` (`Text`).
+- [x] 9.3 `CreatingSpellSlotsTable.tsx` — `Table.ScrollArea`/`Table.Root`/`Table.Body`/`Table.Row`/`Table.Cell`; dropped last-child-border `sx`.
+- [x] 9.4 `pnpm build` passes; `pnpm lint` 5 pre-existing, no new. `dnd/class/` MUI-free. Committed.
 
 ## 10. Verticals: dnd/spells + dnd/abilities + dnd/weapons
 
