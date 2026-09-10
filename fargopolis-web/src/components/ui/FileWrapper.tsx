@@ -1,7 +1,7 @@
 import RequestManager from "@/helpers/RequestManager";
 import FileMetadata from "@/models/FileMetadata";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import { Link } from "@mui/material";
+import { Link } from "@chakra-ui/react";
+import { File } from "lucide-react";
 import useSWR from "swr";
 import { LoadingWrapper } from "./LoadingWrapper";
 
@@ -18,7 +18,7 @@ export const FileWrapper: React.FC<FileWrapperProps> = ({ fileId }) => {
 
     return <LoadingWrapper isLoading={isLoading} size={100}>
         {fileMetadata && (
-            <Link href={fileMetadata.url} target="_blank" rel="noopener noreferrer" sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <Link href={fileMetadata.url} target="_blank" rel="noopener noreferrer" display="flex" flexDirection="column" alignItems="center">
                 {isImage(fileMetadata.filename) && fileMetadata.url
                     ? (
                         <img
@@ -29,7 +29,7 @@ export const FileWrapper: React.FC<FileWrapperProps> = ({ fileId }) => {
                             style={{ objectFit: "cover", borderRadius: 8, marginBottom: 8 }}
                         />
                     ) : (
-                        <InsertDriveFileIcon sx={{ fontSize: 64, color: "action.active", marginBottom: 1 }} />
+                        <File size={64} color="var(--chakra-colors-fg-muted)" style={{ marginBottom: 4 }} />
                     )
                 }
                 {fileMetadata.filename}

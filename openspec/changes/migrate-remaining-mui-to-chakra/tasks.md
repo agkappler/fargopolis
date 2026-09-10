@@ -26,12 +26,12 @@ Mapping reference: see [design.md](./design.md) — D3 (components), D4 (icons),
 
 Files whose only `@mui` import is icons — pure swap, no layout change.
 
-- [ ] 2.1 `src/constants/Projects.tsx` (`Checklist, Description, ListAlt, Settings`).
-- [ ] 2.2 `src/components/ui/buttons/GitHubButton.tsx`, `LinkedInButton.tsx` (`GitHub`, `LinkedIn` → `Github`, `Linkedin`).
-- [ ] 2.3 `src/components/ui/buttons/LinkButton.tsx` (`Description` → `FileText`; `Link` from `@mui/material` → Chakra `Link`).
-- [ ] 2.4 `src/components/ui/UnderConstructionAlert.tsx` (`Construction` icon + `Alert` → `Alert.Root`).
-- [ ] 2.5 Grep for any remaining single-icon files (`ResumeWrapper.tsx`, `FileWrapper.tsx` `InsertDriveFile`) and swap.
-- [ ] 2.6 `pnpm build` + `pnpm lint` + commit.
+- [x] 2.1 `src/constants/Projects.tsx` — icons → lucide (`Settings`, `List`, `ListChecks`, `FileText`).
+- [x] 2.2 `GitHubButton.tsx`, `LinkedInButton.tsx` — inline brand SVGs + Chakra `IconButton asChild`.
+- [x] 2.3 `LinkButton.tsx` — lucide chevrons, Chakra `Button asChild` (MUI `startIcon`/`endIcon`/`component` props gone; icons now children).
+- [x] 2.4 `UnderConstructionAlert.tsx` — `Alert.Root`/`Alert.Indicator`/`Alert.Content`/`Alert.Title`; `Construction` from lucide.
+- [x] 2.5 `ResumeWrapper.tsx` (`FileText` + Chakra `Link`), `FileWrapper.tsx` (`File` + Chakra `Link`).
+- [x] 2.6 `pnpm build` passes; `pnpm lint` 6 pre-existing errors, no new. Committed.
 
 ## 3. Shared `ui/` wrappers — simple
 

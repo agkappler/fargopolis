@@ -1,4 +1,4 @@
-import { Checklist, Description, ListAlt, Settings } from "@mui/icons-material";
+import { FileText, ListChecks, List, Settings } from "lucide-react";
 import { ProjectStatus } from "./Status";
 import { ReactNode } from "react";
 
@@ -51,7 +51,7 @@ export const PROJECTS = [
         description: "Recipe management for custom calorie and quantity tracking across all ingredients.",
         imageUrl: "https://via.placeholder.com/150",
         status: ProjectStatus.InProgress,
-        icon: <ListAlt className="mr-1" />,
+        icon: <List className="mr-1" />,
         url: "/recipes",
         todo: [
             "Transaction handling for new ingredient",
@@ -67,7 +67,7 @@ export const PROJECTS = [
         description: "Gamifying my recurring tasks and making it easy to generate ToDo lists for any occasion.",
         imageUrl: "https://via.placeholder.com/150",
         status: ProjectStatus.InProgress,
-        icon: <Checklist className="mr-1" />,
+        icon: <ListChecks className="mr-1" />,
         url: "/bounties",
         todo: ["Task table", "Task Object", "Task List View"],
         motivation: `I'm an avid lister and I'm constantly writing out ToDo lists in my notebooks and on my whiteboards.
@@ -87,7 +87,7 @@ export const PROJECTS = [
         description: "Basically a digital player's handbook tailored to a single character's needs.",
         imageUrl: "https://via.placeholder.com/150",
         status: ProjectStatus.InProgress,
-        icon: <Description className="mr-1" />,
+        icon: <FileText className="mr-1" />,
         url: "/dnd",
         todo: ["Add AI chat window"],
         motivation: undefined,

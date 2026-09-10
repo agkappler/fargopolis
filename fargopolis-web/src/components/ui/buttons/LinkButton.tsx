@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import { Button } from "@mui/material";
+import { Button } from "@chakra-ui/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 
 interface LinkButtonProps {
@@ -11,20 +11,24 @@ interface LinkButtonProps {
 const isInternalPath = (url: string) => url.startsWith("/") && !url.startsWith("//");
 
 export const LinkButton: React.FC<LinkButtonProps> = ({ url, label, isForward = true }) => {
-    const icons = {
-        startIcon: isForward ? undefined : <ChevronLeft />,
-        endIcon: isForward ? <ChevronRight /> : undefined,
-    };
+    const content = (
+        <>
+            {!isForward && <ChevronLeft size={18} />}
+            {label}
+            {isForward && <ChevronRight size={18} />}
+        </>
+    );
+
     if (isInternalPath(url)) {
         return (
-            <Button variant="text" component={RouterLink} to={url} {...icons}>
-                {label}
+            <Button asChild variant="ghost">
+                <RouterLink to={url}>{content}</RouterLink>
             </Button>
         );
     }
     return (
-        <Button variant="text" href={url} {...icons}>
-            {label}
+        <Button asChild variant="ghost">
+            <a href={url}>{content}</a>
         </Button>
     );
 };
