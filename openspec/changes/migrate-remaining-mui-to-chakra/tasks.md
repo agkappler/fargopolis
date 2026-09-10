@@ -52,12 +52,12 @@ Keep each component's public props identical; change internals only.
 
 ## 5. Verticals: home + about + navigation
 
-- [ ] 5.1 `src/components/home/ProjectCardContents.tsx`, `ProjectHeader.tsx` (`Avatar` → `Avatar.Root`/`Image`/`Fallback`), `ProjectTodos.tsx` — primitives + icons.
-- [ ] 5.2 `src/components/about/ResumeWrapper.tsx`, `TimelineContentText.tsx` — `Typography`/`Box`/`Chip` → `Text`/`Box`/`Badge`.
-- [ ] 5.3 `src/components/about/MyTimeline.tsx` — hand-roll `@mui/lab` `Timeline*` with `Flex`/`Box` (vertical rule + dots) per design.md D3; screenshot-compare before/after.
-- [ ] 5.4 `src/components/navigation/Navbar.tsx` — `useMediaQuery` → `useBreakpointValue`; `Menu` icon → lucide.
-- [ ] 5.5 `src/components/LoginForm.tsx` — primitives.
-- [ ] 5.6 `pnpm build` + `pnpm lint` + visual check + commit.
+- [x] 5.1 `ProjectCardContents.tsx` (`Text`), `ProjectHeader.tsx` (`Heading` + MUI-variant→size map; `TypographyVariant` gone), `ProjectTodos.tsx` (`Box`+`surfaceCardProps`, `List.Root`/`List.Item`/`List.Indicator`, lucide `Circle`).
+- [x] 5.2 `ResumeWrapper.tsx` done in 2.5; `TimelineContentText.tsx` → `Box`+`Text` (was `@mui/lab` `TimelineContent`).
+- [x] 5.3 `MyTimeline.tsx` — hand-rolled with `Grid` (3-col alternating on md, stacked on base) + a `Rail` (line/dot/line `Flex`); content pulled into an `ENTRIES` data array.
+- [x] 5.4 `Navbar.tsx` — MUI `useMediaQuery`/`IconButton`/`Menu` icon → Chakra `useMediaQuery([q],{fallback})` + Chakra `IconButton` + lucide `Menu`; removed dead `Link` import.
+- [x] 5.5 `LoginForm.tsx` — `Box`/`Heading`/`Text`; `sx` → style props.
+- [x] 5.6 `pnpm build` passes; `pnpm lint` down to 5 (only pre-existing `no-explicit-any`). Committed.
 
 ## 6. Verticals: bounties + recipes
 

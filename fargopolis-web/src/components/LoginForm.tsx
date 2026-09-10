@@ -1,5 +1,5 @@
 import { Show, SignIn, UserButton, useAuth } from "@clerk/react";
-import { Box, Typography } from "@mui/material";
+import { Box, Heading, Text } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import { AlertMessage } from "./ui/AlertMessage";
 
@@ -16,29 +16,37 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         }
     }, [isLoaded, isSignedIn, onLogin]);
 
-    return (<>
+    return (
         <Box
-            component="div"
-            sx={{ maxWidth: 480, mx: "auto", mt: 4, p: 3, border: "1px solid #ccc", borderRadius: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            maxW="480px"
+            mx="auto"
+            mt="4"
+            p="3"
+            borderWidth="1px"
+            borderStyle="solid"
+            borderColor="border.strong"
+            borderRadius="lg"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
         >
-            <Typography variant="h5" textAlign="center" mb={2}>
+            <Heading size="lg" textAlign="center" mb="2">
                 Sign In
-            </Typography>
+            </Heading>
             <AlertMessage message="Authentication is only required for write actions, so feel free to take a look around!" />
-            <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+            <Box width="100%" display="flex" justifyContent="center">
                 <Show when="signed-out">
                     <SignIn routing="hash" withSignUp={false} />
                 </Show>
                 <Show when="signed-in">
                     <Box display="flex" flexDirection="column" alignItems="center" gap={2} py={1}>
-                        <Typography variant="body2" textAlign="center">
+                        <Text fontSize="sm" textAlign="center">
                             Signed in with Clerk.
-                        </Typography>
+                        </Text>
                         <UserButton />
                     </Box>
                 </Show>
             </Box>
-
         </Box>
-    </>);
+    );
 };

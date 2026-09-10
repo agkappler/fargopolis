@@ -1,13 +1,11 @@
 import { Show, UserButton } from "@clerk/react";
-import { Menu } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
-import { Box, Drawer, Flex, Link, Text } from "@chakra-ui/react";
+import { Box, Drawer, Flex, IconButton, Text, useMediaQuery } from "@chakra-ui/react";
+import { Menu } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
 import { SimpleDialog } from "../ui/SimpleDialog";
 import { NAVBAR_BREAK } from "@/constants/Media";
-import { useMediaQuery } from "@mui/material";
 
 const NAV_ITEMS = [
     { label: "Recipe Box",   path: "/recipes" },
@@ -21,7 +19,7 @@ const NAV_ITEMS = [
 export const Navbar: React.FC = () => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const isMobile = useMediaQuery(`(max-width:${NAVBAR_BREAK})`);
+    const [isMobile] = useMediaQuery([`(max-width: ${NAVBAR_BREAK})`], { fallback: [false] });
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [loginOpen, setLoginOpen] = useState(false);
 
@@ -74,7 +72,7 @@ export const Navbar: React.FC = () => {
                 <>
                     <Flex ml="auto" align="center" gap="2">
                         <Show when="signed-in"><UserButton /></Show>
-                        <IconButton onClick={() => setDrawerOpen(true)} size="large">
+                        <IconButton variant="ghost" aria-label="Open menu" onClick={() => setDrawerOpen(true)}>
                             <Menu />
                         </IconButton>
                     </Flex>
