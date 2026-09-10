@@ -31,7 +31,7 @@ export const PROJECTS = [
         description: "All things infrastructure! Covers the nitty gritty of deployments, hosting, and QoL across all levels of the stack.",
         imageUrl: "https://via.placeholder.com/150",
         status: ProjectStatus.InProgress,
-        icon: <Settings className="mr-1" />,
+        icon: <Settings style={{ marginRight: "0.25rem" }} />,
         url: "/",
         todo: [
             "Streamline Deployments",
@@ -51,7 +51,7 @@ export const PROJECTS = [
         description: "Recipe management for custom calorie and quantity tracking across all ingredients.",
         imageUrl: "https://via.placeholder.com/150",
         status: ProjectStatus.InProgress,
-        icon: <List className="mr-1" />,
+        icon: <List style={{ marginRight: "0.25rem" }} />,
         url: "/recipes",
         todo: [
             "Transaction handling for new ingredient",
@@ -67,7 +67,7 @@ export const PROJECTS = [
         description: "Gamifying my recurring tasks and making it easy to generate ToDo lists for any occasion.",
         imageUrl: "https://via.placeholder.com/150",
         status: ProjectStatus.InProgress,
-        icon: <ListChecks className="mr-1" />,
+        icon: <ListChecks style={{ marginRight: "0.25rem" }} />,
         url: "/bounties",
         todo: ["Task table", "Task Object", "Task List View"],
         motivation: `I'm an avid lister and I'm constantly writing out ToDo lists in my notebooks and on my whiteboards.
@@ -87,7 +87,7 @@ export const PROJECTS = [
         description: "Basically a digital player's handbook tailored to a single character's needs.",
         imageUrl: "https://via.placeholder.com/150",
         status: ProjectStatus.InProgress,
-        icon: <FileText className="mr-1" />,
+        icon: <FileText style={{ marginRight: "0.25rem" }} />,
         url: "/dnd",
         todo: ["Add AI chat window"],
         motivation: undefined,

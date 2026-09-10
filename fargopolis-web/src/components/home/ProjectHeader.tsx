@@ -18,7 +18,7 @@ const VARIANT_SIZE: Record<HeadingVariant, "md" | "lg" | "xl" | "2xl" | "3xl" | 
 };
 
 export const ProjectHeader: React.FC<ProjectHeaderProps> = ({ project, variant = "h6" }) => {
-    return <Box className="flex items-center justify-center w-full">
+    return <Box display="flex" alignItems="center" justifyContent="center" w="full">
         {project.icon}
         <Heading size={VARIANT_SIZE[variant]}>{project.name}</Heading>
     </Box>

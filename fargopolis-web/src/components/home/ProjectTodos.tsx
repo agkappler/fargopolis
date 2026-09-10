@@ -7,7 +7,7 @@ interface ProjectTodosProps {
 }
 
 export const ProjectTodos: React.FC<ProjectTodosProps> = ({ todos }) => {
-    return <Box {...surfaceCardProps} boxShadow="md" className="p-2 h-full">
+    return <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
         <Text fontWeight="medium">Todo:</Text>
         <List.Root variant="plain" gap={2} mt={2}>
             {todos.map((item, index) => (
