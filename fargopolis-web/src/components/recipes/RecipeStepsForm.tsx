@@ -6,7 +6,7 @@ import { useState } from "react";
 import RequestManager from "@/helpers/RequestManager";
 import { getErrorMessage } from "@/helpers/Errors";
 import { useAuth } from "@clerk/react";
-import { Grid, Typography } from "@mui/material";
+import { Grid, GridItem, Text } from "@chakra-ui/react";
 import { TextInput } from "../inputs/TextInput";
 
 interface RecipeStepsFormProps {
@@ -49,26 +49,18 @@ export const RecipeStepsForm: React.FC<RecipeStepsFormProps> = ({ isOpen, onClos
                 addText="Add Step"
                 defaultItem={{ recipeId: recipeId }}
                 listItemComponent={({ idx, removeButton }) => (
-                    <Grid container spacing={1} key={idx} alignItems="center" marginBottom={2}>
-                        <Grid size={1} mt={3}>
-                            <Typography variant="h6" textAlign="center">{idx + 1}.</Typography>
-                        </Grid>
-                        <Grid size={10}>
+                    <Grid templateColumns="repeat(12, 1fr)" gap={2} key={idx} alignItems="center" marginBottom={4}>
+                        <GridItem colSpan={1} mt={6}>
+                            <Text fontFamily="display" fontSize="md" textAlign="center">{idx + 1}.</Text>
+                        </GridItem>
+                        <GridItem colSpan={10}>
                             <TextInput
                                 label="Description"
                                 fieldName={`steps.[${idx}].description`}
                                 requiredMessage="Description is required"
                             />
-                        </Grid>
-                        {/* <Grid size={5}>
-                            <NumberInput
-                                label="Total"
-                                fieldName={`people[${idx}].total`}
-                                requiredMessage="Total is required"
-                                type={NumberInputType.Currency}
-                            />
-                        </Grid> */}
-                        <Grid size={1} mt={3}>{removeButton}</Grid>
+                        </GridItem>
+                        <GridItem colSpan={1} mt={6}>{removeButton}</GridItem>
                     </Grid>
                 )}
             />

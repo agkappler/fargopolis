@@ -2,7 +2,7 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Ingredient from "@/models/Ingredient";
 import { useAuth } from "@clerk/react";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import { useState } from "react";
 import { BasicForm } from "../inputs/BasicForm";
 import { NumberInput } from "../inputs/NumberInput";
@@ -49,28 +49,28 @@ export const IngredientForm: React.FC<IngredientFormProps> = ({ isOpen, onClose,
             defaultValues={ingredient}
             isClerkForm
         >
-            <Grid container spacing={2} className="mb-2">
-                <Grid size={12}>
+            <Grid templateColumns="repeat(12, 1fr)" gap={4} className="mb-2">
+                <GridItem colSpan={12}>
                     <TextInput
                         label="Name"
                         fieldName="name"
                         requiredMessage="Name is required"
                     />
-                </Grid>
-                <Grid size={6}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <TextInput
                         label="Quantity"
                         fieldName="quantity"
                         requiredMessage="Quantity is required"
                     />
-                </Grid>
-                <Grid size={6}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <NumberInput
                         label="Calories"
                         fieldName="calories"
                         requiredMessage="Calories are required"
                     />
-                </Grid>
+                </GridItem>
             </Grid>
         </BasicForm>
     </SimpleDialog>

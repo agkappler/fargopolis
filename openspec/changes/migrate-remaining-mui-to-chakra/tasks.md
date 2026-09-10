@@ -61,10 +61,10 @@ Keep each component's public props identical; change internals only.
 
 ## 6. Verticals: bounties + recipes
 
-- [ ] 6.1 `src/components/bounties/BountyForm.tsx` — `Box`/`Button`/`Grid`/`Typography` → Chakra.
-- [ ] 6.2 `src/components/recipes/RecipeForm.tsx`, `IngredientForm.tsx`, `RecipeStepsForm.tsx` — `Grid`/`Box`/`Button`/icons.
-- [ ] 6.3 `src/components/recipes/RecipeSteps.tsx`, `IngredientList.tsx` — `Grid`/`Paper`/`Typography` + any `sx`.
-- [ ] 6.4 `pnpm build` + `pnpm lint` + visual check + commit.
+- [x] 6.1 `BountyForm.tsx` — MUI `Grid`/`size` → Chakra `Grid templateColumns="repeat(12,1fr)"` + `GridItem colSpan`. Bare `size={6}` promoted to `{base:12, sm:6}` so forms stack on mobile (consistent with existing responsive items).
+- [x] 6.2 `RecipeForm.tsx`, `IngredientForm.tsx` (same Grid pattern); `RecipeStepsForm.tsx` (Grid + `Typography` → `Text`).
+- [x] 6.3 `RecipeSteps.tsx` (`Heading`/`Text`/`Button`); `IngredientList.tsx` (`Table.ScrollArea`/`Table.Root`/`Table.Header`/`Table.ColumnHeader`/`Table.Body`/`Table.Row`/`Table.Cell`; `Chip` → `Badge`; `Add`/`Edit` → lucide `Plus`/`Pencil`; MUI `startIcon` → icon child).
+- [x] 6.4 `pnpm build` passes; `pnpm lint` 5 pre-existing, no new. `bounties/` + `recipes/` MUI-free. Committed.
 
 ## 7. Verticals: dnd core
 
