@@ -21,36 +21,37 @@ then a commit. Gate: build passes, no lint errors beyond the 5 pre-existing
 
 ## 3. `className` → style props: `constants/` + `App.tsx` + shared
 
-- [ ] 3.1 `constants/Projects.tsx` — 4 × `<Icon className="mr-1" />` → `style={{ marginRight: "0.25rem" }}` on the lucide icons.
-- [ ] 3.2 `App.tsx` — `<main className="flex-grow">` → `<Box as="main" flex="1">` (import `Box`).
-- [ ] 3.3 `components/ui/ErrorMessage.tsx` (`mb-2`), `components/home/ProjectHeader.tsx` (`flex items-center justify-center w-full`), `components/home/ProjectTodos.tsx` (`p-2 h-full`).
-- [ ] 3.4 `pnpm build` + `pnpm lint` + commit.
+- [x] 3.1 `constants/Projects.tsx` — 4 lucide icons `className="mr-1"` → `style={{ marginRight: "0.25rem" }}`.
+- [x] 3.2 `App.tsx` — `<main className="flex-grow">` → `<Box as="main" flex="1">`.
+- [x] 3.3 `ErrorMessage.tsx` (`mb={2}`), `ProjectHeader.tsx` (`display="flex" alignItems/justifyContent="center" w="full"`), `ProjectTodos.tsx` (`p={2} h="full"`).
+- [x] 3.4 `pnpm build` + `pnpm lint` (5 pre-existing) + commit.
 
 ## 4. `className` → style props: dnd/
 
-- [ ] 4.1 `dnd/CharacterFormFields.tsx`, `dnd/weapons/WeaponForm.tsx`, `dnd/abilities/AbilityForm.tsx`, `dnd/race/RaceForm.tsx`, `dnd/class/SubclassForm.tsx` — `mb-2` → `mb={2}` on the `<Grid>`.
-- [ ] 4.2 `dnd/spells/SpellCard.tsx` (`p-2 flex justify-between`), `dnd/race/RaceList.tsx` + `dnd/class/ClassList.tsx` (`p-2`), `dnd/race/CustomRaceTraits.tsx` (`flex justify-end`, `p-2 m-2`) + `dnd/class/Subclasses.tsx` (`flex justify-end`).
-- [ ] 4.3 `dnd/race/RacialTraitCard.tsx` + `dnd/class/FeatureItem.tsx` — `my-2 p-2 pt-3` → `my={2} p={2} pt={3}`.
-- [ ] 4.4 `pnpm build` + `pnpm lint` + commit.
+- [x] 4.1 `CharacterFormFields`, `WeaponForm`, `AbilityForm`, `RaceForm`, `SubclassForm` — Grid `className="mb-2"` → `mb={2}`.
+- [x] 4.2 `SpellCard` (`p={2} display="flex" justifyContent="space-between"`), `RaceList` + `ClassList` (`p={2}`), `CustomRaceTraits` (`display="flex" justifyContent="flex-end"`, `p={2} m={2}`), `Subclasses` (`display="flex" justifyContent="flex-end"`).
+- [x] 4.3 `RacialTraitCard` + `FeatureItem` — `my={2} p={2} pt={3}`.
+- [x] 4.4 `pnpm build` + `pnpm lint` + commit.
 
 ## 5. `className` → style props: bounties/ + recipes/ + pages/
 
-- [ ] 5.1 `bounties/BountyForm.tsx`, `recipes/IngredientForm.tsx`, `recipes/RecipeForm.tsx` — `mb-2` → `mb={2}`.
-- [ ] 5.2 `recipes/RecipeSteps.tsx` (`justify-self-center`), `recipes/IngredientList.tsx` (`flex items-center justify-between mt-2 w-full`, `font-bold` on `Table.Row`).
-- [ ] 5.3 `pages/ProjectsPage.tsx` (`flex flex-col p-2 items-center h-full`), `pages/ProjectDetailPage.tsx` (`m-2`, 4 × `p-2 h-full`).
-- [ ] 5.4 `pages/DndGlossaryPage.tsx` (2 × `px-2 mt-2`), `pages/DndPage.tsx` (`px-2`, `mt-2`), `pages/RecipeDetailPage.tsx` (`p-2`), `pages/SplitCheckPage.tsx` (`m-2 p-2`, `flex items-center`, `p-2`).
-- [ ] 5.5 `rg 'className=' fargopolis-web/src` → confirm zero matches. `pnpm build` + `pnpm lint` + commit.
+- [x] 5.1 `BountyForm`, `IngredientForm`, `RecipeForm` — Grid `mb={2}`.
+- [x] 5.2 `RecipeSteps` (`justifySelf="center"`), `IngredientList` (`display="flex" alignItems="center" justifyContent="space-between" mt={2} w="full"`; `Table.Row fontWeight="bold"`).
+- [x] 5.3 `ProjectsPage` (`display="flex" flexDirection="column" p={2} alignItems="center" h="full"`), `ProjectDetailPage` (`m={2}`, 4 × `p={2} h="full"`).
+- [x] 5.4 `DndGlossaryPage` (2 × `px={2} mt={2}`), `DndPage` (`px={2}`, `mt={2}`), `RecipeDetailPage` (`p={2}`), `SplitCheckPage` (`m={2} p={2}`, `display="flex" alignItems="center"`, `p={2}`).
+- [x] 5.5 `rg 'className="' fargopolis-web/src` → zero string-literal matches (only React `className={…}` prop-passing for the D&D "class name" domain concept). `pnpm build` + `pnpm lint` + commit.
 
 ## 6. Remove Tailwind tooling + `globals.scss`
 
-- [ ] 6.1 Delete `fargopolis-web/src/globals.scss` and remove its `import "./globals.scss";` from `src/main.tsx`.
-- [ ] 6.2 Delete `fargopolis-web/tailwind.config.ts`.
-- [ ] 6.3 Edit `postcss.config.js` — remove the `tailwindcss: {}` plugin entry, keep `autoprefixer: {}`.
-- [ ] 6.4 Remove `tailwindcss` (devDep) and `sass` (dep) from `package.json`; `pnpm install`.
-- [ ] 6.5 `rg -i 'tailwind' fargopolis-web` and `rg 'className=' fargopolis-web/src` → confirm zero matches (src, configs, lockfile).
-- [ ] 6.6 Full `pnpm build` + `pnpm lint` + `pnpm dev` smoke check of About (timeline), a form modal, a card grid, Navbar → commit.
+- [x] 6.1 Deleted `src/globals.scss` + its `main.tsx` import.
+- [x] 6.2 Deleted `tailwind.config.ts`.
+- [x] 6.3 `postcss.config.js` → only `autoprefixer`.
+- [x] 6.4 Removed `tailwindcss` (devDep) + `sass` (dep); `pnpm install` (both dropped from lockfile).
+- [x] 6.5 `rg -i tailwind fargopolis-web` → only the 2 historical-context comments in `fieldStyle.ts` / `surfaceStyle.ts` (refreshed to note Tailwind is gone). Zero `className="` string literals.
+- [x] 6.6 `pnpm build` passes (CSS bundle **22.48 kB → 14.16 kB**, gzip 5.02 → 2.67 — the removed preflight + utilities); `pnpm lint` = 5 pre-existing `no-explicit-any` only. Committed. Interactive `pnpm dev` smoke check not possible this session — see follow-up below.
 
 ## 7. Wrap-up
 
-- [ ] 7.1 Note the reverted "Tailwind stays" non-goal in `migrate-remaining-mui-to-chakra/design.md` (or leave a pointer), if that change is not yet archived.
-- [ ] 7.2 Run `/opsx:archive` for this change.
+- [x] 7.1 Marked the "Tailwind stays" non-goal in `migrate-remaining-mui-to-chakra/design.md` as superseded by this change.
+- [ ] 7.2 **Browser smoke check** (deferred — no interactive session): About timeline, a form modal (field borders — see `fieldStyle.ts` note), a card grid, Navbar height/sticky, page max-width. Then optionally drop the now-redundant `borderWidth`/`borderStyle` from `fieldStyle.ts` if Chakra's own field border renders.
+- [ ] 7.3 Run `/opsx:archive` for this change.

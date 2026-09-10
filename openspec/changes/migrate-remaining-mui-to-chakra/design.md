@@ -21,7 +21,7 @@ Constraints: no test suite in `fargopolis-web` — `pnpm build` (`tsc --noEmit &
 - No redesign — components keep their current structure, props, and behavior. Improvements to visual design are out of scope.
 - No change to `@emotion/*` (Chakra v3 depends on them).
 - No new shared abstraction layer / wrapper library over Chakra — use Chakra components directly, matching how `inputs/` was done.
-- No touching `tailwindcss` config (Tailwind stays; it's orthogonal).
+- No touching `tailwindcss` config (Tailwind stays; it's orthogonal). _[Superseded: the follow-up change `remove-tailwind-from-web` removed Tailwind entirely once its footprint proved trivial and its preflight kept conflicting with Chakra's cascade.]_
 
 ## Decisions
 
