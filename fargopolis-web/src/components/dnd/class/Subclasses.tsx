@@ -89,7 +89,7 @@ export const Subclasses: React.FC<SubclassesProps> = ({ classIndex }) => {
                         </NativeSelect.Root>
                     </Box>
                 </GridItem>
-                <GridItem colSpan={{ base: 12, md: 2 }} className="flex justify-end">
+                <GridItem colSpan={{ base: 12, md: 2 }} display="flex" justifyContent="flex-end">
                     {isLoaded && isSignedIn && (
                         <ActionMenu
                             options={menuOptions}

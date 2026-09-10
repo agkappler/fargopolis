@@ -23,7 +23,7 @@ export const RecipeSteps: React.FC<RecipeStepsProps> = ({ recipeId, recipeSteps,
             {recipeSteps?.map((step) => (
                 <Text key={step.stepNumber}>{step.stepNumber}. {step.description}</Text>
             ))}
-            <Button variant="ghost" onClick={() => setIsStepsOpen(true)} className="justify-self-center">Manage Steps</Button>
+            <Button variant="ghost" onClick={() => setIsStepsOpen(true)} justifySelf="center">Manage Steps</Button>
         </Box>
         <RecipeStepsForm
             isOpen={isStepsOpen}

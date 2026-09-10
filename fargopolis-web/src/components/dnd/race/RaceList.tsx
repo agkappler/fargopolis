@@ -22,7 +22,7 @@ export const RaceList: React.FC = () => {
         <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomRaces}>
             <Grid templateColumns="repeat(12, 1fr)" gap={4} textAlign="center">
                 {races.map((r, index) => (<GridItem key={index} colSpan={{ base: 12, sm: 4 }}>
-                    <Box {...surfaceCardProps} boxShadow="md" className="p-2" role="button" cursor="pointer" onClick={() => navigate(`/dnd/glossary/races?race=${r.index}`)}>
+                    <Box {...surfaceCardProps} boxShadow="md" p={2} role="button" cursor="pointer" onClick={() => navigate(`/dnd/glossary/races?race=${r.index}`)}>
                         <Heading size="md">{r.name}</Heading>
                     </Box>
                 </GridItem>))}

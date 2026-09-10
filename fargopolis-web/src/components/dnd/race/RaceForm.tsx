@@ -50,7 +50,7 @@ export const RaceForm: React.FC<RaceFormProps> = ({ isOpen, onClose, dndRace, up
             defaultValues={dndRace ?? defaultRace}
             isClerkForm
         >
-            <Grid templateColumns="repeat(12, 1fr)" gap={4} className="mb-2">
+            <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
                 <GridItem colSpan={12}>
                     <TextInput
                         label="Name"

@@ -54,7 +54,7 @@ export const CharacterFormFields: React.FC<CharacterFormFieldsProps> = ({
     const dynamicSubraceOptions = allSubraces.map(o => ({ value: o.index, label: o.name }));
 
     return (
-        <Grid templateColumns="repeat(12, 1fr)" gap={4} className="mb-2">
+        <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
             {isEdit && <GridItem colSpan={12}>
                 <FileUpload
                     label="Upload Avatar"

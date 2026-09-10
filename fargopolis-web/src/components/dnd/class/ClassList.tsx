@@ -16,7 +16,7 @@ export const ClassList: React.FC = () => {
         <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomClasses}>
             <Grid templateColumns="repeat(12, 1fr)" gap={4} textAlign="center">
                 {classes.map((c, index) => (<GridItem key={index} colSpan={{ base: 12, sm: 4 }}>
-                    <Box {...surfaceCardProps} boxShadow="md" className="p-2" role="button" cursor="pointer" onClick={() => navigate(`/dnd/glossary/classes?class=${c.index}`)}>
+                    <Box {...surfaceCardProps} boxShadow="md" p={2} role="button" cursor="pointer" onClick={() => navigate(`/dnd/glossary/classes?class=${c.index}`)}>
                         <Heading size="md">{c.name}</Heading>
                     </Box>
                 </GridItem>))}

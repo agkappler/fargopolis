@@ -20,7 +20,7 @@ export const IngredientList: React.FC<IngredientListProps> = ({ recipeId, ingred
 
     return <>
         <Box>
-            <Box className="flex items-center justify-between mt-2 w-full">
+            <Box display="flex" alignItems="center" justifyContent="space-between" mt={2} w="full">
                 <Heading size="md">Ingredients</Heading>
                 <Badge>
                     {`Calories from Ingredients: ${
@@ -32,7 +32,7 @@ export const IngredientList: React.FC<IngredientListProps> = ({ recipeId, ingred
             <Table.ScrollArea borderWidth="1px" rounded="md">
                 <Table.Root aria-label="ingredient table">
                     <Table.Header>
-                        <Table.Row className="font-bold">
+                        <Table.Row fontWeight="bold">
                             <Table.ColumnHeader>Name</Table.ColumnHeader>
                             <Table.ColumnHeader textAlign="center">Quantity</Table.ColumnHeader>
                             <Table.ColumnHeader textAlign="center">Calories</Table.ColumnHeader>

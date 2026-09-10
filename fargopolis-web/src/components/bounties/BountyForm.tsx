@@ -58,7 +58,7 @@ export const BountyForm: FC<BountyFormProps> = ({
                 defaultValues={bounty}
                 isClerkForm
             >
-                <Grid templateColumns="repeat(12, 1fr)" gap={4} className="mb-2">
+                <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
                     <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <TextInput label="Title" fieldName="title" requiredMessage="Title is required" />
                     </GridItem>

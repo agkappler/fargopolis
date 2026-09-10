@@ -26,7 +26,7 @@ export const SpellCard: React.FC<SpellCardProps> = ({
         <Box
             {...surfaceCardProps}
             boxShadow="md"
-            className="p-2 flex justify-between"
+            p={2} display="flex" justifyContent="space-between"
             role="button"
             cursor="pointer"
             onClick={() => setIsOpen(true)}

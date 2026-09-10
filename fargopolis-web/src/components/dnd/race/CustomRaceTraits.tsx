@@ -53,7 +53,7 @@ export const CustomRaceTraits: React.FC<CustomRaceTraitsProps> = ({ raceId }) =>
                 <GridItem colSpan={{ base: 12, md: 8 }}>
                     <Text fontFamily="display" fontSize="md" textAlign="center">{race?.name}</Text>
                 </GridItem>
-                <GridItem colSpan={{ base: 12, md: 2 }} className="flex justify-end">
+                <GridItem colSpan={{ base: 12, md: 2 }} display="flex" justifyContent="flex-end">
                     {isLoaded && isSignedIn && (
                         <ActionMenu
                             options={menuOptions}
@@ -67,7 +67,7 @@ export const CustomRaceTraits: React.FC<CustomRaceTraitsProps> = ({ raceId }) =>
                     <Text>No traits yet!</Text>
                 )}
                 {racialTraits?.map((trait: RacialTrait, index: number) => (
-                    <Box key={index} {...surfaceCardProps} boxShadow="md" className="p-2 m-2" width="100%" maxWidth="600px">
+                    <Box key={index} {...surfaceCardProps} boxShadow="md" p={2} m={2} width="100%" maxWidth="600px">
                         <Text fontWeight="bold" textAlign="center">{trait.name}</Text>
                         <Text textAlign="center">{trait.description}</Text>
                     </Box>

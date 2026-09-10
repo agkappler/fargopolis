@@ -61,7 +61,7 @@ export const WeaponForm: React.FC<WeaponFormProps> = ({
                 errorMessage={errorMessage}
                 isClerkForm
             >
-                <Grid templateColumns="repeat(12, 1fr)" gap={4} className="mb-2">
+                <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
                     <GridItem colSpan={12}>
                         <TextInput
                             label="Weapon Name"

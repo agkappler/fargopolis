@@ -101,7 +101,7 @@ export const AbilityForm: React.FC<AbilityFormProps> = ({
                 errorMessage={errorMessage}
                 isClerkForm
             >
-                <Grid templateColumns="repeat(12, 1fr)" gap={4} className="mb-2">
+                <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
                     <GridItem colSpan={12}>
                         <TextInput
                             label="Ability Name"
