@@ -6,7 +6,8 @@ import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
-import { capitalize, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
+import { capitalize } from "@/helpers/Format";
 import useSWR from "swr";
 import { useParams } from "react-router-dom";
 

@@ -1,5 +1,6 @@
 import { DndItem, getLevelInfoForClass, LevelInfo } from "@/api/dnd5eapi";
-import { capitalize, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
+import { capitalize } from "@/helpers/Format";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 import { ClassSpecificInfo } from "./ClassSpecificInfo";
