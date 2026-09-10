@@ -75,7 +75,7 @@ export function DndGlossaryRacesPage() {
                 leftContainer={<LinkButton url="/dnd/glossary" label="Glossary" isForward={false} />}
             />
             <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomRaces}>
-                <Box display="flex" justifyContent="center">
+                <Box display="flex" justifyContent="center" my={3}>
                     <NativeSelect.Root width="auto">
                         <NativeSelect.Field value={selectedRace} onChange={(e) => handleRaceChange(e.target.value)}>
                             {races.map((r, index) => (

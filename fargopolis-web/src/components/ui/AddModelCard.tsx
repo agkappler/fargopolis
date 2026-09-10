@@ -22,6 +22,7 @@ export const AddModelCard: React.FC<AddModelCardProps> = ({ onClick, title }) =>
             alignItems="center"
             justifyContent="center"
             gap="2"
+            cursor="pointer"
             transition="all 200ms"
             _hover={{ borderColor: "ember.500", color: "accent.hover", transform: "translateY(-2px)" }}
             onClick={onClick}

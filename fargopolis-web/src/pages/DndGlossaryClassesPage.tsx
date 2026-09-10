@@ -44,11 +44,11 @@ export function DndGlossaryClassesPage() {
     <>
       <PageHeader
         title="DnD Classes"
-        rightContainer={<Button variant="secondary"><Plus size={16} />Add Class</Button>}
+        rightContainer={<Button variant="secondary" disabled title="Coming soon"><Plus size={16} />Add Class</Button>}
         leftContainer={<LinkButton url="/dnd/glossary" label="Glossary" isForward={false} />}
       />
       <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomClasses}>
-        <Box display="flex" justifyContent="center">
+        <Box display="flex" justifyContent="center" my={3}>
           <NativeSelect.Root width="auto">
             <NativeSelect.Field value={selectedClass} onChange={(e) => handleClassChange(e.target.value)}>
               {classes.map((c, index) => (
