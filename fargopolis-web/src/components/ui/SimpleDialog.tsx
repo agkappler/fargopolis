@@ -17,6 +17,8 @@ export const SimpleDialog: React.FC<SimpleDialogProps> = ({ title, isOpen, onClo
             onOpenChange={(e) => { if (!e.open) onClose(); }}
             size={maxWidth}
             placement="center"
+            lazyMount
+            unmountOnExit
         >
             <Portal>
                 <Dialog.Backdrop />

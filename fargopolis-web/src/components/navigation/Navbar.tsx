@@ -81,6 +81,8 @@ export const Navbar: React.FC = () => {
                         open={drawerOpen}
                         onOpenChange={(e) => setDrawerOpen(e.open)}
                         placement="end"
+                        lazyMount
+                        unmountOnExit
                     >
                         <Drawer.Backdrop />
                         <Drawer.Positioner>
