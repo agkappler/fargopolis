@@ -90,7 +90,7 @@ export function SplitCheckPage() {
     <>
       <PageHeader title="Check Splitter" />
       <FormProvider {...methods}>
-        <Grid templateColumns="repeat(12, 1fr)" gap={4} className="m-2 p-2">
+        <Grid templateColumns="repeat(12, 1fr)" gap={4} m={2} p={2}>
           <GridItem colSpan={12}>
             <ListInput
               title="People"
@@ -162,7 +162,7 @@ export function SplitCheckPage() {
           <GridItem colSpan={{ base: 12, sm: 4 }}>
             <NumberInput label="Tip Percentage" fieldName="tipPercentage" type={NumberInputType.Percentage} />
           </GridItem>
-          <GridItem colSpan={{ base: 12, sm: 4 }} className="flex items-center">
+          <GridItem colSpan={{ base: 12, sm: 4 }} display="flex" alignItems="center">
             <SwitchInput label="Include Tax in Tip" fieldName="includeTaxInTip" />
           </GridItem>
         </Grid>
@@ -177,7 +177,7 @@ export function SplitCheckPage() {
           <Grid templateColumns="repeat(12, 1fr)" gap={2} marginTop={1}>
             {individualTotals.map((person) => (
               <GridItem colSpan={{ base: 12, sm: 6, md: 3 }} key={person.name}>
-                <Box {...surfaceCardProps} boxShadow="md" className="p-2">
+                <Box {...surfaceCardProps} boxShadow="md" p={2}>
                   <Heading size="md" textAlign="center">
                     {person.name}: {formatCurrency(person.total)}
                   </Heading>

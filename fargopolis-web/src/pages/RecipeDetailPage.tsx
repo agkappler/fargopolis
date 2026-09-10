@@ -52,7 +52,7 @@ export function RecipeDetailPage() {
                     <ImageBox fileId={recipeData.avatarId} altText="Recipe image" />
                 </>
             )}
-            <Box className="p-2">
+            <Box p={2}>
                 <Box display="flex" justifyContent="center" gap={2} mb={2}>
                     <Badge>{`Prep Time: ${recipeData.prepTimeMinutes} min`}</Badge>
                     <Badge>{`Cook Time: ${recipeData.cookTimeMinutes} min`}</Badge>

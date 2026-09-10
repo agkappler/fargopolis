@@ -28,9 +28,9 @@ export function ProjectDetailPage() {
       <Text textAlign="center">
         {project.description}
       </Text>
-      <Grid templateColumns="repeat(12, 1fr)" gap={4} className="m-2">
+      <Grid templateColumns="repeat(12, 1fr)" gap={4} m={2}>
         <GridItem colSpan={{ base: 12, md: 6 }}>
-          <Box {...surfaceCardProps} boxShadow="md" className="p-2 h-full">
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
             <Heading size="md" textAlign="center">
               Motivation
             </Heading>
@@ -40,7 +40,7 @@ export function ProjectDetailPage() {
           </Box>
         </GridItem>
         <GridItem colSpan={{ base: 12, md: 6 }}>
-          <Box {...surfaceCardProps} boxShadow="md" className="p-2 h-full">
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
             <Heading size="md" textAlign="center">
               Vision
             </Heading>
@@ -50,7 +50,7 @@ export function ProjectDetailPage() {
           </Box>
         </GridItem>
         <GridItem colSpan={{ base: 12, md: 6 }}>
-          <Box {...surfaceCardProps} boxShadow="md" className="p-2 h-full">
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
             <Heading size="md" textAlign="center">
               Feature Goals
             </Heading>
@@ -62,7 +62,7 @@ export function ProjectDetailPage() {
           </Box>
         </GridItem>
         <GridItem colSpan={{ base: 12, md: 6 }}>
-          <Box {...surfaceCardProps} boxShadow="md" className="p-2 h-full">
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
             <Heading size="md" textAlign="center">
               Tech Breakdown
             </Heading>

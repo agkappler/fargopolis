@@ -11,7 +11,7 @@ export function ProjectsPage() {
       <Grid templateColumns="repeat(12, 1fr)" gap={4} margin={2}>
         {PROJECTS.map((project, index) => (
           <GridItem key={index} colSpan={{ base: 12, sm: 4 }}>
-            <Box {...surfaceCardProps} boxShadow="md" className="flex flex-col p-2 items-center h-full">
+            <Box {...surfaceCardProps} boxShadow="md" display="flex" flexDirection="column" p={2} alignItems="center" h="full">
               <ProjectCardContents project={project} index={index} />
             </Box>
           </GridItem>

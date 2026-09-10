@@ -25,7 +25,7 @@ export function DndPage() {
     return (
         <>
             <PageHeader title="Dungeons & Dragons" rightContainer={<LinkButton url={`/projects/${Project.DnD}`} label="Project Details" />} />
-            <Box className="px-2">
+            <Box px={2}>
                 <Heading size="lg" textAlign="center">
                     Character Catalog
                 </Heading>
@@ -42,7 +42,7 @@ export function DndPage() {
                     </Grid>
                 </LoadingWrapper>
             </Box>
-            <Box className="mt-2" display="flex" justifyContent="center">
+            <Box mt={2} display="flex" justifyContent="center">
                 <LinkButton url="/dnd/glossary" label="Glossary" />
             </Box>
             <CharacterForm isOpen={isOpen} onClose={onClose} updateCharacters={mutate} character={selectedCharacter} />
