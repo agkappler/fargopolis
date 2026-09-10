@@ -2,8 +2,8 @@ import { FileRole } from "@/constants/FileRole";
 import RequestManager from "@/helpers/RequestManager";
 import FileMetadata from "@/models/FileMetadata";
 import { useAuth } from "@clerk/react";
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { Avatar, Box, Button, IconButton } from "@mui/material";
+import { Avatar, Button, Flex, IconButton } from "@chakra-ui/react";
+import { UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import useSWR from "swr";
 
@@ -53,24 +53,22 @@ export const FileUpload: React.FC<FileUploadButtonProps> = ({
         setImageUrl(url);
     };
 
+    const avatarSrc = currentAvatarUrl?.url || imageUrl;
+
     return (
-        <Box display="flex" flexDirection="column" alignItems="center">
+        <Flex direction="column" align="center">
             {isAvatar
-                ? <IconButton onClick={handleClick} sx={{ width: size, height: size }}>
-                    <Avatar
-                        src={currentAvatarUrl?.url || imageUrl}
-                        sx={{ width: size, height: size, border: "2px dashed #aaa", bgcolor: "#f5f5f5" }}
-                    >
-                        <CloudUploadIcon fontSize="large" />
-                    </Avatar>
+                ? <IconButton aria-label={label} onClick={handleClick} variant="ghost" w={size} h={size} borderRadius="full" p="0">
+                    <Avatar.Root w={size} h={size} border="2px dashed" borderColor="border.strong" bg="bg.sunk">
+                        {avatarSrc
+                            ? <Avatar.Image src={avatarSrc} />
+                            : <Avatar.Fallback><UploadCloud size={28} /></Avatar.Fallback>}
+                    </Avatar.Root>
                 </IconButton>
                 : !canUpload
                     ? <></>
-                    : <Button
-                        onClick={handleClick}
-                        variant="contained"
-                        startIcon={<CloudUploadIcon />}
-                    >
+                    : <Button onClick={handleClick}>
+                        <UploadCloud size={16} />
                         {label}
                     </Button>
             }
@@ -81,6 +79,6 @@ export const FileUpload: React.FC<FileUploadButtonProps> = ({
                 style={{ display: "none" }}
                 onChange={handleChange}
             />
-        </Box>
+        </Flex>
     );
 }

@@ -1,7 +1,7 @@
 import { getNameForClass } from "@/constants/DndClass";
 import { getNameForRace } from "@/constants/DndRace";
 import Character from "@/models/Character";
-import { Typography } from "@mui/material";
+import { Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { ImageBox } from "../ui/ImageBox";
 import { ModelCard } from "../ui/ModelCard";
@@ -16,8 +16,8 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({ character }) => {
         {character.avatarId && <>
             <ImageBox fileId={character.avatarId} altText="Character avatar" />
         </>}
-        <Typography variant="body1" color="textSecondary">
+        <Text color="fg.secondary">
             {getNameForRace(character.race)} | {getNameForClass(character.className)}
-        </Typography>
+        </Text>
     </ModelCard>
 }

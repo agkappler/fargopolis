@@ -15,13 +15,14 @@ export const AddModelCard: React.FC<AddModelCardProps> = ({ onClick, title }) =>
             borderColor="border.strong"
             borderRadius="md"
             bg="transparent"
-            color="brand.DEFAULT"
+            color="brand"
             textStyle="label"
             display="flex"
             flexDir="column"
             alignItems="center"
             justifyContent="center"
             gap="2"
+            cursor="pointer"
             transition="all 200ms"
             _hover={{ borderColor: "ember.500", color: "accent.hover", transform: "translateY(-2px)" }}
             onClick={onClick}

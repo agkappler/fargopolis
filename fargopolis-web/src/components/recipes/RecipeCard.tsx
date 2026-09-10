@@ -36,7 +36,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipeData }) => {
                 mb="3"
                 textStyle="display-title"
                 fontSize="lg"
-                color="fg.DEFAULT"
+                color="fg"
             >
                 {recipeData.name}
             </Text>
@@ -45,7 +45,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipeData }) => {
                 mt="auto"
                 pt="3"
                 borderTop="1px dashed"
-                borderTopColor="border.DEFAULT"
+                borderTopColor="border"
                 gap="4"
                 textStyle="label"
                 color="fg.muted"

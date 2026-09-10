@@ -1,7 +1,7 @@
 import { AbilitySource } from "@/constants/Abilities";
 import RequestManager from "@/helpers/RequestManager";
 import Ability from "@/models/Ability";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Grid, GridItem, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
@@ -54,14 +54,14 @@ export const AbilityInfo: React.FC<AbilityInfoProps> = ({ characterId, canEdit =
     return (
         <Box>
             <LoadingWrapper isLoading={isLoading}>
-                <Grid container spacing={2}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={4}>
                     {canEdit && (
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <GridItem colSpan={{ base: 12, sm: 6, md: 4 }}>
                             <AddModelCard onClick={() => setIsOpen(true)} title="Add Ability" />
-                        </Grid>
+                        </GridItem>
                     )}
                     {sortedAbilities.map((ability) => (
-                        <Grid key={ability.abilityId} size={{ xs: 12, sm: 6, md: 4 }}>
+                        <GridItem key={ability.abilityId} colSpan={{ base: 12, sm: 6, md: 4 }}>
                             <AbilityCard
                                 ability={ability}
                                 characterId={characterId}
@@ -69,12 +69,12 @@ export const AbilityInfo: React.FC<AbilityInfoProps> = ({ characterId, canEdit =
                                 onAbilityUpdate={mutate}
                                 onClick={canEdit ? onEditAbility : undefined}
                             />
-                        </Grid>
+                        </GridItem>
                     ))}
                     {(!sortedAbilities || sortedAbilities.length === 0) && !isLoading && (
-                        <Grid size={12}>
-                            <Typography>No abilities found for this character.</Typography>
-                        </Grid>
+                        <GridItem colSpan={12}>
+                            <Text>No abilities found for this character.</Text>
+                        </GridItem>
                     )}
                 </Grid>
             </LoadingWrapper>

@@ -1,18 +1,16 @@
-import ConstructionIcon from "@mui/icons-material/Construction";
-import { Alert } from "@mui/material";
+import { Alert } from "@chakra-ui/react";
+import { Construction } from "lucide-react";
 import React from "react";
 
 export const UnderConstructionAlert: React.FC = () => {
-    return (<>
-        <Alert
-            severity="warning"
-            icon={<ConstructionIcon />}
-            title="Under Construction"
-            color="warning"
-            variant="standard"
-            sx={{ fontWeight: "bold", margin: 2 }}
-        >
-            Under Construction
-        </Alert>
-    </>);
+    return (
+        <Alert.Root status="warning" m="2" fontWeight="bold">
+            <Alert.Indicator>
+                <Construction />
+            </Alert.Indicator>
+            <Alert.Content>
+                <Alert.Title>Under Construction</Alert.Title>
+            </Alert.Content>
+        </Alert.Root>
+    );
 };

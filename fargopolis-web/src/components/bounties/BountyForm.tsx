@@ -4,7 +4,7 @@ import RequestManager from "@/helpers/RequestManager";
 import Bounty from "@/models/Bounty";
 import BountyCategory from "@/models/BountyCategory";
 import { useAuth } from "@clerk/react";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import { type FC, useState } from "react";
 import { BasicForm } from "../inputs/BasicForm";
 import { DropdownInput } from "../inputs/DropdownInput";
@@ -58,11 +58,11 @@ export const BountyForm: FC<BountyFormProps> = ({
                 defaultValues={bounty}
                 isClerkForm
             >
-                <Grid container spacing={2} className="mb-2">
-                    <Grid size={6}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <TextInput label="Title" fieldName="title" requiredMessage="Title is required" />
-                    </Grid>
-                    <Grid size={6}>
+                    </GridItem>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <DropdownInput
                             label="Category"
                             fieldName="categoryId"
@@ -72,20 +72,20 @@ export const BountyForm: FC<BountyFormProps> = ({
                             }))}
                             requiredMessage="Category is required"
                         />
-                    </Grid>
+                    </GridItem>
                     {isEdit && (
-                        <Grid size={6}>
+                        <GridItem colSpan={{ base: 12, sm: 6 }}>
                             <DropdownInput label="Status" fieldName="status" options={BOUNTY_STATUS_OPTIONS} />
-                        </Grid>
+                        </GridItem>
                     )}
-                    <Grid size={12}>
+                    <GridItem colSpan={12}>
                         <TextInput
                             label="Description"
                             fieldName="description"
                             requiredMessage="Description is required"
                             multilineRows={4}
                         />
-                    </Grid>
+                    </GridItem>
                 </Grid>
             </BasicForm>
         </SimpleDialog>

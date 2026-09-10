@@ -1,7 +1,6 @@
 import { DndClass } from "@/constants/DndClass";
 import { LevelInfo } from "@/api/dnd5eapi";
-import { InfoOutlineSharp } from "@mui/icons-material";
-import { Box, Chip } from "@mui/material";
+import { Badge, Box } from "@chakra-ui/react";
 
 interface ClassSpecificInfoProps {
     levelInfo: LevelInfo;
@@ -10,7 +9,6 @@ interface ClassSpecificInfoProps {
 export const ClassSpecificInfo: React.FC<ClassSpecificInfoProps> = ({ levelInfo }) => {
     const classIndex = levelInfo.class.index;
     const info = levelInfo.class_specific;
-    if (InfoOutlineSharp === undefined) return <></>;
 
     let classInfo: { label: string, value: number | string }[] = [];
     switch (classIndex) {
@@ -101,7 +99,7 @@ export const ClassSpecificInfo: React.FC<ClassSpecificInfoProps> = ({ levelInfo 
 
     return <Box display="flex" justifyContent="center" flexWrap="wrap" gap={2} width="100">
         {classInfo.map((item, index) => (
-            <Chip key={index} label={`${item.label}: ${item.value}`} />
+            <Badge key={index}>{`${item.label}: ${item.value}`}</Badge>
         ))}
     </Box>
 }

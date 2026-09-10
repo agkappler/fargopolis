@@ -1,6 +1,7 @@
 import { BaseInputProps } from "@/helpers/BaseInputProps";
-import { InputAdornment, TextField } from "@mui/material";
+import { Field, Input, InputGroup } from "@chakra-ui/react";
 import { useFormContext } from "react-hook-form";
+import { fieldBorderProps } from "./fieldStyle";
 
 export enum NumberInputType {
     Currency,
@@ -14,6 +15,7 @@ interface NumberInputProps extends BaseInputProps {
 
 export const NumberInput: React.FC<NumberInputProps> = ({ label, fieldName, requiredMessage, type = NumberInputType.WholeNumber }) => {
     const { register, formState: { errors } } = useFormContext();
+    const error = errors[fieldName];
     const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         const allowed =
             // Allow: backspace, delete, tab, escape, enter, arrows, home/end
@@ -29,28 +31,30 @@ export const NumberInput: React.FC<NumberInputProps> = ({ label, fieldName, requ
         }
     }
 
-    return <>
-        <TextField
-            fullWidth
-            label={requiredMessage ? `${label}*` : label}
-            {...register(fieldName, {
-                required: requiredMessage,
-                pattern: {
-                    value: /^\d+(\.\d{1,2})?$/,
-                    message: "Enter a valid number with up to 2 decimals"
-                }
-            })}
-            error={!!errors[fieldName]}
-            helperText={errors[fieldName]?.message as string ?? ""}
-            onKeyDown={onKeyDown}
-            slotProps={{
-                input: {
-                    startAdornment: type === NumberInputType.Currency ? <InputAdornment position="start">$</InputAdornment> : undefined,
-                    endAdornment: type === NumberInputType.Percentage ? <InputAdornment position="end">%</InputAdornment> : undefined,
-                    inputMode: type === NumberInputType.WholeNumber ? "numeric" : "decimal",
-                },
-                htmlInput: { pattern: "\\d+(\\.\\d{1,2})?" }
-            }}
-        />
-    </>
+    return (
+        <Field.Root invalid={!!error} w="full">
+            <Field.Label>{requiredMessage ? `${label}*` : label}</Field.Label>
+            <InputGroup
+                startElement={type === NumberInputType.Currency ? "$" : undefined}
+                endElement={type === NumberInputType.Percentage ? "%" : undefined}
+                w="full"
+            >
+                <Input
+                    px="3.5"
+                    {...fieldBorderProps}
+                    {...register(fieldName, {
+                        required: requiredMessage,
+                        pattern: {
+                            value: /^\d+(\.\d{1,2})?$/,
+                            message: "Enter a valid number with up to 2 decimals"
+                        }
+                    })}
+                    onKeyDown={onKeyDown}
+                    inputMode={type === NumberInputType.WholeNumber ? "numeric" : "decimal"}
+                    pattern="\d+(\.\d{1,2})?"
+                />
+            </InputGroup>
+            {error && <Field.ErrorText>{error.message as string}</Field.ErrorText>}
+        </Field.Root>
+    );
 }

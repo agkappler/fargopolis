@@ -1,19 +1,20 @@
 import { ProjectCardContents } from "@/components/home/ProjectCardContents";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { surfaceCardProps } from "@/components/ui/surfaceStyle";
 import { PROJECTS } from "@/constants/Projects";
-import { Grid, Paper } from "@mui/material";
+import { Box, Grid, GridItem } from "@chakra-ui/react";
 
 export function ProjectsPage() {
   return (
     <>
       <PageHeader title="Projects" />
-      <Grid container spacing={2} margin={2}>
+      <Grid templateColumns="repeat(12, 1fr)" gap={4} margin={2}>
         {PROJECTS.map((project, index) => (
-          <Grid key={index} size={4}>
-            <Paper elevation={3} className="flex flex-col p-2 items-center h-full">
+          <GridItem key={index} colSpan={{ base: 12, sm: 4 }}>
+            <Box {...surfaceCardProps} boxShadow="md" display="flex" flexDirection="column" p={2} alignItems="center" h="full">
               <ProjectCardContents project={project} index={index} />
-            </Paper>
-          </Grid>
+            </Box>
+          </GridItem>
         ))}
       </Grid>
     </>

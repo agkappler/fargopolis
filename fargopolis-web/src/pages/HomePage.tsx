@@ -31,7 +31,7 @@ export function HomePage() {
                 <Flex
                     direction="column"
                     align="center"
-                    maxW="var(--fp-container-narrow)"
+                    maxW="fp.containerNarrow"
                     mx="auto"
                     position="relative"
                 >

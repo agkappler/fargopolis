@@ -1,5 +1,5 @@
-import { Add, Delete } from "@mui/icons-material";
-import { Button, IconButton, Typography } from "@mui/material";
+import { Button, Heading, IconButton } from "@chakra-ui/react";
+import { Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { useFormContext } from "react-hook-form";
 
@@ -17,13 +17,13 @@ export const ListInput = <T,>({ title, fieldName, defaultItem, listItemComponent
     const addItem = () => methods.setValue(fieldName, [...items, defaultItem]);
     const removeItem = (index: number) => methods.setValue(fieldName, items.filter((_, i) => i !== index));
     return <>
-        {title && <Typography variant="h6" gutterBottom>{title}</Typography>}
+        {title && <Heading size="md" mb="2">{title}</Heading>}
         {items.map((_, idx) => (
             listItemComponent({
                 idx,
-                removeButton: <IconButton color="error" title="Remove" onClick={() => removeItem(idx)}><Delete /></IconButton>
+                removeButton: <IconButton aria-label="Remove" title="Remove" variant="ghost" color="ember.700" _hover={{ color: "ember.900" }} onClick={() => removeItem(idx)}><Trash2 size={18} /></IconButton>
             })
         ))}
-        <Button variant="outlined" onClick={addItem} startIcon={<Add />}>{addText}</Button>
+        <Button variant="secondary" onClick={addItem}><Plus size={16} />{addText}</Button>
     </>
 }

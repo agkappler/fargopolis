@@ -3,7 +3,7 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Ability from "@/models/Ability";
 import { useAuth } from "@clerk/react";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { BasicForm } from "../../inputs/BasicForm";
 import { DropdownInput } from "../../inputs/DropdownInput";
@@ -101,52 +101,52 @@ export const AbilityForm: React.FC<AbilityFormProps> = ({
                 errorMessage={errorMessage}
                 isClerkForm
             >
-                <Grid container spacing={2} className="mb-2">
-                    <Grid size={12}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
+                    <GridItem colSpan={12}>
                         <TextInput
                             label="Ability Name"
                             fieldName="name"
                             requiredMessage="Ability name is required"
                         />
-                    </Grid>
-                    <Grid size={6}>
+                    </GridItem>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <DropdownInput
                             label="Source"
                             fieldName="source"
                             options={ABILITY_SOURCE_OPTIONS}
                             requiredMessage="Source is required"
                         />
-                    </Grid>
-                    <Grid size={6}>
+                    </GridItem>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <TextInput
                             label="Source Description"
                             fieldName="sourceDescription"
                             requiredMessage="Source description is required"
                         />
-                    </Grid>
-                    <Grid size={6}>
+                    </GridItem>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <DropdownInput
                             label="Usage"
                             fieldName="usage"
                             options={USAGE_TYPE_OPTIONS}
                             requiredMessage="Usage is required"
                         />
-                    </Grid>
-                    <Grid size={6}>
+                    </GridItem>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <TextInput
                             label="Recovery"
                             fieldName="recovery"
                             requiredMessage="Recovery is required"
                         />
-                    </Grid>
-                    <Grid size={12}>
+                    </GridItem>
+                    <GridItem colSpan={12}>
                         <TextInput
                             label="Description"
                             fieldName="description"
                             multilineRows={4}
                             requiredMessage="Description is required"
                         />
-                    </Grid>
+                    </GridItem>
                 </Grid>
             </BasicForm>
         </SimpleDialog>

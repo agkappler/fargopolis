@@ -5,9 +5,8 @@ import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DndClass } from "@/constants/DndClass";
-import { Add } from "@mui/icons-material";
-import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { Box, Button, MenuItem, Select, Tab } from "@mui/material";
+import { Plus } from "lucide-react";
+import { Box, Button, NativeSelect, Tabs } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
@@ -21,9 +20,6 @@ export function DndGlossaryClassesPage() {
   const classes = [...(apiClassResults?.results ?? []), ...customClasses].sort((a, b) => a.name.localeCompare(b.name));
   const [selectedClass, setSelectedClass] = useState<DndClass>(DndClass.Barbarian);
   const [value, setValue] = useState("1");
-  const handleChange = (_: React.SyntheticEvent, newValue: string) => {
-    setValue(newValue);
-  };
 
   useEffect(() => {
     const classParam = searchParams.get("class");
@@ -48,29 +44,32 @@ export function DndGlossaryClassesPage() {
     <>
       <PageHeader
         title="DnD Classes"
-        rightContainer={<Button startIcon={<Add />}>Add Class</Button>}
+        rightContainer={<Button variant="secondary" disabled title="Coming soon"><Plus size={16} />Add Class</Button>}
         leftContainer={<LinkButton url="/dnd/glossary" label="Glossary" isForward={false} />}
       />
       <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomClasses}>
-        <Box display="flex" justifyContent="center">
-          <Select value={selectedClass} onChange={(e) => handleClassChange(e.target.value as string)}>
-            {classes.map((c, index) => (
-              <MenuItem key={index} value={c.index}>
-                {c.name}
-              </MenuItem>
-            ))}
-          </Select>
+        <Box display="flex" justifyContent="center" my={3}>
+          <NativeSelect.Root width="auto">
+            <NativeSelect.Field value={selectedClass} onChange={(e) => handleClassChange(e.target.value)}>
+              {classes.map((c, index) => (
+                <option key={index} value={c.index}>
+                  {c.name}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
         </Box>
-        <TabContext value={value}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "center" }}>
-            <TabList onChange={handleChange} aria-label="Character info tabs">
-              <Tab label="Class Info" value="1" />
-              <Tab label="Subclasses" value="2" />
-            </TabList>
+        <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
+          <Box borderBottomWidth="1px" borderColor="border" display="flex" justifyContent="center">
+            <Tabs.List aria-label="Character info tabs">
+              <Tabs.Trigger value="1">Class Info</Tabs.Trigger>
+              <Tabs.Trigger value="2">Subclasses</Tabs.Trigger>
+            </Tabs.List>
           </Box>
-          <TabPanel value="1">{selectedClass && <ClassFeatures currentLevel={20} className={selectedClass} />}</TabPanel>
-          <TabPanel value="2">{selectedClass && <Subclasses classIndex={selectedClass} />}</TabPanel>
-        </TabContext>
+          <Tabs.Content value="1">{selectedClass && <ClassFeatures currentLevel={20} className={selectedClass} />}</Tabs.Content>
+          <Tabs.Content value="2">{selectedClass && <Subclasses classIndex={selectedClass} />}</Tabs.Content>
+        </Tabs.Root>
       </LoadingWrapper>
     </>
   );

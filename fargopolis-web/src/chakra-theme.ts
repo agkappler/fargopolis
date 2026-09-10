@@ -43,7 +43,7 @@ const cardSlotRecipe = defineSlotRecipe({
         root: {
             bg: "bg.raised",
             border: "1px solid",
-            borderColor: "border.DEFAULT",
+            borderColor: "border",
             borderTopWidth: "2px",
             borderTopColor: "pine.500",
             borderRadius: "md",
@@ -237,6 +237,13 @@ const config = defineConfig({
                 normal: { value: "200ms" },
                 slow:   { value: "320ms" },
             },
+            sizes: {
+                fp: {
+                    container:       { value: "1180px" },
+                    containerNarrow: { value: "720px" },
+                    nav:             { value: "64px" },
+                },
+            },
         },
         semanticTokens: {
             colors: {
@@ -306,8 +313,8 @@ const config = defineConfig({
     },
     globalCss: {
         body: {
-            bg: "bg.DEFAULT",
-            color: "fg.DEFAULT",
+            bg: "bg",
+            color: "fg",
             fontFamily: "body",
             margin: "0",
         },
@@ -320,3 +327,6 @@ const config = defineConfig({
 });
 
 export const chakraSystem = createSystem(defaultConfig, config);
+
+// Named export required by the Chakra CLI typegen command (`chakra-ui typegen`).
+export const system = chakraSystem;

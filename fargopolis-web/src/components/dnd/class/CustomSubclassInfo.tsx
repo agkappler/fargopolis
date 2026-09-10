@@ -1,6 +1,6 @@
 import RequestManager from "@/helpers/RequestManager";
 import SubclassFeature from "@/models/SubclassFeature";
-import { Box, Typography } from "@mui/material";
+import { Box, Text } from "@chakra-ui/react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 import { FeatureItem } from "./FeatureItem";
@@ -23,7 +23,7 @@ export const CustomSubclassInfo: React.FC<CustomSubclassInfoProps> = ({ subclass
         <LoadingWrapper isLoading={isLoading}>
             <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
                 {(!subclassFeatures || subclassFeatures.length === 0) && (
-                    <Typography variant="body1">No features yet!</Typography>
+                    <Text>No features yet!</Text>
                 )}
                 {subclassFeatures?.map((feature: SubclassFeature, index: number) => (
                     <FeatureItem

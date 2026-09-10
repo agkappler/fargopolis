@@ -2,9 +2,10 @@ import { ProjectHeader } from "@/components/home/ProjectHeader";
 import { ProjectTodos } from "@/components/home/ProjectTodos";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { surfaceCardProps } from "@/components/ui/surfaceStyle";
 import { PROJECTS } from "@/constants/Projects";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { Grid, Paper, Typography } from "@mui/material";
+import { Box, Grid, GridItem, Heading, Text } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 
 export function ProjectDetailPage() {
@@ -24,55 +25,55 @@ export function ProjectDetailPage() {
       >
         <ProjectHeader project={project} variant="h4" />
       </PageHeader>
-      <Typography variant="body1" textAlign="center">
+      <Text textAlign="center">
         {project.description}
-      </Typography>
-      <Grid container spacing={2} className="m-2">
-        <Grid size={6}>
-          <Paper elevation={3} className="p-2 h-full">
-            <Typography variant="h6" textAlign="center">
+      </Text>
+      <Grid templateColumns="repeat(12, 1fr)" gap={4} m={2}>
+        <GridItem colSpan={{ base: 12, md: 6 }}>
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
+            <Heading size="md" textAlign="center">
               Motivation
-            </Typography>
-            <Typography variant="body1" textAlign="center">
+            </Heading>
+            <Text textAlign="center">
               {project.motivation ?? "Divine inspiration."}
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid size={6}>
-          <Paper elevation={3} className="p-2 h-full">
-            <Typography variant="h6" textAlign="center">
+            </Text>
+          </Box>
+        </GridItem>
+        <GridItem colSpan={{ base: 12, md: 6 }}>
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
+            <Heading size="md" textAlign="center">
               Vision
-            </Typography>
-            <Typography variant="body1" textAlign="center">
+            </Heading>
+            <Text textAlign="center">
               {project.vision ?? "I see something, it's too far away to make out clearly yet."}
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid size={6}>
-          <Paper elevation={3} className="p-2 h-full">
-            <Typography variant="h6" textAlign="center">
+            </Text>
+          </Box>
+        </GridItem>
+        <GridItem colSpan={{ base: 12, md: 6 }}>
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
+            <Heading size="md" textAlign="center">
               Feature Goals
-            </Typography>
+            </Heading>
             {(project.goals ?? ["Add goals ;)"]).map((g, index) => (
-              <Typography key={index} variant="body1" textAlign="center">
+              <Text key={index} textAlign="center">
                 {g}
-              </Typography>
+              </Text>
             ))}
-          </Paper>
-        </Grid>
-        <Grid size={6}>
-          <Paper elevation={3} className="p-2 h-full">
-            <Typography variant="h6" textAlign="center">
+          </Box>
+        </GridItem>
+        <GridItem colSpan={{ base: 12, md: 6 }}>
+          <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
+            <Heading size="md" textAlign="center">
               Tech Breakdown
-            </Typography>
-            <Typography variant="body1" textAlign="center">
+            </Heading>
+            <Text textAlign="center">
               {project.technology ?? "All of the technologies."}
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid size={6}>
+            </Text>
+          </Box>
+        </GridItem>
+        <GridItem colSpan={{ base: 12, md: 6 }}>
           <ProjectTodos todos={project.todo} />
-        </Grid>
+        </GridItem>
       </Grid>
     </>
   );

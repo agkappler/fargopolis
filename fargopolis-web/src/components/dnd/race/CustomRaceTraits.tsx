@@ -2,9 +2,10 @@ import RequestManager from "@/helpers/RequestManager";
 import CustomDndRace from "@/models/CustomDndRace";
 import RacialTrait from "@/models/RacialTrait";
 import { useAuth } from "@clerk/react";
-import { Build, Edit } from "@mui/icons-material";
-import { Box, Grid, Paper, Typography } from "@mui/material";
+import { Wrench, Pencil } from "lucide-react";
+import { Box, Grid, GridItem, Text } from "@chakra-ui/react";
 import { useState } from "react";
+import { surfaceCardProps } from "../../ui/surfaceStyle";
 import useSWR from "swr";
 import { ActionMenu, MenuOption } from "../../ui/ActionMenu";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
@@ -35,41 +36,41 @@ export const CustomRaceTraits: React.FC<CustomRaceTraitsProps> = ({ raceId }) =>
     const menuOptions: MenuOption[] = [
         {
             label: "Edit Race",
-            icon: <Edit />,
+            icon: <Pencil size={16} />,
             onClick: () => setIsRaceFormOpen(true)
         },
         {
             label: "Manage Traits",
-            icon: <Build />,
+            icon: <Wrench size={16} />,
             onClick: () => setIsTraitsFormOpen(true)
         }
     ];
 
     return <>
         <LoadingWrapper isLoading={isLoading || isLoadingRace}>
-            <Grid container>
-                <Grid size={{ md: 2 }}></Grid>
-                <Grid size={{ md: 8 }}>
-                    <Typography variant="h6" textAlign="center">{race?.name}</Typography>
-                </Grid>
-                <Grid size={{ md: 2 }} className="flex justify-end">
+            <Grid templateColumns="repeat(12, 1fr)">
+                <GridItem colSpan={{ base: 12, md: 2 }}></GridItem>
+                <GridItem colSpan={{ base: 12, md: 8 }}>
+                    <Text fontFamily="display" fontSize="md" textAlign="center">{race?.name}</Text>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, md: 2 }} display="flex" justifyContent="flex-end">
                     {isLoaded && isSignedIn && (
                         <ActionMenu
                             options={menuOptions}
                             ariaLabel="Race options"
                         />
                     )}
-                </Grid>
+                </GridItem>
             </Grid>
             <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
                 {(!racialTraits || racialTraits.length === 0) && (
-                    <Typography variant="body1">No traits yet!</Typography>
+                    <Text>No traits yet!</Text>
                 )}
                 {racialTraits?.map((trait: RacialTrait, index: number) => (
-                    <Paper key={index} elevation={3} className="p-2 m-2" sx={{ width: '100%', maxWidth: 600 }}>
-                        <Typography variant="subtitle1" fontWeight="bold" textAlign="center">{trait.name}</Typography>
-                        <Typography variant="body1" textAlign="center">{trait.description}</Typography>
-                    </Paper>
+                    <Box key={index} {...surfaceCardProps} boxShadow="md" p={2} m={2} width="100%" maxWidth="600px">
+                        <Text fontWeight="bold" textAlign="center">{trait.name}</Text>
+                        <Text textAlign="center">{trait.description}</Text>
+                    </Box>
                 ))}
             </Box>
             <RaceForm

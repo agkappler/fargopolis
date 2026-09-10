@@ -1,5 +1,6 @@
 import { DndItem, getLevelInfoForClass, LevelInfo } from "@/api/dnd5eapi";
-import { capitalize, Typography } from "@mui/material";
+import { Heading } from "@chakra-ui/react";
+import { capitalize } from "@/helpers/Format";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 import { ClassSpecificInfo } from "./ClassSpecificInfo";
@@ -25,7 +26,7 @@ export const ClassFeatures: React.FC<ClassFeaturesProps> = ({ currentLevel, clas
         nextLevelFeatures = levelInfos?.find(l => l.level === (currentLevel + 1))?.features;
     const formattedClassName = getNameForClass(className);
     return <>
-        <Typography variant="h5" textAlign="center">{capitalize(className)}</Typography>
+        <Heading size="lg" textAlign="center">{capitalize(className)}</Heading>
         <LoadingWrapper isLoading={isLoadingClassInfo}>
             {currentLevelInfo?.class_specific &&
                 <ClassSpecificInfo levelInfo={currentLevelInfo} />
@@ -39,7 +40,7 @@ export const ClassFeatures: React.FC<ClassFeaturesProps> = ({ currentLevel, clas
                 />
             ))}
             {currentLevel < 20 && (<>
-                <Typography variant="h6">Next Level Features:</Typography>
+                <Heading size="md">Next Level Features:</Heading>
                 {nextLevelFeatures?.map((f: any) => (
                     <ApiFeatureItem
                         key={f.index}

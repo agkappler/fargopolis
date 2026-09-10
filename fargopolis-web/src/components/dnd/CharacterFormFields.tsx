@@ -4,7 +4,7 @@ import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
 import FileMetadata from "@/models/FileMetadata";
 import Subclass from "@/models/Subclass";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import { useFormContext } from "react-hook-form";
 import useSWR from "swr";
 import { DropdownInput } from "../inputs/DropdownInput";
@@ -54,8 +54,8 @@ export const CharacterFormFields: React.FC<CharacterFormFieldsProps> = ({
     const dynamicSubraceOptions = allSubraces.map(o => ({ value: o.index, label: o.name }));
 
     return (
-        <Grid container spacing={2} className="mb-2">
-            {isEdit && <Grid size={12}>
+        <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
+            {isEdit && <GridItem colSpan={12}>
                 <FileUpload
                     label="Upload Avatar"
                     fileRole={FileRole.CharacterAvatar}
@@ -63,51 +63,51 @@ export const CharacterFormFields: React.FC<CharacterFormFieldsProps> = ({
                     isAvatar={true}
                     currentAvatarId={character?.avatarId}
                 />
-            </Grid>}
-            <Grid size={{ sm: 6, xs: 12 }}>
+            </GridItem>}
+            <GridItem colSpan={{ base: 12, sm: 6 }}>
                 <TextInput
                     label="Name"
                     fieldName="name"
                     requiredMessage="Name is required"
                 />
-            </Grid>
-            <Grid size={{ sm: 6, xs: 12 }}>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, sm: 6 }}>
                 <NumberInput
                     label="Level"
                     fieldName="level"
                     requiredMessage="Level is required"
                 />
-            </Grid>
-            <Grid size={{ sm: 6, xs: 12 }}>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, sm: 6 }}>
                 <DropdownInput
                     label="Race"
                     fieldName="race"
                     options={raceOptions}
                     requiredMessage="Race is required"
                 />
-            </Grid>
-            <Grid size={{ sm: 6, xs: 12 }}>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, sm: 6 }}>
                 <DropdownInput
                     label="Class"
                     fieldName="className"
                     options={classOptions}
                     requiredMessage="Class is required"
                 />
-            </Grid>
-            <Grid size={{ sm: 6, xs: 12 }}>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, sm: 6 }}>
                 <DropdownInput
                     label="Subrace"
                     fieldName="subrace"
                     options={dynamicSubraceOptions}
                 />
-            </Grid>
-            <Grid size={{ sm: 6, xs: 12 }}>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, sm: 6 }}>
                 <DropdownInput
                     label="Subclass"
                     fieldName="subclassName"
                     options={dynamicSubclassOptions}
                 />
-            </Grid>
+            </GridItem>
         </Grid>
     );
 };

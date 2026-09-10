@@ -2,8 +2,8 @@ import { BaseDndResponse, getSubclasses } from "@/api/dnd5eapi";
 import RequestManager from "@/helpers/RequestManager";
 import Subclass from "@/models/Subclass";
 import { useAuth } from "@clerk/react";
-import { Add, Build, Edit } from "@mui/icons-material";
-import { Box, Grid, MenuItem, Select, Typography } from "@mui/material";
+import { Plus, Wrench, Pencil } from "lucide-react";
+import { Box, Grid, GridItem, Heading, NativeSelect } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { ActionMenu, MenuOption } from "../../ui/ActionMenu";
@@ -52,18 +52,18 @@ export const Subclasses: React.FC<SubclassesProps> = ({ classIndex }) => {
     const menuOptions: MenuOption[] = [
         {
             label: "Add Subclass",
-            icon: <Add />,
+            icon: <Plus size={16} />,
             onClick: () => setIsSubclassFormOpen(true)
         },
         ...(isCustom ? [
             {
                 label: "Edit Subclass",
-                icon: <Edit />,
+                icon: <Pencil size={16} />,
                 onClick: () => setIsSubclassFormOpen(true)
             },
             {
                 label: "Manage Features",
-                icon: <Build />,
+                icon: <Wrench size={16} />,
                 onClick: () => setIsFeaturesFormOpen(true)
             }
         ] : [])
@@ -71,29 +71,32 @@ export const Subclasses: React.FC<SubclassesProps> = ({ classIndex }) => {
 
     return <>
         <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomSubclasses}>
-            <Grid container>
-                <Grid size={2}></Grid>
-                <Grid size={8}>
+            <Grid templateColumns="repeat(12, 1fr)">
+                <GridItem colSpan={{ base: 12, md: 2 }}></GridItem>
+                <GridItem colSpan={{ base: 12, md: 8 }}>
                     <Box display="flex" justifyContent="center" alignItems="center" gap={2}>
-                        <Typography variant="h6" textAlign="center">Subclass Info:</Typography>
-                        <Select
-                            value={selectedSubclass}
-                            onChange={(e) => handleSubclassChange(e.target.value as string)}
-                        >
-                            {subclasses.map((c, index) => (
-                                <MenuItem key={index} value={c.index}>{c.name}</MenuItem>
-                            ))}
-                        </Select>
+                        <Heading size="md" textAlign="center">Subclass Info:</Heading>
+                        <NativeSelect.Root width="auto">
+                            <NativeSelect.Field
+                                value={selectedSubclass}
+                                onChange={(e) => handleSubclassChange(e.target.value)}
+                            >
+                                {subclasses.map((c, index) => (
+                                    <option key={index} value={c.index}>{c.name}</option>
+                                ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                        </NativeSelect.Root>
                     </Box>
-                </Grid>
-                <Grid size={2} className="flex justify-end">
+                </GridItem>
+                <GridItem colSpan={{ base: 12, md: 2 }} display="flex" justifyContent="flex-end">
                     {isLoaded && isSignedIn && (
                         <ActionMenu
                             options={menuOptions}
                             ariaLabel="Subclass options"
                         />
                     )}
-                </Grid>
+                </GridItem>
             </Grid>
         </LoadingWrapper>
         {selectedSubclass && (isCustom

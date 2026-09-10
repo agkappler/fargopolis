@@ -1,5 +1,5 @@
 import Ability from "@/models/Ability";
-import { Box, Chip, Typography } from "@mui/material";
+import { Badge, Box, Text } from "@chakra-ui/react";
 import { getLabelForAbilitySource, getLabelForUsageType } from "@/constants/Abilities";
 import { SimpleDialog } from "../../ui/SimpleDialog";
 
@@ -18,19 +18,13 @@ export const AbilityDetailsModal: React.FC<AbilityDetailsModalProps> = ({
         <SimpleDialog title={ability.name} isOpen={isOpen} onClose={onClose}>
             <Box>
                 <Box display="flex" flexWrap="wrap" gap={1} mb={2} justifyContent="center">
-                    <Chip
-                        label={`${getLabelForAbilitySource(ability.source)}: ${ability.sourceDescription}`}
-                    />
-                    <Chip
-                        label={`Usage: ${getLabelForUsageType(ability.usage)}`}
-                    />
-                    <Chip
-                        label={`Recovery: ${ability.recovery}`}
-                    />
+                    <Badge>{`${getLabelForAbilitySource(ability.source)}: ${ability.sourceDescription}`}</Badge>
+                    <Badge>{`Usage: ${getLabelForUsageType(ability.usage)}`}</Badge>
+                    <Badge>{`Recovery: ${ability.recovery}`}</Badge>
                 </Box>
-                <Typography variant="body1">
+                <Text>
                     {ability.description}
-                </Typography>
+                </Text>
             </Box>
         </SimpleDialog>
     );

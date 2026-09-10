@@ -1,6 +1,6 @@
 import Ingredient from "@/models/Ingredient";
-import { Add, Edit } from "@mui/icons-material";
-import { Box, Button, Chip, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Badge, Box, Button, Heading, IconButton, Table } from "@chakra-ui/react";
+import { Pencil, Plus } from "lucide-react";
 import React, { useState } from "react";
 import { IngredientForm } from "./IngredientForm";
 
@@ -20,48 +20,49 @@ export const IngredientList: React.FC<IngredientListProps> = ({ recipeId, ingred
 
     return <>
         <Box>
-            <Box className="flex items-center justify-between mt-2 w-full">
-                <Typography variant="h6">Ingredients</Typography>
-                <Chip
-                    label={`Calories from Ingredients: ${
+            <Box display="flex" alignItems="center" justifyContent="space-between" mt={2} w="full">
+                <Heading size="md">Ingredients</Heading>
+                <Badge>
+                    {`Calories from Ingredients: ${
                         ingredients?.reduce((total, ingredient) => total + Number(ingredient.calories ?? 0), 0) ?? 0
                     }`}
-                />
-                <Button variant='text' onClick={() => setIsOpen(!isOpen)} startIcon={<Add />}>Add Ingredient</Button>
+                </Badge>
+                <Button variant="ghost" onClick={() => setIsOpen(!isOpen)}><Plus size={16} />Add Ingredient</Button>
             </Box>
-            <TableContainer component={Paper}>
-                <Table aria-label="ingredient table">
-                    <TableHead>
-                        <TableRow className="font-bold">
-                            <TableCell>Name</TableCell>
-                            <TableCell align="center">Quantity</TableCell>
-                            <TableCell align="center">Calories</TableCell>
-                            <TableCell align="center">Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
+            <Table.ScrollArea borderWidth="1px" rounded="md">
+                <Table.Root aria-label="ingredient table">
+                    <Table.Header>
+                        <Table.Row fontWeight="bold">
+                            <Table.ColumnHeader>Name</Table.ColumnHeader>
+                            <Table.ColumnHeader textAlign="center">Quantity</Table.ColumnHeader>
+                            <Table.ColumnHeader textAlign="center">Calories</Table.ColumnHeader>
+                            <Table.ColumnHeader textAlign="center">Actions</Table.ColumnHeader>
+                        </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
                         {ingredients?.map((ingredient, index) => (
-                            <TableRow
-                                key={index}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">{ingredient.name}</TableCell>
-                                <TableCell align="center">{ingredient.quantity}</TableCell>
-                                <TableCell align="center">{ingredient.calories}</TableCell>
-                                <TableCell align="center">
-                                    <IconButton onClick={() => {
-                                        setSelectedIngredient(ingredient);
-                                        setIsOpen(true);
-                                    }}
+                            <Table.Row key={index}>
+                                <Table.Cell>{ingredient.name}</Table.Cell>
+                                <Table.Cell textAlign="center">{ingredient.quantity}</Table.Cell>
+                                <Table.Cell textAlign="center">{ingredient.calories}</Table.Cell>
+                                <Table.Cell textAlign="center">
+                                    <IconButton
+                                        variant="ghost"
+                                        size="sm"
+                                        aria-label="Edit ingredient"
+                                        onClick={() => {
+                                            setSelectedIngredient(ingredient);
+                                            setIsOpen(true);
+                                        }}
                                     >
-                                        <Edit />
+                                        <Pencil size={16} />
                                     </IconButton>
-                                </TableCell>
-                            </TableRow>
+                                </Table.Cell>
+                            </Table.Row>
                         ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                    </Table.Body>
+                </Table.Root>
+            </Table.ScrollArea>
         </Box>
         {isOpen && <IngredientForm
             recipeId={recipeId}

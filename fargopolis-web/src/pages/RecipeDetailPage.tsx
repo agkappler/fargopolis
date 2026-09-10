@@ -9,8 +9,8 @@ import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import Recipe from "@/models/Recipe";
-import { Edit } from "@mui/icons-material";
-import { Box, Chip, IconButton, Typography } from "@mui/material";
+import { Pencil } from "lucide-react";
+import { Badge, Box, Heading, IconButton, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
@@ -42,8 +42,8 @@ export function RecipeDetailPage() {
                 title={recipeData.name}
                 leftContainer={<LinkButton label="All Recipes" url="/recipes" isForward={false} />}
                 rightContainer={
-                    <IconButton size="medium" aria-label="edit" onClick={() => setIsOpen(true)}>
-                        <Edit />
+                    <IconButton variant="ghost" size="md" aria-label="edit" onClick={() => setIsOpen(true)}>
+                        <Pencil size={18} />
                     </IconButton>
                 }
             />
@@ -52,19 +52,19 @@ export function RecipeDetailPage() {
                     <ImageBox fileId={recipeData.avatarId} altText="Recipe image" />
                 </>
             )}
-            <Box className="p-2">
+            <Box p={2}>
                 <Box display="flex" justifyContent="center" gap={2} mb={2}>
-                    <Chip label={`Prep Time: ${recipeData.prepTimeMinutes} min`} />
-                    <Chip label={`Cook Time: ${recipeData.cookTimeMinutes} min`} />
-                    <Chip label={`Total Calories: ${recipeData.totalCalories ?? "TBD"}`} />
-                    <Chip label={`Quantity: ${recipeData.quantity ?? "TBD"}`} />
+                    <Badge>{`Prep Time: ${recipeData.prepTimeMinutes} min`}</Badge>
+                    <Badge>{`Cook Time: ${recipeData.cookTimeMinutes} min`}</Badge>
+                    <Badge>{`Total Calories: ${recipeData.totalCalories ?? "TBD"}`}</Badge>
+                    <Badge>{`Quantity: ${recipeData.quantity ?? "TBD"}`}</Badge>
                 </Box>
                 {recipeData.description && (
-                    <Box border={1} padding={2} borderRadius={4}>
-                        <Typography variant="h6" textAlign="center">
+                    <Box borderWidth="1px" borderColor="border" padding={2} borderRadius="md">
+                        <Heading size="md" textAlign="center">
                             Description
-                        </Typography>
-                        <Typography variant="body1">{recipeData.description}</Typography>
+                        </Heading>
+                        <Text>{recipeData.description}</Text>
                     </Box>
                 )}
                 <RecipeSteps recipeId={id} recipeSteps={recipeData.steps ?? []} refreshRecipe={mutate} />

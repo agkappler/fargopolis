@@ -1,8 +1,9 @@
 import { getColorForAbilitySource, getLabelForAbilitySource, getLabelForUsageType, getColorForUsageType } from "@/constants/Abilities";
 import Ability from "@/models/Ability";
-import { Box, Chip } from "@mui/material";
+import { Badge, Box } from "@chakra-ui/react";
 import { useState } from "react";
 import { ModelCard } from "../../ui/ModelCard";
+import { StatusChip } from "../../ui/StatusChip";
 import { AbilityDetailsModal } from "./AbilityDetailsModal";
 import { AbilityForm } from "./AbilityForm";
 
@@ -41,20 +42,15 @@ export const AbilityCard: React.FC<AbilityCardProps> = ({
                 onClick={handleClick}
             >
                 <Box display="flex" flexWrap="wrap" gap={1} mb={2} justifyContent="center">
-                    <Chip
+                    <StatusChip
                         label={`${getLabelForAbilitySource(ability.source)}: ${ability.sourceDescription}`}
                         color={getColorForAbilitySource(ability.source)}
-                        size="small"
                     />
-                    <Chip
+                    <StatusChip
                         label={`${getLabelForUsageType(ability.usage)}`}
                         color={getColorForUsageType(ability.usage)}
-                        size="small"
                     />
-                    <Chip
-                        label={`Recovery: ${ability.recovery}`}
-                        size="small"
-                    />
+                    <Badge>{`Recovery: ${ability.recovery}`}</Badge>
                 </Box>
             </ModelCard>
 

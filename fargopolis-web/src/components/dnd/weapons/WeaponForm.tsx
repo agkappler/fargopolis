@@ -2,7 +2,7 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Weapon from "@/models/Weapon";
 import { useAuth } from "@clerk/react";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { BasicForm } from "../../inputs/BasicForm";
 import { TextInput } from "../../inputs/TextInput";
@@ -61,42 +61,42 @@ export const WeaponForm: React.FC<WeaponFormProps> = ({
                 errorMessage={errorMessage}
                 isClerkForm
             >
-                <Grid container spacing={2} className="mb-2">
-                    <Grid size={12}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
+                    <GridItem colSpan={12}>
                         <TextInput
                             label="Weapon Name"
                             fieldName="name"
                             requiredMessage="Weapon name is required"
                         />
-                    </Grid>
-                    <Grid size={6}>
+                    </GridItem>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <TextInput
                             label="Damage"
                             fieldName="damage"
                             requiredMessage="Damage is required"
                         />
-                    </Grid>
-                    <Grid size={6}>
+                    </GridItem>
+                    <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <TextInput
                             label="Damage Type"
                             fieldName="damageType"
                             requiredMessage="Damage type is required"
                         />
-                    </Grid>
-                    <Grid size={12}>
+                    </GridItem>
+                    <GridItem colSpan={12}>
                         <TextInput
                             label="Range"
                             fieldName="range"
                             requiredMessage="Range is required"
                         />
-                    </Grid>
-                    <Grid size={12}>
+                    </GridItem>
+                    <GridItem colSpan={12}>
                         <TextInput
                             label="Description"
                             fieldName="description"
                             multilineRows={3}
                         />
-                    </Grid>
+                    </GridItem>
                 </Grid>
             </BasicForm>
         </SimpleDialog>

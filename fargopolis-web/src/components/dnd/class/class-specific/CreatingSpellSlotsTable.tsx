@@ -1,4 +1,4 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from "@mui/material";
+import { Table, Text } from "@chakra-ui/react";
 import React from "react";
 
 interface CreatingSpellSlotsTableProps {
@@ -11,24 +11,24 @@ interface SorcerySpellSlot {
 }
 
 export const CreatingSpellSlotsTable: React.FC<CreatingSpellSlotsTableProps> = ({ creatingSpellSlots }) => {
-    return <><Typography variant="body1" textAlign="center">Creating Spell Slots</Typography>
-        <TableContainer component={Paper}>
-            <Table>
-                <TableBody>
-                    <TableRow>
-                        <TableCell>Spell Slot Level</TableCell>
+    return <><Text textAlign="center">Creating Spell Slots</Text>
+        <Table.ScrollArea borderWidth="1px" rounded="md">
+            <Table.Root>
+                <Table.Body>
+                    <Table.Row>
+                        <Table.Cell>Spell Slot Level</Table.Cell>
                         {creatingSpellSlots.map((slot: SorcerySpellSlot) => (
-                            <TableCell align="center" key={slot.spell_slot_level}>{slot.spell_slot_level}</TableCell>
+                            <Table.Cell textAlign="center" key={slot.spell_slot_level}>{slot.spell_slot_level}</Table.Cell>
                         ))}
-                    </TableRow>
-                    <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell>Sorcery Points</TableCell>
+                    </Table.Row>
+                    <Table.Row>
+                        <Table.Cell>Sorcery Points</Table.Cell>
                         {creatingSpellSlots.map((slot: SorcerySpellSlot) => (
-                            <TableCell align="center" key={slot.sorcery_point_cost}>{slot.sorcery_point_cost}</TableCell>
+                            <Table.Cell textAlign="center" key={slot.sorcery_point_cost}>{slot.sorcery_point_cost}</Table.Cell>
                         ))}
-                    </TableRow>
-                </TableBody>
-            </Table>
-        </TableContainer>
+                    </Table.Row>
+                </Table.Body>
+            </Table.Root>
+        </Table.ScrollArea>
     </>
 }

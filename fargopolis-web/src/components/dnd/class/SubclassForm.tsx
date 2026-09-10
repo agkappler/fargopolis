@@ -2,7 +2,7 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Subclass from "@/models/Subclass";
 import { useAuth } from "@clerk/react";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import { useState } from "react";
 import { BasicForm } from "../../inputs/BasicForm";
 import { TextInput } from "../../inputs/TextInput";
@@ -48,36 +48,36 @@ export const SubclassForm: React.FC<SubclassFormProps> = ({ isOpen, onClose, sub
             defaultValues={subclass ?? defaultSubclass}
             isClerkForm
         >
-            <Grid container spacing={2} className="mb-2">
-                <Grid size={12}>
+            <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
+                <GridItem colSpan={12}>
                     <TextInput
                         label="Name"
                         fieldName="name"
                         requiredMessage="Name is required"
                     />
-                </Grid>
-                <Grid size={12}>
+                </GridItem>
+                <GridItem colSpan={12}>
                     <TextInput
                         label="Description"
                         fieldName="description"
                         requiredMessage="Description is required"
                         multilineRows={4}
                     />
-                </Grid>
-                <Grid size={6}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <TextInput
                         label="Index"
                         fieldName="index"
                         requiredMessage="Index is required"
                     />
-                </Grid>
-                <Grid size={6}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <TextInput
                         label="Class Index"
                         fieldName="classIndex"
                         requiredMessage="Class index is required"
                     />
-                </Grid>
+                </GridItem>
             </Grid>
         </BasicForm>
     </SimpleDialog>

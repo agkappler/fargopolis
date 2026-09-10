@@ -4,7 +4,7 @@ import RequestManager from "@/helpers/RequestManager";
 import FileMetadata from "@/models/FileMetadata";
 import Recipe from "@/models/Recipe";
 import { useAuth } from "@clerk/react";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import { useState } from "react";
 import { BasicForm } from "../inputs/BasicForm";
 import { FileUpload } from "../inputs/FileUpload";
@@ -55,8 +55,8 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({ isOpen, onClose, recipeD
             errorMessage={errorMessage}
             isClerkForm
         >
-            <Grid container spacing={2} className="mb-2">
-                {isEdit && <Grid size={12}>
+            <Grid templateColumns="repeat(12, 1fr)" gap={4} mb={2}>
+                {isEdit && <GridItem colSpan={12}>
                     <FileUpload
                         label="Upload Image"
                         fileRole={FileRole.RecipeImage}
@@ -64,47 +64,47 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({ isOpen, onClose, recipeD
                         isAvatar={true}
                         currentAvatarId={recipeData.avatarId}
                     />
-                </Grid>}
-                <Grid size={12}>
+                </GridItem>}
+                <GridItem colSpan={12}>
                     <TextInput
                         label="Name"
                         fieldName="name"
                         requiredMessage="Name is required"
                     />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <NumberInput
                         label="Prep Time (minutes)"
                         fieldName="prepTimeMinutes"
                         requiredMessage="Prep Time is required"
                     />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <NumberInput
                         label="Cook Time (minutes)"
                         fieldName="cookTimeMinutes"
                         requiredMessage="Cook Time is required"
                     />
-                </Grid>
-                <Grid size={6}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <NumberInput
                         label="Total Calories"
                         fieldName="totalCalories"
                     />
-                </Grid>
-                <Grid size={6}>
+                </GridItem>
+                <GridItem colSpan={{ base: 12, sm: 6 }}>
                     <TextInput
                         label="Quantity Info"
                         fieldName="quantity"
                     />
-                </Grid>
-                <Grid size={12}>
+                </GridItem>
+                <GridItem colSpan={12}>
                     <TextInput
                         label="Description"
                         fieldName="description"
                         multilineRows={4}
                     />
-                </Grid>
+                </GridItem>
             </Grid>
         </BasicForm>
     </SimpleDialog>

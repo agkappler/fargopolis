@@ -1,10 +1,7 @@
 import { getLevelInfoForClass, LevelInfo } from "@/api/dnd5eapi";
 import { MOBILE_BREAK } from "@/constants/Media";
 import Character from "@/models/Character";
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
-import { Box, MenuItem, Select, Tab, Typography, useMediaQuery } from "@mui/material";
+import { Box, NativeSelect, Tabs, Text, useMediaQuery } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../ui/LoadingWrapper";
@@ -23,11 +20,8 @@ interface CharacterInfoProps {
 export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
     const { data: levelInfos, isLoading: isLoadingClassInfo } = useSWR<LevelInfo[]>(`/class/${character.className}/levels`, () => getLevelInfoForClass(character.className));
     const [value, setValue] = useState('1');
-    const handleChange = (_: React.SyntheticEvent, newValue: string) => {
-        setValue(newValue);
-    };
 
-    const isMobile = useMediaQuery(`(max-width:${MOBILE_BREAK})`);
+    const [isMobile] = useMediaQuery([`(max-width: ${MOBILE_BREAK})`], { fallback: [false] });
     const characterTabs = [
         { label: "Info", value: "1" },
         { label: "Spells", value: "2" },
@@ -36,24 +30,24 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
     ];
 
     return <LoadingWrapper isLoading={isLoadingClassInfo}>
-        <TabContext value={value}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center' }}>
+        <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
+            <Box borderBottomWidth="1px" borderColor="border" display="flex" justifyContent="center">
                 {isMobile
-                    ? <Select
-                        value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                    >
+                    ? <NativeSelect.Root>
+                        <NativeSelect.Field value={value} onChange={(e) => setValue(e.target.value)}>
+                            {characterTabs.map((tab) => (
+                                <option key={tab.value} value={tab.value}>{tab.label}</option>
+                            ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                    : <Tabs.List aria-label="Character tabs">
                         {characterTabs.map((tab) => (
-                            <MenuItem key={tab.value} value={tab.value}>{tab.label}</MenuItem>
+                            <Tabs.Trigger key={tab.value} value={tab.value}>{tab.label}</Tabs.Trigger>
                         ))}
-                    </Select>
-                    : <TabList onChange={handleChange} aria-label="Character tabs">
-                        {characterTabs.map((tab) => (
-                            <Tab key={tab.value} label={tab.label} value={tab.value} />
-                        ))}
-                    </TabList>}
+                    </Tabs.List>}
             </Box>
-            <TabPanel value="1">
+            <Tabs.Content value="1">
                 <Box>
                     <StyledAccordion title="Class Features">
                         <ClassFeatures
@@ -71,23 +65,23 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
                     </StyledAccordion>
 
                     <StyledAccordion title="Proficiencies">
-                        <Typography>No proficiencies yet!</Typography>
+                        <Text>No proficiencies yet!</Text>
                     </StyledAccordion>
 
                     <StyledAccordion title="Resources">
                         <CharacterResources characterId={character.characterId} />
                     </StyledAccordion>
                 </Box>
-            </TabPanel>
-            <TabPanel value="2">
+            </Tabs.Content>
+            <Tabs.Content value="2">
                 <SpellInfo levelInfos={levelInfos} currentLevel={character.level} className={character.className} characterId={character.characterId} />
-            </TabPanel>
-            <TabPanel value="3">
+            </Tabs.Content>
+            <Tabs.Content value="3">
                 <AbilityInfo characterId={character.characterId} canEdit={true} />
-            </TabPanel>
-            <TabPanel value="4">
+            </Tabs.Content>
+            <Tabs.Content value="4">
                 <WeaponInfo characterId={character.characterId} />
-            </TabPanel>
-        </TabContext>
+            </Tabs.Content>
+        </Tabs.Root>
     </LoadingWrapper>
 }

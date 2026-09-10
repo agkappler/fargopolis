@@ -2,7 +2,7 @@ import { FileRole } from "@/constants/FileRole";
 import RequestManager from "@/helpers/RequestManager";
 import FileMetadata from "@/models/FileMetadata";
 import { useAuth } from "@clerk/react";
-import { Box, Typography } from "@mui/material";
+import { Box, Text } from "@chakra-ui/react";
 import useSWR from "swr";
 import { FileUpload } from "../inputs/FileUpload";
 import { FileWrapper } from "../ui/FileWrapper";
@@ -36,7 +36,7 @@ export const CharacterResources: React.FC<CharacterResourcesProps> = ({ characte
                         <Box margin={2} key={id}>
                             <FileWrapper fileId={id} />
                         </Box>
-                    )) : <Typography textAlign="center">No resources yet!</Typography>
+                    )) : <Text textAlign="center">No resources yet!</Text>
                 }
             </Box>
         </LoadingWrapper>

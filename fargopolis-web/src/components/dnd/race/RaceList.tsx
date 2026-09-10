@@ -2,10 +2,11 @@ import RequestManager from "@/helpers/RequestManager";
 import CustomDndRace from "@/models/CustomDndRace";
 import { BaseDndResponse, getRaces } from "@/api/dnd5eapi";
 import { useAuth } from "@clerk/react";
-import { Grid, Paper, Typography } from "@mui/material";
+import { Box, Grid, GridItem, Heading } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
+import { surfaceCardProps } from "../../ui/surfaceStyle";
 
 export const RaceList: React.FC = () => {
     const navigate = useNavigate();
@@ -17,14 +18,14 @@ export const RaceList: React.FC = () => {
     );
     const races = [...(apiRaceResults?.results ?? []), ...(customRaces ?? [])].sort((a, b) => a.name.localeCompare(b.name));
     return <>
-        <Typography variant="h5" textAlign="center">Races</Typography>
+        <Heading size="lg" textAlign="center">Races</Heading>
         <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomRaces}>
-            <Grid container spacing={2} textAlign="center">
-                {races.map((r, index) => (<Grid key={index} size={{ xs: 12, sm: 4 }}>
-                    <Paper elevation={3} className="p-2" role="button" onClick={() => navigate(`/dnd/glossary/races?race=${r.index}`)}>
-                        <Typography variant="h6">{r.name}</Typography>
-                    </Paper>
-                </Grid>))}
+            <Grid templateColumns="repeat(12, 1fr)" gap={4} textAlign="center">
+                {races.map((r, index) => (<GridItem key={index} colSpan={{ base: 12, sm: 4 }}>
+                    <Box {...surfaceCardProps} boxShadow="md" p={2} role="button" cursor="pointer" onClick={() => navigate(`/dnd/glossary/races?race=${r.index}`)}>
+                        <Heading size="md">{r.name}</Heading>
+                    </Box>
+                </GridItem>))}
             </Grid>
         </LoadingWrapper>
     </>

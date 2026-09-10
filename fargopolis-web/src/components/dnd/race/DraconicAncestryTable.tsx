@@ -1,5 +1,5 @@
 import { DndItem } from "@/api/dnd5eapi";
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Table } from "@chakra-ui/react";
 import { DraconicAncestryRow } from "./DraconicAncestryRow";
 
 interface DraconicAncestryTableProps {
@@ -8,22 +8,21 @@ interface DraconicAncestryTableProps {
 
 export const DraconicAncestryTable: React.FC<DraconicAncestryTableProps> = ({ subOptions }) => {
     return <>
-        <TableContainer component={Paper}>
-            <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Dragon</TableCell>
-                        <TableCell align="center">Damage Type</TableCell>
-                        <TableCell align="center">Breath Weapon</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
+        <Table.ScrollArea borderWidth="1px" rounded="md">
+            <Table.Root size="sm">
+                <Table.Header>
+                    <Table.Row>
+                        <Table.ColumnHeader>Dragon</Table.ColumnHeader>
+                        <Table.ColumnHeader textAlign="center">Damage Type</Table.ColumnHeader>
+                        <Table.ColumnHeader textAlign="center">Breath Weapon</Table.ColumnHeader>
+                    </Table.Row>
+                </Table.Header>
+                <Table.Body>
                     {subOptions.from.options.map((option: { item: DndItem }, index: number) => (
                         <DraconicAncestryRow key={index} ancestryOption={option.item} />
                     ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+                </Table.Body>
+            </Table.Root>
+        </Table.ScrollArea>
     </>;
 }
-

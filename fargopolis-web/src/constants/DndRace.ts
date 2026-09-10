@@ -1,4 +1,4 @@
-import { capitalize } from "@mui/material";
+import { capitalize } from "@/helpers/Format";
 
 export enum DndRace {
     Dragonborn = "dragonborn",

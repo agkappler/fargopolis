@@ -1,5 +1,4 @@
-import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
-import { ExpandMore } from "@mui/icons-material";
+import { Accordion, Text } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 
 interface StyledAccordionProps extends PropsWithChildren {
@@ -8,13 +7,18 @@ interface StyledAccordionProps extends PropsWithChildren {
 
 export const StyledAccordion: React.FC<StyledAccordionProps> = ({ title, children }) => {
     return (
-        <Accordion sx={{ mb: 2, borderRadius: 2, '&:before': { display: 'none' } }}>
-            <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography variant="h6">{title}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-                {children}
-            </AccordionDetails>
-        </Accordion>
+        <Accordion.Root collapsible mb="2" borderRadius="md">
+            <Accordion.Item value={title}>
+                <Accordion.ItemTrigger>
+                    <Text flex="1" fontFamily="display" fontSize="md">{title}</Text>
+                    <Accordion.ItemIndicator />
+                </Accordion.ItemTrigger>
+                <Accordion.ItemContent>
+                    <Accordion.ItemBody>
+                        {children}
+                    </Accordion.ItemBody>
+                </Accordion.ItemContent>
+            </Accordion.Item>
+        </Accordion.Root>
     );
 };

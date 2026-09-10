@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { Box, Typography, Grid } from "@mui/material";
+import { Box, Text, Grid, GridItem } from "@chakra-ui/react";
 import { useState } from "react";
 import RequestManager from "@/helpers/RequestManager";
 import Weapon from "@/models/Weapon";
@@ -35,21 +35,21 @@ export const WeaponInfo: React.FC<WeaponInfoProps> = ({ characterId, canEdit = t
     return (
         <Box>
             <LoadingWrapper isLoading={isLoading}>
-                <Grid container spacing={2}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={4}>
                     {canEdit && (
-                        <Grid size={{ sm: 4, xs: 12 }}>
+                        <GridItem colSpan={{ base: 12, sm: 4 }}>
                             <AddModelCard onClick={() => setIsOpen(true)} title="Add Weapon" />
-                        </Grid>
+                        </GridItem>
                     )}
                     {weapons?.map((weapon) => (
-                        <Grid key={weapon.weaponId} size={{ sm: 4, xs: 12 }}>
+                        <GridItem key={weapon.weaponId} colSpan={{ base: 12, sm: 4 }}>
                             <WeaponCard weapon={weapon} onClick={canEdit ? onEditWeapon : undefined} />
-                        </Grid>
+                        </GridItem>
                     ))}
                     {(!weapons || weapons.length === 0) && !isLoading && (
-                        <Grid size={12}>
-                            <Typography>No weapons found for this character.</Typography>
-                        </Grid>
+                        <GridItem colSpan={12}>
+                            <Text>No weapons found for this character.</Text>
+                        </GridItem>
                     )}
                 </Grid>
             </LoadingWrapper>

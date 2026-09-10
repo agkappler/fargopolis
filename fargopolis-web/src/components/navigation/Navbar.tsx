@@ -1,13 +1,11 @@
 import { Show, UserButton } from "@clerk/react";
-import { Menu } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
-import { Box, Drawer, Flex, Link, Text } from "@chakra-ui/react";
+import { Box, Drawer, Flex, IconButton, Text, useMediaQuery } from "@chakra-ui/react";
+import { Menu } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
 import { SimpleDialog } from "../ui/SimpleDialog";
 import { NAVBAR_BREAK } from "@/constants/Media";
-import { useMediaQuery } from "@mui/material";
 
 const NAV_ITEMS = [
     { label: "Recipe Box",   path: "/recipes" },
@@ -21,7 +19,7 @@ const NAV_ITEMS = [
 export const Navbar: React.FC = () => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const isMobile = useMediaQuery(`(max-width:${NAVBAR_BREAK})`);
+    const [isMobile] = useMediaQuery([`(max-width: ${NAVBAR_BREAK})`], { fallback: [false] });
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [loginOpen, setLoginOpen] = useState(false);
 
@@ -43,8 +41,8 @@ export const Navbar: React.FC = () => {
             zIndex="10"
             bg="bg.raised"
             borderBottom="1px solid"
-            borderBottomColor="border.DEFAULT"
-            h="var(--fp-nav-height)"
+            borderBottomColor="border"
+            h="fp.nav"
             px="6"
             gap="6"
             align="center"
@@ -62,7 +60,7 @@ export const Navbar: React.FC = () => {
                 fontFamily="display"
                 fontSize="lg"
                 fontWeight="500"
-                color="fg.DEFAULT"
+                color="fg"
                 p="0"
                 style={{ fontVariationSettings: '"opsz" 14, "SOFT" 80, "WONK" 1' }}
             >
@@ -74,7 +72,7 @@ export const Navbar: React.FC = () => {
                 <>
                     <Flex ml="auto" align="center" gap="2">
                         <Show when="signed-in"><UserButton /></Show>
-                        <IconButton onClick={() => setDrawerOpen(true)} size="large">
+                        <IconButton variant="ghost" aria-label="Open menu" onClick={() => setDrawerOpen(true)}>
                             <Menu />
                         </IconButton>
                     </Flex>
@@ -83,6 +81,8 @@ export const Navbar: React.FC = () => {
                         open={drawerOpen}
                         onOpenChange={(e) => setDrawerOpen(e.open)}
                         placement="end"
+                        lazyMount
+                        unmountOnExit
                     >
                         <Drawer.Backdrop />
                         <Drawer.Positioner>
@@ -102,8 +102,8 @@ export const Navbar: React.FC = () => {
                                             cursor="pointer"
                                             fontFamily="body"
                                             fontWeight={isActive(item.path) ? "600" : "400"}
-                                            color={isActive(item.path) ? "brand.DEFAULT" : "fg.secondary"}
-                                            _hover={{ color: "fg.DEFAULT", bg: "bg.sunk" }}
+                                            color={isActive(item.path) ? "brand" : "fg.secondary"}
+                                            _hover={{ color: "fg", bg: "bg.sunk" }}
                                             onClick={() => {
                                                 setDrawerOpen(false);
                                                 handleNav(item.path);
@@ -128,17 +128,17 @@ export const Navbar: React.FC = () => {
                                 border="none"
                                 borderBottom="2px solid"
                                 borderBottomColor={isActive(item.path) ? "ember.500" : "transparent"}
-                                color={isActive(item.path) ? "brand.DEFAULT" : "fg.secondary"}
+                                color={isActive(item.path) ? "brand" : "fg.secondary"}
                                 fontFamily="body"
                                 fontSize="xs"
                                 fontWeight="500"
                                 letterSpacing="0.02em"
                                 px="3"
-                                h="var(--fp-nav-height)"
+                                h="fp.nav"
                                 whiteSpace="nowrap"
                                 cursor="pointer"
                                 transition="color 200ms"
-                                _hover={{ color: "fg.DEFAULT" }}
+                                _hover={{ color: "fg" }}
                                 onClick={() => handleNav(item.path)}
                             >
                                 {item.label}

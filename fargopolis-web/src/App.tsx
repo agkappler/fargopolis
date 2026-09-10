@@ -17,6 +17,7 @@ import { ProjectsPage } from "@/pages/ProjectsPage";
 import { RecipeDetailPage } from "@/pages/RecipeDetailPage";
 import { RecipesPage } from "@/pages/RecipesPage";
 import { SplitCheckPage } from "@/pages/SplitCheckPage";
+import { Box } from "@chakra-ui/react";
 import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
@@ -25,7 +26,7 @@ function AppShell() {
     <SwrConfigWrapper>
       <ThemeRegistry>
         <Navbar />
-        <main className="flex-grow">
+        <Box as="main" flex="1">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
@@ -43,7 +44,7 @@ function AppShell() {
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectDetailPage />} />
           </Routes>
-        </main>
+        </Box>
         <Footer />
       </ThemeRegistry>
       <ToastContainer />

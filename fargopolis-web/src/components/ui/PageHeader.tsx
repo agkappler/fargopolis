@@ -35,10 +35,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             position="relative"
             bg="bg.sunk"
             borderBottom="1px solid"
-            borderBottomColor="border.DEFAULT"
+            borderBottomColor="border"
         >
             <Box
-                maxW="var(--fp-container)"
+                maxW="fp.container"
                 mx="auto"
                 px="6"
                 pt="4"
@@ -65,7 +65,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                                     bg="transparent"
                                     border="none"
                                     cursor="pointer"
-                                    color="brand.DEFAULT"
+                                    color="brand"
                                     p="0"
                                     _hover={{ color: "accent.hover" }}
                                     transition="color 200ms"
@@ -78,13 +78,13 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                         ) : (
                             leftContainer
                         )}
-                        {title && <Text color="fg.DEFAULT">{title}</Text>}
+                        {title && <Text color="fg">{title}</Text>}
                     </Flex>
                 )}
 
                 <Flex direction="column" gap="1">
                     {eyebrow && (
-                        <Text textStyle="eyebrow" color="accent.DEFAULT">
+                        <Text textStyle="eyebrow" color="accent">
                             {eyebrow}
                         </Text>
                     )}
@@ -95,7 +95,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                             textStyle="display-title"
                             fontSize={{ base: "2xl", sm: "3xl" }}
                             letterSpacing="-0.02em"
-                            color="fg.DEFAULT"
+                            color="fg"
                             style={{ fontVariationSettings: '"opsz" 14, "SOFT" 80, "WONK" 1' }}
                         >
                             {title}
