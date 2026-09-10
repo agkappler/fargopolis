@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Project } from "@/constants/Projects";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Grid, GridItem, Heading } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -26,18 +26,18 @@ export function DndPage() {
         <>
             <PageHeader title="Dungeons & Dragons" rightContainer={<LinkButton url={`/projects/${Project.DnD}`} label="Project Details" />} />
             <Box className="px-2">
-                <Typography variant="h5" textAlign="center">
+                <Heading size="lg" textAlign="center">
                     Character Catalog
-                </Typography>
+                </Heading>
                 <LoadingWrapper isLoading={isLoading}>
-                    <Grid container spacing={1}>
-                        <Grid size={{ sm: 3, xs: 12 }}>
+                    <Grid templateColumns="repeat(12, 1fr)" gap={2}>
+                        <GridItem colSpan={{ base: 12, sm: 3 }}>
                             <AddModelCard onClick={() => setIsOpen(true)} title="Create Character" />
-                        </Grid>
+                        </GridItem>
                         {characters?.map((c) => (
-                            <Grid key={c.characterId} size={{ sm: 3, xs: 12 }}>
+                            <GridItem key={c.characterId} colSpan={{ base: 12, sm: 3 }}>
                                 <CharacterCard character={c} />
-                            </Grid>
+                            </GridItem>
                         ))}
                     </Grid>
                 </LoadingWrapper>

@@ -8,8 +8,8 @@ import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
-import { Casino, Edit } from "@mui/icons-material";
-import { Typography } from "@mui/material";
+import { Dice5, Pencil } from "lucide-react";
+import { Text } from "@chakra-ui/react";
 import { capitalize } from "@/helpers/Format";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -35,12 +35,12 @@ export function CharacterDetailPage() {
     const menuOptions: MenuOption[] = [
         {
             label: "Edit Character",
-            icon: <Edit />,
+            icon: <Pencil size={16} />,
             onClick: handleEdit,
         },
         {
             label: "Actions",
-            icon: <Casino />,
+            icon: <Dice5 size={16} />,
             onClick: handleActions,
         },
     ];
@@ -58,9 +58,9 @@ export function CharacterDetailPage() {
                 {character && (
                     <>
                         {character.avatarId && <ImageBox fileId={character.avatarId} altText="Character avatar" />}
-                        <Typography variant="h6" textAlign="center" fontWeight="light" color="textSecondary">
+                        <Text fontSize="md" textAlign="center" fontWeight="light" color="fg.secondary">
                             {`${capitalize(character.race)}, Level ${character.level} ${capitalize(character.className)}`}
-                        </Typography>
+                        </Text>
                         <CharacterInfo character={character} />
                     </>
                 )}

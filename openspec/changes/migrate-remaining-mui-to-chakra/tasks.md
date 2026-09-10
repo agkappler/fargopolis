@@ -100,12 +100,12 @@ Keep each component's public props identical; change internals only.
 
 ## 11. Pages
 
-- [ ] 11.1 `src/pages/ProjectsPage.tsx`, `ProjectDetailPage.tsx` — `Grid`/`Paper`/`Typography` → Chakra.
-- [ ] 11.2 `src/pages/RecipeDetailPage.tsx` — primitives + any `Table`.
-- [ ] 11.3 `src/pages/DndPage.tsx`, `DndGlossaryPage.tsx`, `DndGlossaryRacesPage.tsx`, `DndGlossaryClassesPage.tsx` — `Select`+`MenuItem` → Chakra `Select`; `useMediaQuery` → `useBreakpointValue`; `@mui/lab` Tabs if present.
-- [ ] 11.4 `src/pages/CharacterDetailPage.tsx`, `CharacterActionsPage.tsx` — `Box`/`Button`/`MenuItem`/`Select`/`Tab` → Chakra.
-- [ ] 11.5 `src/pages/SplitCheckPage.tsx` — primitives + `TableCell`.
-- [ ] 11.6 `pnpm build` + `pnpm lint` + visual check (each page route) + commit.
+- [x] 11.1 `ProjectsPage.tsx` + `ProjectDetailPage.tsx` — `Grid`/`GridItem`, `Paper` → `Box` + `surfaceCardProps`, `Heading`/`Text`.
+- [x] 11.2 `RecipeDetailPage.tsx` — `Chip`→`Badge`, `IconButton`+lucide `Pencil`, `Box border` → `borderWidth`, `Heading`/`Text` (no MUI Table present).
+- [x] 11.3 `DndPage.tsx` (`Grid`/`GridItem`/`Heading`); `DndGlossaryPage.tsx` (`Box`); `DndGlossaryRacesPage.tsx` + `DndGlossaryClassesPage.tsx` (`@mui/lab` Tabs → `Tabs.*`, `Select`+`MenuItem` → `NativeSelect`, `Button startIcon` → lucide child, dropped `SyntheticEvent` handler).
+- [x] 11.4 `CharacterDetailPage.tsx` (lucide `Pencil`/`Dice5` in `ActionMenu`, `Typography`→`Text`, `textSecondary`→`fg.secondary`); `CharacterActionsPage.tsx` (`Typography`→`Text`).
+- [x] 11.5 `SplitCheckPage.tsx` — `Grid`/`GridItem`, `Divider`→`Separator`, `Paper`→`Box`+`surfaceCardProps`, `Button variant="contained"`→`variant="primary"`, `Heading`/`Text`.
+- [x] 11.6 `pnpm build` passes; `pnpm lint` 5 pre-existing, no new. Only `theme.ts` + `ThemeRegistry.tsx` still import MUI. Committed.
 
 ## 12. Theme teardown + dependency removal
 

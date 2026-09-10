@@ -9,9 +9,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import CustomDndRace from "@/models/CustomDndRace";
 import { useAuth } from "@clerk/react";
-import { Add } from "@mui/icons-material";
-import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { Box, Button, MenuItem, Select, Tab } from "@mui/material";
+import { Plus } from "lucide-react";
+import { Box, Button, NativeSelect, Tabs } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
@@ -38,10 +37,6 @@ export function DndGlossaryRacesPage() {
         (races.find((r) => r.index === selectedRace) as CustomDndRace | undefined)?.raceId ?? "",
     );
     const [value, setValue] = useState("1");
-    const handleChange = (_: React.SyntheticEvent, newValue: string) => {
-        setValue(newValue);
-    };
-
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
@@ -72,7 +67,8 @@ export function DndGlossaryRacesPage() {
             <PageHeader
                 title="DnD Races"
                 rightContainer={
-                    <Button startIcon={<Add />} disabled={!isLoaded || !isSignedIn} onClick={() => setIsOpen(true)}>
+                    <Button variant="secondary" disabled={!isLoaded || !isSignedIn} onClick={() => setIsOpen(true)}>
+                        <Plus size={16} />
                         Add Race
                     </Button>
                 }
@@ -80,22 +76,25 @@ export function DndGlossaryRacesPage() {
             />
             <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomRaces}>
                 <Box display="flex" justifyContent="center">
-                    <Select value={selectedRace} onChange={(e) => handleRaceChange(e.target.value as string)}>
-                        {races.map((r, index) => (
-                            <MenuItem key={index} value={r.index}>
-                                {r.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
+                    <NativeSelect.Root width="auto">
+                        <NativeSelect.Field value={selectedRace} onChange={(e) => handleRaceChange(e.target.value)}>
+                            {races.map((r, index) => (
+                                <option key={index} value={r.index}>
+                                    {r.name}
+                                </option>
+                            ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                    </NativeSelect.Root>
                 </Box>
-                <TabContext value={value}>
-                    <Box sx={{ borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "center" }}>
-                        <TabList onChange={handleChange} aria-label="Character info tabs">
-                            <Tab label="Race Info" value="1" />
-                            <Tab label="Subraces" value="2" />
-                        </TabList>
+                <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
+                    <Box borderBottomWidth="1px" borderColor="border.DEFAULT" display="flex" justifyContent="center">
+                        <Tabs.List aria-label="Character info tabs">
+                            <Tabs.Trigger value="1">Race Info</Tabs.Trigger>
+                            <Tabs.Trigger value="2">Subraces</Tabs.Trigger>
+                        </Tabs.List>
                     </Box>
-                    <TabPanel value="1">
+                    <Tabs.Content value="1">
                         {selectedRace &&
                             (isCustom ? (
                                 selectedCustomRaceId ? (
@@ -104,11 +103,11 @@ export function DndGlossaryRacesPage() {
                             ) : (
                                 <RacialTraits race={selectedRace} />
                             ))}
-                    </TabPanel>
-                    <TabPanel value="2">
+                    </Tabs.Content>
+                    <Tabs.Content value="2">
                         <Subraces race={selectedRace} />
-                    </TabPanel>
-                </TabContext>
+                    </Tabs.Content>
+                </Tabs.Root>
             </LoadingWrapper>
             <RaceForm isOpen={isOpen} onClose={() => setIsOpen(false)} updateDndRaces={mutate} />
         </>

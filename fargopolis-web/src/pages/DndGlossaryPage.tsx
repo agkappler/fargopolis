@@ -2,7 +2,7 @@ import { ClassList } from "@/components/dnd/class/ClassList";
 import { RaceList } from "@/components/dnd/race/RaceList";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Box } from "@mui/material";
+import { Box } from "@chakra-ui/react";
 
 export function DndGlossaryPage() {
   return (

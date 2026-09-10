@@ -6,7 +6,7 @@ import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
-import { Typography } from "@mui/material";
+import { Text } from "@chakra-ui/react";
 import { capitalize } from "@/helpers/Format";
 import useSWR from "swr";
 import { useParams } from "react-router-dom";
@@ -30,9 +30,9 @@ export function CharacterActionsPage() {
             {character && (
                 <>
                     {character.avatarId && <ImageBox fileId={character.avatarId} altText="Character avatar" />}
-                    <Typography variant="h6" textAlign="center" fontWeight="light" color="textSecondary">
+                    <Text fontSize="md" textAlign="center" fontWeight="light" color="fg.secondary">
                         {`${capitalize(character.race)}, Level ${character.level} ${capitalize(character.className)}`}
-                    </Typography>
+                    </Text>
                     <ActionInfo characterId={character.characterId} className={character.className} />
                 </>
             )}

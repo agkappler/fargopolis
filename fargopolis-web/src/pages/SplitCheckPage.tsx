@@ -5,7 +5,8 @@ import { SwitchInput } from "@/components/inputs/SwitchInput";
 import { TextInput } from "@/components/inputs/TextInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { formatCurrency } from "@/helpers/Format";
-import { Box, Button, Divider, Grid, Paper, Typography } from "@mui/material";
+import { Box, Button, Grid, GridItem, Heading, Separator, Text } from "@chakra-ui/react";
+import { surfaceCardProps } from "@/components/ui/surfaceStyle";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
@@ -89,51 +90,51 @@ export function SplitCheckPage() {
     <>
       <PageHeader title="Check Splitter" />
       <FormProvider {...methods}>
-        <Grid container spacing={2} rowGap={2} className="m-2 p-2">
-          <Grid size={12}>
+        <Grid templateColumns="repeat(12, 1fr)" gap={4} className="m-2 p-2">
+          <GridItem colSpan={12}>
             <ListInput
               title="People"
               fieldName="people"
               addText="Add Person"
               defaultItem={defaultPerson}
               listItemComponent={({ idx, removeButton }) => (
-                <Grid container spacing={1} key={idx} alignItems="center" marginBottom={2}>
-                  <Grid size={6}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={2} key={idx} alignItems="center" marginBottom={4}>
+                  <GridItem colSpan={6}>
                     <TextInput label="Name" fieldName={`people[${idx}].name`} requiredMessage="Feature name is required" />
-                  </Grid>
-                  <Grid size={5}>
+                  </GridItem>
+                  <GridItem colSpan={5}>
                     <NumberInput
                       label="Total"
                       fieldName={`people[${idx}].total`}
                       requiredMessage="Total is required"
                       type={NumberInputType.Currency}
                     />
-                  </Grid>
-                  <Grid size={1}>{removeButton}</Grid>
+                  </GridItem>
+                  <GridItem colSpan={1}>{removeButton}</GridItem>
                 </Grid>
               )}
             />
-          </Grid>
-          <Grid size={12}>
+          </GridItem>
+          <GridItem colSpan={12}>
             <ListInput
               title="Shared Items"
               fieldName="sharedItems"
               addText="Add Shared Item"
               defaultItem={{ name: "", value: 0, splitBy: [EVERYBODY] }}
               listItemComponent={({ idx, removeButton }) => (
-                <Grid container spacing={1} key={idx} alignItems="center" marginBottom={2}>
-                  <Grid size={4}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={2} key={idx} alignItems="center" marginBottom={4}>
+                  <GridItem colSpan={4}>
                     <TextInput label="Name" fieldName={`sharedItems[${idx}].name`} requiredMessage="Shared item name is required" />
-                  </Grid>
-                  <Grid size={3}>
+                  </GridItem>
+                  <GridItem colSpan={3}>
                     <NumberInput
                       label="Value"
                       fieldName={`sharedItems[${idx}].value`}
                       requiredMessage="Value is required"
                       type={NumberInputType.Currency}
                     />
-                  </Grid>
-                  <Grid size={4}>
+                  </GridItem>
+                  <GridItem colSpan={4}>
                     <DropdownInput
                       label="Split By"
                       fieldName={`sharedItems[${idx}].splitBy`}
@@ -144,48 +145,48 @@ export function SplitCheckPage() {
                       requiredMessage="Split By is required"
                       isMultiSelect={true}
                     />
-                  </Grid>
-                  <Grid size={1}>{removeButton}</Grid>
+                  </GridItem>
+                  <GridItem colSpan={1}>{removeButton}</GridItem>
                 </Grid>
               )}
             />
-          </Grid>
-          <Grid size={12}>
-            <Typography variant="h6" gutterBottom>
+          </GridItem>
+          <GridItem colSpan={12}>
+            <Heading size="md" mb={2}>
               Add-Ons
-            </Typography>
-          </Grid>
-          <Grid size={4}>
+            </Heading>
+          </GridItem>
+          <GridItem colSpan={{ base: 12, sm: 4 }}>
             <NumberInput label="Tax Amount" fieldName="taxAmount" type={NumberInputType.Currency} />
-          </Grid>
-          <Grid size={4}>
+          </GridItem>
+          <GridItem colSpan={{ base: 12, sm: 4 }}>
             <NumberInput label="Tip Percentage" fieldName="tipPercentage" type={NumberInputType.Percentage} />
-          </Grid>
-          <Grid size={4} className="flex items-center">
+          </GridItem>
+          <GridItem colSpan={{ base: 12, sm: 4 }} className="flex items-center">
             <SwitchInput label="Include Tax in Tip" fieldName="includeTaxInTip" />
-          </Grid>
+          </GridItem>
         </Grid>
-        <Button role="submit" onClick={methods.handleSubmit(onSubmit)} variant="contained" color="primary" sx={{ margin: 2 }}>
+        <Button role="submit" onClick={methods.handleSubmit(onSubmit)} variant="primary" m={2}>
           Calculate Totals
         </Button>
       </FormProvider>
       {individualTotals.length > 0 && (
         <Box margin={2}>
-          <Typography variant="h5">Total: {formatCurrency(totalInfo)}</Typography>
-          <Divider />
-          <Grid container spacing={1} marginTop={1}>
+          <Heading size="lg">Total: {formatCurrency(totalInfo)}</Heading>
+          <Separator />
+          <Grid templateColumns="repeat(12, 1fr)" gap={2} marginTop={1}>
             {individualTotals.map((person) => (
-              <Grid size={3} key={person.name}>
-                <Paper elevation={3} className="p-2">
-                  <Typography variant="h6" textAlign="center">
+              <GridItem colSpan={{ base: 12, sm: 6, md: 3 }} key={person.name}>
+                <Box {...surfaceCardProps} boxShadow="md" className="p-2">
+                  <Heading size="md" textAlign="center">
                     {person.name}: {formatCurrency(person.total)}
-                  </Typography>
-                  <Typography variant="body1">Pre-tax Total: {formatCurrency(person.preTaxTotal)}</Typography>
-                  <Typography variant="body1">Tax: {formatCurrency(person.tax)}</Typography>
-                  <Typography variant="body1">Sub Total: {formatCurrency(person.subTotal)}</Typography>
-                  <Typography variant="body1">Tip: {formatCurrency(person.tip)}</Typography>
-                </Paper>
-              </Grid>
+                  </Heading>
+                  <Text>Pre-tax Total: {formatCurrency(person.preTaxTotal)}</Text>
+                  <Text>Tax: {formatCurrency(person.tax)}</Text>
+                  <Text>Sub Total: {formatCurrency(person.subTotal)}</Text>
+                  <Text>Tip: {formatCurrency(person.tip)}</Text>
+                </Box>
+              </GridItem>
             ))}
           </Grid>
         </Box>
