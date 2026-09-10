@@ -1,7 +1,8 @@
 import { Spell } from "@/api/dnd5eapi"
-import { InfoOutline } from "@mui/icons-material"
-import { Paper, Typography } from "@mui/material"
+import { Box, Text } from "@chakra-ui/react"
+import { Info } from "lucide-react"
 import { useState } from "react"
+import { surfaceCardProps } from "../../ui/surfaceStyle"
 import { SpellDetailsModal } from "./SpellDetailsModal"
 
 interface SpellCardProps {
@@ -22,15 +23,17 @@ export const SpellCard: React.FC<SpellCardProps> = ({
     const [isOpen, setIsOpen] = useState(false);
 
     return <>
-        <Paper
-            elevation={3}
+        <Box
+            {...surfaceCardProps}
+            boxShadow="md"
             className="p-2 flex justify-between"
             role="button"
+            cursor="pointer"
             onClick={() => setIsOpen(true)}
         >
-            <Typography variant="body1" textAlign="center">{spell.name}</Typography>
-            <InfoOutline fontSize="small" />
-        </Paper>
+            <Text textAlign="center">{spell.name}</Text>
+            <Info size={16} />
+        </Box>
         {isOpen &&
             <SpellDetailsModal
                 isOpen={isOpen}

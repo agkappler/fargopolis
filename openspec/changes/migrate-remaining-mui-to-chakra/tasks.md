@@ -91,12 +91,12 @@ Keep each component's public props identical; change internals only.
 
 ## 10. Verticals: dnd/spells + dnd/abilities + dnd/weapons
 
-- [ ] 10.1 `src/components/dnd/spells/SpellCard.tsx`, `SpellInfo.tsx`, `KnownSpellsDisplay.tsx` — primitives.
-- [ ] 10.2 `src/components/dnd/spells/SpellSlotTable.tsx` — MUI `Table*` → `Table.*`.
-- [ ] 10.3 `src/components/dnd/spells/SpellDetailsModal.tsx` + `abilities/AbilityDetailsModal.tsx` — should consume the migrated `SimpleDialog`; swap remaining primitives.
-- [ ] 10.4 `src/components/dnd/abilities/AbilityCard.tsx`, `AbilityInfo.tsx`, `AbilityForm.tsx` — primitives + icons.
-- [ ] 10.5 `src/components/dnd/weapons/WeaponCard.tsx`, `WeaponInfo.tsx`, `WeaponForm.tsx` — primitives + `sx`.
-- [ ] 10.6 `pnpm build` + `pnpm lint` + visual check + commit.
+- [x] 10.1 `SpellCard.tsx` (`Paper`→`Box`+`surfaceCardProps`, `InfoOutline`→lucide `Info`); `SpellInfo.tsx` (`Grid`/`GridItem`, `Chip`→`Badge`, `Heading`); `KnownSpellsDisplay.tsx` (`Grid`/`GridItem`, `Heading`/`Text`).
+- [x] 10.2 `SpellSlotTable.tsx` — `Table.ScrollArea`/`Table.Root`/`Table.Header`/`Table.ColumnHeader`/`Table.Body`/`Table.Row`/`Table.Cell`; row-head `variant="head"` → `Table.ColumnHeader`.
+- [x] 10.3 `SpellDetailsModal.tsx` (`Chip`→`Badge`, `Add`/`Remove`→lucide `Plus`/`Minus`, `Button color` → `variant`/`colorPalette`, `startIcon` → child); `AbilityDetailsModal.tsx` (`Chip`→`Badge`, `Text`).
+- [x] 10.4 `AbilityCard.tsx` (colored `Chip` → existing `StatusChip`, plain → `Badge`); `AbilityInfo.tsx` + `AbilityForm.tsx` (`Grid`/`GridItem`, `Text`).
+- [x] 10.5 `WeaponCard.tsx` (`Chip`→`Badge`, `sx` line-clamp → Chakra `lineClamp={2}`); `WeaponInfo.tsx` + `WeaponForm.tsx` (`Grid`/`GridItem`, `Text`).
+- [x] 10.6 `pnpm build` passes; `pnpm lint` 5 pre-existing, no new. **All of `src/components/dnd/` is MUI-free.** Committed.
 
 ## 11. Pages
 

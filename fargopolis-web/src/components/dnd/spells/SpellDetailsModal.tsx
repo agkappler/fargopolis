@@ -1,8 +1,8 @@
 import { getRelativeUrlInfo, Spell } from "@/api/dnd5eapi";
 import RequestManager from "@/helpers/RequestManager";
 import { useAuth } from "@clerk/react";
-import { Add, Remove } from "@mui/icons-material";
-import { Box, Button, Chip } from "@mui/material";
+import { Plus, Minus } from "lucide-react";
+import { Badge, Box, Button } from "@chakra-ui/react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 import { SimpleDialog } from "../../ui/SimpleDialog";
@@ -61,12 +61,12 @@ export const SpellDetailsModal: React.FC<SpllDetailsModalProps> = ({
     return <SimpleDialog title={spell.name} isOpen={isOpen} onClose={onClose}>
         <LoadingWrapper isLoading={isLoading} size={10}>
             <Box display="flex" flexWrap="wrap" gap={1} mb={2} justifyContent="center">
-                {spellDetails?.concentration && <Chip label="Concentration" />}
-                {spellDetails?.casting_time && <Chip label={`Casting: ${spellDetails.casting_time}`} />}
-                {spellDetails?.range && <Chip label={`Range: ${spellDetails.range}`} />}
-                {spellDetails?.duration && <Chip label={`Duration: ${spellDetails.duration}`} />}
-                {spellDetails?.ritual && <Chip label="Ritual" />}
-                {spellDetails?.material && <Chip label={`Material: ${spellDetails.material}`} />}
+                {spellDetails?.concentration && <Badge>Concentration</Badge>}
+                {spellDetails?.casting_time && <Badge>{`Casting: ${spellDetails.casting_time}`}</Badge>}
+                {spellDetails?.range && <Badge>{`Range: ${spellDetails.range}`}</Badge>}
+                {spellDetails?.duration && <Badge>{`Duration: ${spellDetails.duration}`}</Badge>}
+                {spellDetails?.ritual && <Badge>Ritual</Badge>}
+                {spellDetails?.material && <Badge>{`Material: ${spellDetails.material}`}</Badge>}
             </Box>
             <DescriptionList descriptions={spellDetails?.desc} />
         </LoadingWrapper>
@@ -75,18 +75,19 @@ export const SpellDetailsModal: React.FC<SpllDetailsModalProps> = ({
                 {isKnown
                     ? (
                         <Button
-                            color="error"
-                            startIcon={<Remove />}
+                            variant="secondary"
+                            colorPalette="red"
                             onClick={handleRemoveSpell}
                         >
+                            <Minus size={16} />
                             Remove from known spells
                         </Button>
                     ) : (
                         <Button
-                            color="primary"
-                            startIcon={<Add />}
+                            variant="primary"
                             onClick={handleAddSpell}
                         >
+                            <Plus size={16} />
                             Add to known spells
                         </Button>
                     )}

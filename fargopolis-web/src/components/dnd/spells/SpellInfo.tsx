@@ -1,5 +1,5 @@
 import { BaseDndResponse, getSpellsForClass, LevelInfo, Spell } from "@/api/dnd5eapi";
-import { Box, Chip, Grid, Typography } from "@mui/material";
+import { Badge, Box, Grid, GridItem, Heading, Text } from "@chakra-ui/react";
 import useSWR from "swr";
 import { ErrorMessage } from "../../ui/ErrorMessage";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
@@ -25,7 +25,7 @@ export const SpellInfo: React.FC<SpellInfoProps> = ({ levelInfos, currentLevel, 
 
     if (levelInfos === undefined) return <ErrorMessage errorMessage="Missing level data." />;
     const spellcasting = levelInfos.find(l => l.level === currentLevel)?.spellcasting;
-    if (spellcasting === undefined) return <Typography variant="body1">No spells yet!</Typography>;
+    if (spellcasting === undefined) return <Text>No spells yet!</Text>;
     // const maxSpellLevel = 3;
     const spellLevels = Array.from({ length: 10 }, (_, i) => i);
     const hasSpellSlotAtLevel = (spellLevel: number) => {
@@ -45,10 +45,10 @@ export const SpellInfo: React.FC<SpellInfoProps> = ({ levelInfos, currentLevel, 
 
     return <>
         <SpellSlotTable spellSlots={spellcasting} />
-        <Typography variant="h6" textAlign="center" marginTop={2} marginBottom={1}>Known Spells</Typography>
+        <Heading size="md" textAlign="center" marginTop={2} marginBottom={1}>Known Spells</Heading>
         <Box display="flex" justifyContent="center" gap={3}>
-            <Chip label={`Cantrips: ${spellcasting.cantrips_known}`} size="medium" />
-            <Chip label={`Spells: ${spellcasting.spells_known}`} size="medium" />
+            <Badge>{`Cantrips: ${spellcasting.cantrips_known}`}</Badge>
+            <Badge>{`Spells: ${spellcasting.spells_known}`}</Badge>
         </Box>
         <KnownSpellsDisplay
             characterId={characterId}
@@ -56,13 +56,13 @@ export const SpellInfo: React.FC<SpellInfoProps> = ({ levelInfos, currentLevel, 
             canEdit={false}
             onSpellUpdate={mutate}
         />
-        <Typography variant="h6" textAlign="center" marginTop={2}>Available Spells</Typography>
+        <Heading size="md" textAlign="center" marginTop={2}>Available Spells</Heading>
         <LoadingWrapper isLoading={isLoading}>
             {spellLevels.map(spellLevel => (<Box key={spellLevel}>
-                <Typography variant="h6" marginTop={2}>{spellLevel === 0 ? 'Cantrips' : `Level ${spellLevel} Spells`}</Typography>
-                <Grid container spacing={2}>
+                <Heading size="md" marginTop={2}>{spellLevel === 0 ? 'Cantrips' : `Level ${spellLevel} Spells`}</Heading>
+                <Grid templateColumns="repeat(12, 1fr)" gap={4}>
                     {(spellsByLevel?.[spellLevel] ?? []).map((spell, index) => (
-                        <Grid key={index} size={3}>
+                        <GridItem key={index} colSpan={{ base: 12, sm: 6, md: 3 }}>
                             <SpellCard
                                 spell={spell}
                                 isKnown={knownSpells?.[spell.index] !== undefined}
@@ -70,7 +70,7 @@ export const SpellInfo: React.FC<SpellInfoProps> = ({ levelInfos, currentLevel, 
                                 characterId={characterId}
                                 onSpellUpdate={mutate}
                             />
-                        </Grid>
+                        </GridItem>
                     ))}
                 </Grid>
             </Box>))}

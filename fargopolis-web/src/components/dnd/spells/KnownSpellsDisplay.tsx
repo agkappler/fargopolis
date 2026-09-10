@@ -1,7 +1,7 @@
 import { getSpellsForClass, BaseDndResponse, Spell } from "@/api/dnd5eapi";
 import RequestManager from "@/helpers/RequestManager";
 import KnownSpell from "@/models/KnownSpell";
-import { Grid, Typography, Box } from "@mui/material";
+import { Grid, GridItem, Heading, Box, Text } from "@chakra-ui/react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 import { SpellCard } from "./SpellCard";
@@ -64,13 +64,13 @@ export const KnownSpellsDisplay: React.FC<KnownSpellsDisplayProps> = ({
     return (
         <LoadingWrapper isLoading={isLoadingKnownSpells || isLoadingSpells}>
             {spellLevels.length > 0 ? (
-                <Grid container spacing={2}>
+                <Grid templateColumns="repeat(12, 1fr)" gap={4}>
                     {spellLevels.map(spellLevel => (
-                        <Grid key={spellLevel} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                        <GridItem key={spellLevel} colSpan={{ base: 12, sm: 6, md: 4, lg: 3 }}>
                             <Box>
-                                <Typography variant="h6" gutterBottom textAlign="center">
+                                <Heading size="md" mb={2} textAlign="center">
                                     {spellLevel === 0 ? 'Cantrips' : `Level ${spellLevel}`}
-                                </Typography>
+                                </Heading>
                                 <Box display="flex" flexDirection="column" gap={1}>
                                     {knownSpellsByLevel[spellLevel].map(spell => (
                                         <SpellCard
@@ -84,11 +84,11 @@ export const KnownSpellsDisplay: React.FC<KnownSpellsDisplayProps> = ({
                                     ))}
                                 </Box>
                             </Box>
-                        </Grid>
+                        </GridItem>
                     ))}
                 </Grid>
             ) : (
-                <Typography textAlign="center">No known spells.</Typography>
+                <Text textAlign="center">No known spells.</Text>
             )}
         </LoadingWrapper>
     );
