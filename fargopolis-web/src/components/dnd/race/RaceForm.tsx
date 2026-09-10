@@ -2,7 +2,7 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import CustomDndRace from "@/models/CustomDndRace";
 import { useAuth } from "@clerk/react";
-import { Grid } from "@mui/material";
+import { Grid, GridItem } from "@chakra-ui/react";
 import { useState } from "react";
 import { BasicForm } from "../../inputs/BasicForm";
 import { TextInput } from "../../inputs/TextInput";
@@ -50,23 +50,23 @@ export const RaceForm: React.FC<RaceFormProps> = ({ isOpen, onClose, dndRace, up
             defaultValues={dndRace ?? defaultRace}
             isClerkForm
         >
-            <Grid container spacing={2} className="mb-2">
-                <Grid size={12}>
+            <Grid templateColumns="repeat(12, 1fr)" gap={4} className="mb-2">
+                <GridItem colSpan={12}>
                     <TextInput
                         label="Name"
                         fieldName="name"
                         requiredMessage="Name is required"
                     />
-                </Grid>
-                <Grid size={12}>
+                </GridItem>
+                <GridItem colSpan={12}>
                     <TextInput
                         label="Description"
                         fieldName="description"
                         requiredMessage="Description is required"
                         multilineRows={4}
                     />
-                </Grid>
-                <Grid size={12}>
+                </GridItem>
+                <GridItem colSpan={12}>
                     {/* <ListInput
                             title={"Traits"}
                             fieldName={"traits"}
@@ -84,7 +84,7 @@ export const RaceForm: React.FC<RaceFormProps> = ({ isOpen, onClose, dndRace, up
                                 </Grid>
                             )}
                         /> */}
-                </Grid>
+                </GridItem>
             </Grid>
         </BasicForm>
     </SimpleDialog>

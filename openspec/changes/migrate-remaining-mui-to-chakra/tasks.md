@@ -77,10 +77,10 @@ Keep each component's public props identical; change internals only.
 
 ## 8. Verticals: dnd/race
 
-- [ ] 8.1 `src/components/dnd/race/RaceList.tsx`, `RaceForm.tsx`, `Subraces.tsx`, `CustomRaceTraits.tsx` — primitives + icons.
-- [ ] 8.2 `src/components/dnd/race/RacialTraits.tsx`, `RacialTraitCard.tsx`, `RacialTraitsForm.tsx` — primitives.
-- [ ] 8.3 `src/components/dnd/race/DraconicAncestryTable.tsx` + `DraconicAncestryRow.tsx` — MUI `Table*` → `Table.ScrollArea` + `Table.*`.
-- [ ] 8.4 `pnpm build` + `pnpm lint` + visual check + commit.
+- [x] 8.1 `RaceList.tsx` (`Grid`/`GridItem`, `Paper`→`Box`+`surfaceCardProps`, `Heading`); `RaceForm.tsx` (`Grid`/`GridItem`); `Subraces.tsx` (`Select`+`MenuItem` → `NativeSelect`, `Heading`); `CustomRaceTraits.tsx` (`Grid`/`GridItem`, `Paper`→`Box`, lucide `Wrench`/`Pencil`).
+- [x] 8.2 `RacialTraits.tsx` (`Heading`); `RacialTraitCard.tsx` (`Text`/`Button variant="secondary"`, `borderTop`→`borderTopWidth`, `Add`→lucide `Plus`, `startIcon`→child); `RacialTraitsForm.tsx` (`Grid`/`GridItem`).
+- [x] 8.3 `DraconicAncestryTable.tsx` + `DraconicAncestryRow.tsx` — `Table.ScrollArea`/`Table.Root size="sm"`/`Table.Header`/`Table.ColumnHeader`/`Table.Body`/`Table.Row`/`Table.Cell`.
+- [x] 8.4 `pnpm build` passes; `pnpm lint` 5 pre-existing, no new. `dnd/race/` MUI-free. Committed.
 
 ## 9. Verticals: dnd/class
 

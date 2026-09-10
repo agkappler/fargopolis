@@ -1,6 +1,6 @@
 import CustomDndRace from "@/models/CustomDndRace";
 import { BaseDndResponse, getSubraces } from "@/api/dnd5eapi";
-import { Box, MenuItem, Select, Typography } from "@mui/material";
+import { Box, Heading, NativeSelect } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
@@ -23,18 +23,21 @@ export const Subraces: React.FC<SubracesProps> = ({ race }) => {
     const subraces = [...(apiSubraceResults?.results ?? []), ...customSubraces].sort((a, b) => a.name.localeCompare(b.name));
     const [selectedSubrace, setSelectedSubrace] = useState<string>(subraces[0]?.index ?? "");
     return <>
-        <Typography variant="h6" textAlign="center">{subraces.length ? "Subrace Info" : "No available subraces."}</Typography>
+        <Heading size="md" textAlign="center">{subraces.length ? "Subrace Info" : "No available subraces."}</Heading>
         <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomSubraces}>
             <Box display="flex" justifyContent="center">
                 {subraces.length > 0 && (
-                    <Select
-                        value={selectedSubrace}
-                        onChange={(e) => setSelectedSubrace(e.target.value as string)}
-                    >
-                        {subraces.map((r, index) => (
-                            <MenuItem key={index} value={r.index}>{r.name}</MenuItem>
-                        ))}
-                    </Select>
+                    <NativeSelect.Root width="auto">
+                        <NativeSelect.Field
+                            value={selectedSubrace}
+                            onChange={(e) => setSelectedSubrace(e.target.value)}
+                        >
+                            {subraces.map((r, index) => (
+                                <option key={index} value={r.index}>{r.name}</option>
+                            ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                    </NativeSelect.Root>
                 )}
             </Box>
         </LoadingWrapper>

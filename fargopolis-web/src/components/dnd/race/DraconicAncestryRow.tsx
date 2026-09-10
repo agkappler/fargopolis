@@ -1,5 +1,5 @@
 import { DndItem, getRelativeUrlInfo } from "@/api/dnd5eapi";
-import { TableCell, TableRow, Typography } from "@mui/material";
+import { Table, Text } from "@chakra-ui/react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 
@@ -17,19 +17,19 @@ export const DraconicAncestryRow: React.FC<DraconicAncestryRowProps> = ({ ancest
         return name.substring('Draconic Ancestry ('.length, name.length - 1);
     }
 
-    return <TableRow>
-        <TableCell>{getDragonType(ancestryOption.name)}</TableCell>
-        <TableCell>
+    return <Table.Row>
+        <Table.Cell>{getDragonType(ancestryOption.name)}</Table.Cell>
+        <Table.Cell>
             <LoadingWrapper isLoading={isLoading} size={10}>
-                {ancestryInfo && <Typography variant="body1" textAlign="center">{ancestryInfo.trait_specific.damage_type.name}</Typography>}
+                {ancestryInfo && <Text textAlign="center">{ancestryInfo.trait_specific.damage_type.name}</Text>}
             </LoadingWrapper>
-        </TableCell>
-        <TableCell>
+        </Table.Cell>
+        <Table.Cell>
             <LoadingWrapper isLoading={isLoading} size={10}>
-                {ancestryInfo && <Typography variant="body1" textAlign="center">
+                {ancestryInfo && <Text textAlign="center">
                     {getBreathWeaponInfo(ancestryInfo.trait_specific.breath_weapon)}
-                </Typography>}
+                </Text>}
             </LoadingWrapper>
-        </TableCell>
-    </TableRow>
+        </Table.Cell>
+    </Table.Row>
 }

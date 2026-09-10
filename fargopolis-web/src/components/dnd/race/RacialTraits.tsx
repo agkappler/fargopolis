@@ -1,5 +1,5 @@
 import { DndItem, getRace } from "@/api/dnd5eapi";
-import { Typography } from "@mui/material";
+import { Heading } from "@chakra-ui/react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 import { RacialTraitCard } from "./RacialTraitCard";
@@ -12,7 +12,7 @@ interface RacialTraitsProps {
 export const RacialTraits: React.FC<RacialTraitsProps> = ({ race, characterId }) => {
     const { data: racialTraits, isLoading } = useSWR(race, () => getRace(race));
     return <LoadingWrapper isLoading={isLoading}>
-        <Typography variant="h5" textAlign="center">{racialTraits?.name}</Typography>
+        <Heading size="lg" textAlign="center">{racialTraits?.name}</Heading>
         {racialTraits?.traits.map((t: DndItem, index: number) => (
             <RacialTraitCard
                 key={index}
