@@ -1,6 +1,6 @@
-import { Menu, MenuItem, IconButton } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
-import { ReactNode, useState } from "react";
+import { IconButton, Menu, Portal } from "@chakra-ui/react";
+import { EllipsisVertical } from "lucide-react";
+import { ReactNode } from "react";
 
 export interface MenuOption {
     label: string;
@@ -14,58 +14,36 @@ interface ActionMenuProps {
     ariaLabel?: string;
 }
 
+const SIZE_MAP = { small: "sm", medium: "md", large: "lg" } as const;
+
 export const ActionMenu: React.FC<ActionMenuProps> = ({
     options,
     size = "small",
     ariaLabel = "More options"
 }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const isMenuOpen = Boolean(anchorEl);
-
-    const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleMenuItemClick = (onClick: () => void) => {
-        onClick();
-        handleMenuClose();
-    };
-
     return (
-        <>
-            <IconButton
-                onClick={handleMenuClick}
-                size={size}
-                aria-label={ariaLabel}
-                aria-controls={isMenuOpen ? 'three-dot-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={isMenuOpen ? 'true' : undefined}
-            >
-                <MoreVert />
-            </IconButton>
-            <Menu
-                id="three-dot-menu"
-                anchorEl={anchorEl}
-                open={isMenuOpen}
-                onClose={handleMenuClose}
-                MenuListProps={{
-                    'aria-labelledby': 'three-dot-menu-button',
-                }}
-            >
-                {options.map((option, index) => (
-                    <MenuItem
-                        key={index}
-                        onClick={() => handleMenuItemClick(option.onClick)}
-                    >
-                        {option.icon && <span style={{ marginRight: 8 }}>{option.icon}</span>}
-                        {option.label}
-                    </MenuItem>
-                ))}
-            </Menu>
-        </>
+        <Menu.Root>
+            <Menu.Trigger asChild>
+                <IconButton variant="ghost" size={SIZE_MAP[size]} aria-label={ariaLabel}>
+                    <EllipsisVertical />
+                </IconButton>
+            </Menu.Trigger>
+            <Portal>
+                <Menu.Positioner>
+                    <Menu.Content>
+                        {options.map((option, index) => (
+                            <Menu.Item
+                                key={index}
+                                value={option.label}
+                                onSelect={option.onClick}
+                            >
+                                {option.icon && <span style={{ marginRight: 8, display: "inline-flex" }}>{option.icon}</span>}
+                                {option.label}
+                            </Menu.Item>
+                        ))}
+                    </Menu.Content>
+                </Menu.Positioner>
+            </Portal>
+        </Menu.Root>
     );
 };

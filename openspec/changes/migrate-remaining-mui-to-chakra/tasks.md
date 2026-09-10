@@ -44,11 +44,11 @@ Keep each component's public props identical; change internals only.
 
 ## 4. Shared `ui/` wrappers — compound
 
-- [ ] 4.1 `src/components/ui/SimpleDialog.tsx` — `Dialog`/`DialogTitle`/`DialogContent`/`Breakpoint`/`IconButton`/`Close` → `Dialog.*` namespace + `Dialog.CloseTrigger`; `maxWidth: Breakpoint` prop → `size` union; theme-callback `sx` → tokens (`color="fg.subtle"`).
-- [ ] 4.2 `src/components/ui/StyledAccordion.tsx` — `Accordion`/`AccordionSummary`/`AccordionDetails`/`ExpandMore` → `Accordion.Root`/`Accordion.Item`/`Accordion.ItemTrigger`/`Accordion.ItemContent`/`Accordion.ItemIndicator`; `sx` `&:before` → `_before`.
-- [ ] 4.3 `src/components/ui/ActionMenu.tsx` — `Menu`/`MenuItem`/`IconButton`/`MoreVert` → `Menu.Root`/`Menu.Trigger`/`Menu.Positioner`/`Menu.Content`/`Menu.Item`; drop `anchorEl`/`useState` (Chakra manages open state); give each `Menu.Item` a `value`; keep `MenuOption[]` prop shape.
-- [ ] 4.4 `src/components/ui/Carousel.tsx` — `Box`/`Grid`/`IconButton`/`Paper`/`useMediaQuery` + `ChevronLeft`/`ChevronRight`/`Circle`/`CircleOutlined` → Chakra; `useMediaQuery` → `useBreakpointValue`.
-- [ ] 4.5 `pnpm build` + `pnpm lint` + visual check (`pnpm dev`) + commit.
+- [x] 4.1 `SimpleDialog.tsx` — Chakra `Dialog.*` + `Portal` + `CloseButton` in `Dialog.CloseTrigger`; `maxWidth: Breakpoint` → local `DialogSize` union → `size`; `onClose` → `onOpenChange`.
+- [x] 4.2 `StyledAccordion.tsx` — Chakra `Accordion.*` (Root `collapsible` + `Item value` + `ItemTrigger`/`ItemIndicator`/`ItemContent`/`ItemBody`); MUI `&:before` reset dropped (not needed).
+- [x] 4.3 `ActionMenu.tsx` — Chakra `Menu.*` + `Portal`; dropped `anchorEl`/`useState`; `onClick` → `Menu.Item onSelect` + `value`; `size` mapped small/medium/large → sm/md/lg. `MenuOption[]` prop shape unchanged.
+- [x] 4.4 `Carousel.tsx` — `Box`/`IconButton`/`SimpleGrid` (was `Grid`); `Paper` → `Box` + `surfaceCardProps`; `useMediaQuery` → Chakra `useMediaQuery([query], { fallback })`; lucide `Circle` (fill toggles active).
+- [x] 4.5 `pnpm build` passes; `pnpm lint` no new. `src/components/ui/` now MUI-free. Committed. (Visual check deferred — no interactive browser this session.)
 
 ## 5. Verticals: home + about + navigation
 
