@@ -119,5 +119,5 @@ Keep each component's public props identical; change internals only.
 
 ## 13. Wrap-up
 
-- [ ] 13.1 Update `fargopolis-web/README.md` / repo docs if they mention MUI.
+- [x] 13.1 No-op — `rg -i mui` across all non-openspec markdown (`CLAUDE.md`, `fargopolis-web/README.md`, etc.) returned nothing; no docs reference a UI library.
 - [ ] 13.2 Run `/opsx:archive` for this change.
