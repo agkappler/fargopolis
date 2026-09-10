@@ -109,13 +109,13 @@ Keep each component's public props identical; change internals only.
 
 ## 12. Theme teardown + dependency removal
 
-- [ ] 12.1 Run `rg "@mui/" fargopolis-web/src` — confirm zero matches except `ThemeRegistry.tsx` and `theme.ts`. Fix any stragglers before continuing.
-- [ ] 12.2 Port the still-needed MUI `styleOverrides` from `theme.ts` (Paper `backgroundImage:none`, Chip mono font, Tab weight) into `chakra-theme.ts` recipes; run `pnpm chakra:typegen`.
-- [ ] 12.3 Delete `fargopolis-web/src/theme.ts`.
-- [ ] 12.4 Edit `src/components/ThemeRegistry.tsx` — remove the MUI `ThemeProvider` import and wrapper; leave only `<ChakraProvider value={chakraSystem}>`.
-- [ ] 12.5 Remove `@mui/material`, `@mui/icons-material`, `@mui/lab` from `fargopolis-web/package.json`; `pnpm install` to update lockfile.
-- [ ] 12.6 `rg "@mui/" fargopolis-web` — confirm zero matches anywhere (incl. lockfile).
-- [ ] 12.7 Full `pnpm build` + `pnpm lint` + click through every route in `pnpm dev` + commit.
+- [x] 12.1 Confirmed: only `ThemeRegistry.tsx` + `theme.ts` referenced MUI.
+- [x] 12.2 No port needed — `MuiPaper backgroundImage:none` (Paper removed), `MuiChip` mono/size/tracking (already the `badge` recipe in `chakra-theme.ts`), `MuiTab` weight/tracking (Chakra `Tabs` defaults are acceptable). Left `chakra-theme.ts` unchanged.
+- [x] 12.3 Deleted `src/theme.ts`.
+- [x] 12.4 `ThemeRegistry.tsx` now only `<ChakraProvider value={chakraSystem}>`.
+- [x] 12.5 Removed `@mui/material`, `@mui/icons-material`, `@mui/lab` from `package.json`; `pnpm install` updated the lockfile (all three dropped).
+- [x] 12.6 `rg "@mui" fargopolis-web` — zero matches (src, package.json, lockfile).
+- [x] 12.7 `pnpm build` passes; `pnpm lint` = 5 pre-existing `no-explicit-any` only (`dnd5eapi.ts`, `OptionsList.tsx`, `ClassFeatures.tsx` — untouched, out of scope). Committed. (Interactive route click-through not possible this session.)
 
 ## 13. Wrap-up
 
