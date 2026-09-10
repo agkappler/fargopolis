@@ -320,3 +320,6 @@ const config = defineConfig({
 });
 
 export const chakraSystem = createSystem(defaultConfig, config);
+
+// Named export required by the Chakra CLI typegen command (`chakra-ui typegen`).
+export const system = chakraSystem;

@@ -50,7 +50,7 @@ export const RecipeStepsForm: React.FC<RecipeStepsFormProps> = ({ isOpen, onClos
                 defaultItem={{ recipeId: recipeId }}
                 listItemComponent={({ idx, removeButton }) => (
                     <Grid container spacing={1} key={idx} alignItems="center" marginBottom={2}>
-                        <Grid size={1}>
+                        <Grid size={1} mt={3}>
                             <Typography variant="h6" textAlign="center">{idx + 1}.</Typography>
                         </Grid>
                         <Grid size={10}>
@@ -68,7 +68,7 @@ export const RecipeStepsForm: React.FC<RecipeStepsFormProps> = ({ isOpen, onClos
                                 type={NumberInputType.Currency}
                             />
                         </Grid> */}
-                        <Grid size={1}>{removeButton}</Grid>
+                        <Grid size={1} mt={3}>{removeButton}</Grid>
                     </Grid>
                 )}
             />

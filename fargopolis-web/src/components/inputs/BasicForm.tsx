@@ -1,5 +1,5 @@
 import { useAuth } from "@clerk/react";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Flex } from "@chakra-ui/react";
 import { PropsWithChildren, useState } from "react";
 import { DefaultValues, FieldValues, FormProvider, useForm } from "react-hook-form";
 import { ErrorMessage } from "../ui/ErrorMessage";
@@ -39,16 +39,20 @@ export const BasicForm = <T extends FieldValues,>({
         }
     };
 
-    return (<Box paddingY={1}>
+    return (<Box py="1">
         <ErrorMessage errorMessage={errorMessage} />
         <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(awaitSubmit)}>
                 {children}
                 {canWrite && (
-                    <Box className={`flex py-2 ${onDelete === undefined ? 'justify-center' : 'justify-between'}`}>
-                        {onDelete !== undefined && <Button type="button" variant="outlined" color="secondary" loading={isLoading} onClick={awaitDelete}>Delete</Button>}
-                        <Button type="submit" variant="contained" color="primary" loading={isLoading}>Submit</Button>
-                    </Box>
+                    <Flex py="2" justify={onDelete === undefined ? "center" : "space-between"}>
+                        {onDelete !== undefined && (
+                            <Button type="button" variant="secondary" loading={isLoading} onClick={awaitDelete}>
+                                Delete
+                            </Button>
+                        )}
+                        <Button type="submit" variant="primary" loading={isLoading}>Submit</Button>
+                    </Flex>
                 )}
             </form>
         </FormProvider>

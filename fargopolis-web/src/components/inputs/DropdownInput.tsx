@@ -1,55 +1,78 @@
 import { BaseInputProps } from '@/helpers/BaseInputProps';
-import { FormHelperText } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { createListCollection, Field, Select } from '@chakra-ui/react';
 import * as React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
+import { fieldBorderProps } from './fieldStyle';
 
-interface DropdownInputProps extends BaseInputProps {
-    options: { value: string | number; label: string }[];
+interface DropdownOption {
+    value: string | number;
+    label: string;
+}
+
+interface DropdownInputProps extends Omit<BaseInputProps, "onChange"> {
+    options: DropdownOption[];
     isMultiSelect?: boolean;
-    onChange?: (event: SelectChangeEvent) => void;
+    onChange?: (value: string | number | (string | number)[]) => void;
 }
 
 export const DropdownInput: React.FC<DropdownInputProps> = ({ label, fieldName, options, requiredMessage, isMultiSelect = false, onChange }) => {
     const { control } = useFormContext();
-    const id = `${label}-select`;
+    const collection = React.useMemo(() => createListCollection({
+        items: options,
+        itemToValue: (item: DropdownOption) => String(item.value),
+        itemToString: (item: DropdownOption) => item.label,
+    }), [options]);
+
     return (
-        <FormControl fullWidth>
-            <InputLabel id={`${id}-label`}>{requiredMessage ? `${label}*` : label}</InputLabel>
-            <Controller
-                name={fieldName}
-                control={control}
-                defaultValue=""
-                rules={{ required: requiredMessage }}
-                render={({ field, fieldState }) => (<>
-                    <Select
-                        {...field}
-                        labelId={`${id}-label`}
-                        id={id}
-                        label={label}
-                        error={!!fieldState.error}
-                        onChange={(event) => {
-                            field.onChange(event);
-                            if (onChange) {
-                                onChange(event);
-                            }
-                        }}
-                        multiple={isMultiSelect}
-                    >
-                        {options.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                    {fieldState.error && (
-                        <FormHelperText error>{fieldState.error.message}</FormHelperText>
-                    )}
-                </>)}
-            />
-        </FormControl>
+        <Controller
+            name={fieldName}
+            control={control}
+            defaultValue={isMultiSelect ? [] : ""}
+            rules={{ required: requiredMessage }}
+            render={({ field, fieldState }) => {
+                const selectedValues: string[] = isMultiSelect
+                    ? (field.value ?? []).map(String)
+                    : field.value !== undefined && field.value !== "" ? [String(field.value)] : [];
+
+                return (
+                    <Field.Root invalid={!!fieldState.error} w="full">
+                        <Select.Root
+                            collection={collection}
+                            multiple={isMultiSelect}
+                            value={selectedValues}
+                            onValueChange={(details) => {
+                                const rawValues = details.items.map((item) => item.value);
+                                const newValue = isMultiSelect ? rawValues : (rawValues[0] ?? "");
+                                field.onChange(newValue);
+                                onChange?.(newValue);
+                            }}
+                            onInteractOutside={field.onBlur}
+                        >
+                            <Select.Label>{requiredMessage ? `${label}*` : label}</Select.Label>
+                            <Select.Control>
+                                <Select.Trigger px="3.5" {...fieldBorderProps}>
+                                    <Select.ValueText placeholder={label} />
+                                </Select.Trigger>
+                                <Select.IndicatorGroup>
+                                    <Select.Indicator />
+                                </Select.IndicatorGroup>
+                            </Select.Control>
+                            <Select.Positioner>
+                                <Select.Content>
+                                    {options.map((option) => (
+                                        <Select.Item item={option} key={option.value}>
+                                            <Select.ItemText>{option.label}</Select.ItemText>
+                                            <Select.ItemIndicator />
+                                        </Select.Item>
+                                    ))}
+                                </Select.Content>
+                            </Select.Positioner>
+                            <Select.HiddenSelect />
+                        </Select.Root>
+                        {fieldState.error && <Field.ErrorText>{fieldState.error.message}</Field.ErrorText>}
+                    </Field.Root>
+                );
+            }}
+        />
     );
 }
