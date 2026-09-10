@@ -121,3 +121,7 @@ Keep each component's public props identical; change internals only.
 
 - [x] 13.1 No-op — `rg -i mui` across all non-openspec markdown (`CLAUDE.md`, `fargopolis-web/README.md`, etc.) returned nothing; no docs reference a UI library.
 - [ ] 13.2 Run `/opsx:archive` for this change.
+
+## 14. Post-migration fixes
+
+- [x] 14.1 Overlay pane lingered after closing a dialog (click-outside), blocking all subsequent clicks. Chakra `Dialog.Root`/`Drawer.Root` default `unmountOnExit={false}`; the closed `Positioner` (fixed, inset 0) stayed mounted and Chakra's `hidden`-attribute hiding lost to Tailwind preflight (same conflict as `inputs/fieldStyle.ts`). Added `lazyMount` + `unmountOnExit` to `SimpleDialog` and the `Navbar` `Drawer`.
