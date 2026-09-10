@@ -37,10 +37,10 @@ Files whose only `@mui` import is icons — pure swap, no layout change.
 
 Keep each component's public props identical; change internals only.
 
-- [ ] 3.1 `src/components/ui/AlertMessage.tsx` + `ErrorMessage.tsx` — `Alert`/`AlertColor` → `Alert.Root`/`Alert.Indicator`/`Alert.Content`; `severity` → `status`; migrate `sx`.
-- [ ] 3.2 `src/components/ui/LoadingSpinner.tsx` + `LoadingWrapper.tsx` — `CircularProgress` → `Spinner`; `Box`/`Typography` → `Box`/`Text`.
-- [ ] 3.3 `src/components/ui/ImageBox.tsx` + `FileWrapper.tsx` — `Box`/icons → Chakra.
-- [ ] 3.4 `pnpm build` + `pnpm lint` + commit.
+- [x] 3.1 `AlertMessage.tsx` + `ErrorMessage.tsx` — Chakra `Alert.*`; local `AlertStatus` type replaces `AlertColor`; `severity` → `status`; `sx` → style props.
+- [x] 3.2 `LoadingSpinner.tsx` (`Spinner boxSize` + `Text`) + `LoadingWrapper.tsx` (`Box` → Chakra).
+- [x] 3.3 `ImageBox.tsx` — `Avatar.Root`/`Avatar.Image`/`Avatar.Fallback`. (`FileWrapper.tsx` already done in 2.5.)
+- [x] 3.4 `pnpm build` passes; `pnpm lint` 6 pre-existing, no new. Committed.
 
 ## 4. Shared `ui/` wrappers — compound
 

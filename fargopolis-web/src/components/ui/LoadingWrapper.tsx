@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 import { LoadingSpinner } from "./LoadingSpinner";
 
