@@ -38,3 +38,10 @@ The placeholder avatar shown to signed-out users SHALL be clickable and SHALL op
 #### Scenario: Completing sign-in closes the dialog
 - **WHEN** a signed-out user successfully signs in through the dialog opened from the placeholder avatar
 - **THEN** the dialog closes
+
+### Requirement: Sign-in is reachable only through the avatar
+Sign-in SHALL be triggered exclusively by the avatar's click handler, not by navigating to a dedicated route. The application SHALL NOT expose a `/login` route.
+
+#### Scenario: No standalone login route
+- **WHEN** a user navigates directly to `/login`
+- **THEN** no dedicated login page is served (the route does not exist)

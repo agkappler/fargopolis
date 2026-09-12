@@ -13,7 +13,6 @@ import { DndGlossaryPage } from "@/pages/DndGlossaryPage";
 import { DndGlossaryRacesPage } from "@/pages/DndGlossaryRacesPage";
 import { DndPage } from "@/pages/DndPage";
 import { HomePage } from "@/pages/HomePage";
-import { LoginPage } from "@/pages/LoginPage";
 import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
 import { ProjectsPage } from "@/pages/ProjectsPage";
 import { RecipeDetailPage } from "@/pages/RecipeDetailPage";
@@ -32,7 +31,6 @@ function AppShell() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/login" element={<LoginPage />} />
             <Route path="/bounties" element={<BountiesPage />} />
             <Route path="/camping" element={<CampingPage />} />
             <Route path="/camping/:id" element={<CampsiteDetailPage />} />

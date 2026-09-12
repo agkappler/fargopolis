@@ -13,3 +13,9 @@
 
 - [x] 3.1 Run `pnpm build` and `pnpm lint` in `fargopolis-web/` to confirm no type/lint errors.
 - [x] 3.2 Manually test in the browser: signed-out desktop shows only the placeholder avatar, clicking it opens the `LoginForm` dialog, and signing in swaps it for `UserButton`; repeat for the mobile breakpoint (top bar avatar and drawer no longer list "Login").
+
+## 4. Remove the orphaned `/login` route
+
+- [x] 4.1 Remove the `/login` route and `LoginPage` import from `fargopolis-web/src/App.tsx`.
+- [x] 4.2 Delete `fargopolis-web/src/pages/LoginPage.tsx`.
+- [x] 4.3 Re-run `pnpm build` and `pnpm lint` to confirm removal doesn't break anything.
