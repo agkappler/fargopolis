@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
 import { SimpleDialog } from "../ui/SimpleDialog";
 import { NAVBAR_BREAK } from "@/constants/Media";
+import { SignInAvatar } from "./SignInAvatar";
 
 const NAV_ITEMS = [
     { label: "Recipe Box",   path: "/recipes" },
@@ -14,7 +15,6 @@ const NAV_ITEMS = [
     { label: "DnD",          path: "/dnd" },
     { label: "About",        path: "/about" },
     { label: "Split Check",  path: "/split-check" },
-    { label: "Login",        path: "/login" },
 ];
 
 export const Navbar: React.FC = () => {
@@ -25,14 +25,6 @@ export const Navbar: React.FC = () => {
     const [loginOpen, setLoginOpen] = useState(false);
 
     const isActive = (path: string) => pathname.startsWith(path);
-
-    const handleNav = (path: string) => {
-        if (!isMobile && path === "/login") {
-            setLoginOpen(true);
-        } else {
-            navigate(path);
-        }
-    };
 
     return (
         <Flex
@@ -73,6 +65,9 @@ export const Navbar: React.FC = () => {
                 <>
                     <Flex ml="auto" align="center" gap="2">
                         <Show when="signed-in"><UserButton /></Show>
+                        <Show when="signed-out">
+                            <SignInAvatar onClick={() => setLoginOpen(true)} />
+                        </Show>
                         <IconButton variant="ghost" aria-label="Open menu" onClick={() => setDrawerOpen(true)}>
                             <Menu />
                         </IconButton>
@@ -107,7 +102,7 @@ export const Navbar: React.FC = () => {
                                             _hover={{ color: "fg", bg: "bg.sunk" }}
                                             onClick={() => {
                                                 setDrawerOpen(false);
-                                                handleNav(item.path);
+                                                navigate(item.path);
                                             }}
                                         >
                                             {item.label}
@@ -140,7 +135,7 @@ export const Navbar: React.FC = () => {
                                 cursor="pointer"
                                 transition="color 200ms"
                                 _hover={{ color: "fg" }}
-                                onClick={() => handleNav(item.path)}
+                                onClick={() => navigate(item.path)}
                             >
                                 {item.label}
                             </Box>
@@ -148,21 +143,7 @@ export const Navbar: React.FC = () => {
                     </Flex>
                     <Show when="signed-in"><UserButton /></Show>
                     <Show when="signed-out">
-                        <Flex
-                            w="8"
-                            h="8"
-                            borderRadius="full"
-                            bg="pine.500"
-                            color="white"
-                            align="center"
-                            justify="center"
-                            fontFamily="mono"
-                            fontSize="xs"
-                            fontWeight="600"
-                            flexShrink="0"
-                        >
-                            AK
-                        </Flex>
+                        <SignInAvatar onClick={() => setLoginOpen(true)} />
                     </Show>
                 </>
             )}
