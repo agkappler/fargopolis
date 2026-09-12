@@ -4,6 +4,8 @@ import { SwrConfigWrapper } from "@/components/SwrConfigWrapper";
 import { ThemeRegistry } from "@/components/ThemeRegistry";
 import { AboutPage } from "@/pages/AboutPage";
 import { BountiesPage } from "@/pages/BountiesPage";
+import { CampingPage } from "@/pages/CampingPage";
+import { CampsiteDetailPage } from "@/pages/CampsiteDetailPage";
 import { CharacterActionsPage } from "@/pages/CharacterActionsPage";
 import { CharacterDetailPage } from "@/pages/CharacterDetailPage";
 import { DndGlossaryClassesPage } from "@/pages/DndGlossaryClassesPage";
@@ -32,6 +34,8 @@ function AppShell() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/bounties" element={<BountiesPage />} />
+            <Route path="/camping" element={<CampingPage />} />
+            <Route path="/camping/:id" element={<CampsiteDetailPage />} />
             <Route path="/split-check" element={<SplitCheckPage />} />
             <Route path="/dnd" element={<DndPage />} />
             <Route path="/dnd/glossary" element={<DndGlossaryPage />} />

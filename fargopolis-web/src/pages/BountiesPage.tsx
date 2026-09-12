@@ -3,7 +3,7 @@ import { BountyCategoryForm } from "@/components/bounties/BountyCategoryForm";
 import { BountyForm } from "@/components/bounties/BountyForm";
 import { AddModelCard } from "@/components/ui/AddModelCard";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
-import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { ErrorWrapper } from "@/components/ui/ErrorWrapper";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Project } from "@/constants/Projects";
@@ -41,10 +41,6 @@ export function BountiesPage() {
         () => RequestManager.get<BountyCategory[]>("/bountyCategories")
     );
 
-    if (bountiesError || bountyCategoriesError) {
-        return <ErrorMessage errorMessage={(bountiesError ?? bountyCategoriesError)?.message} />;
-    }
-
     const bountyCategoryMap = (bountyCategories ?? []).reduce(
         (map, category) => {
             map[category.categoryId] = category;
@@ -62,36 +58,40 @@ export function BountiesPage() {
         />
 
         <LoadingWrapper isLoading={isLoadingBountyCategories}>
-            <Flex gap="2" align="center" wrap="wrap" px="4" py="2" width="100%" justifyContent="center">
-                <Badge role="button" onClick={() => setIsCategoryOpen(true)}>
-                    + Category
-                </Badge>
-                {bountyCategories?.map((category) => (
-                    <Badge key={category.categoryId}>{category.name}</Badge>
-                ))}
-            </Flex>
+            <ErrorWrapper error={bountyCategoriesError} errorMessage="Failed to load bounty categories.">
+                <Flex gap="2" align="center" wrap="wrap" px="4" py="2" width="100%" justifyContent="center">
+                    <Badge role="button" onClick={() => setIsCategoryOpen(true)}>
+                        + Category
+                    </Badge>
+                    {bountyCategories?.map((category) => (
+                        <Badge key={category.categoryId}>{category.name}</Badge>
+                    ))}
+                </Flex>
+            </ErrorWrapper>
         </LoadingWrapper>
 
         <LoadingWrapper isLoading={isLoadingBounties}>
-            <Grid
-                templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }}
-                gap="4"
-                px="4"
-                py="6"
-                maxW="fp.container"
-                mx="auto"
-            >
-                <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />
+            <ErrorWrapper error={bountiesError} errorMessage="Failed to load bounties.">
+                <Grid
+                    templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }}
+                    gap="4"
+                    px="4"
+                    py="6"
+                    maxW="fp.container"
+                    mx="auto"
+                >
+                    <AddModelCard onClick={() => setIsOpen(true)} title="Post Bounty" />
 
-                {bounties?.map((bounty) => (
-                    <BountyCard
-                        key={bounty.bountyId}
-                        bounty={bounty}
-                        onClick={() => onBountyClick(bounty)}
-                        category={bountyCategoryMap[bounty.categoryId]}
-                    />
-                ))}
-            </Grid>
+                    {bounties?.map((bounty) => (
+                        <BountyCard
+                            key={bounty.bountyId}
+                            bounty={bounty}
+                            onClick={() => onBountyClick(bounty)}
+                            category={bountyCategoryMap[bounty.categoryId]}
+                        />
+                    ))}
+                </Grid>
+            </ErrorWrapper>
         </LoadingWrapper>
 
         <BountyForm isOpen={isOpen} onClose={onClose} updateBounties={mutate} bountyCategories={bountyCategories ?? []} bounty={selectedBounty} />

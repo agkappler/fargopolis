@@ -1,4 +1,4 @@
-import { FileText, ListChecks, List, Settings } from "lucide-react";
+import { FileText, ListChecks, List, Settings, Tent } from "lucide-react";
 import { ProjectStatus } from "./Status";
 import { ReactNode } from "react";
 
@@ -6,7 +6,8 @@ export enum Project {
     SiteInfrastructure = 0,
     Recipes = 1,
     Bounties = 2,
-    DnD = 3
+    DnD = 3,
+    Camping = 4
 }
 
 export const FARGOPOLIS_BLURB = "This platform was built as a personal project to explore different technologies, manage my own recipes, gamify recurring tasks as bounties, and organize Dungeons & Dragons characters. It's also a way to showcase my work and experiment with new ideas. Feel free to explore and see what I've been working on!"
@@ -90,6 +91,23 @@ export const PROJECTS = [
         icon: <FileText style={{ marginRight: "0.25rem" }} />,
         url: "/dnd",
         todo: ["Add AI chat window"],
+        motivation: undefined,
+        goals: undefined,
+        vision: undefined,
+        technology: undefined
+    },
+    {
+        name: "Camping Catalog",
+        description: "A place-centric log of every campsite we've stayed at — location, trip history, people, and photos.",
+        imageUrl: "https://via.placeholder.com/150",
+        status: ProjectStatus.InProgress,
+        icon: <Tent style={{ marginRight: "0.25rem" }} />,
+        url: "/camping",
+        todo: [
+            "Nested visits (dates, people, notes)",
+            "Photo galleries per visit",
+            "Leaflet map of all campsites",
+        ],
         motivation: undefined,
         goals: undefined,
         vision: undefined,

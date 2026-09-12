@@ -7,6 +7,8 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { BountiesApiRoutesConstruct } from '../constructs/bounties-api-routes-construct';
 import { BountiesConstruct } from '../constructs/bounties-construct';
+import { CampingApiRoutesConstruct } from '../constructs/camping-api-routes-construct';
+import { CampsitesConstruct } from '../constructs/campsites-construct';
 import { ClerkHttpAuthorizerConstruct } from '../constructs/clerk-http-authorizer-construct';
 import { FilesApiRoutesConstruct } from '../constructs/files-api-routes-construct';
 import { FargopolisHttpApiConstruct } from '../constructs/fargopolis-http-api-construct';
@@ -29,6 +31,7 @@ import { resolveApiGithubDeployOidcProviderArn } from '../github-actions-oidc';
 export class FargopolisApiStack extends cdk.Stack {
     public readonly bounties: BountiesConstruct;
     public readonly recipes: RecipesConstruct;
+    public readonly campsites: CampsitesConstruct;
     /** Shared file-metadata table reused across verticals (recipes today, DnD next). */
     public readonly files: FilesConstruct;
     /** Private S3 bucket for user uploads (presigned GET/PUT); not the static-site bucket. */
@@ -40,6 +43,7 @@ export class FargopolisApiStack extends cdk.Stack {
     public readonly bountiesApi: BountiesApiRoutesConstruct;
     public readonly filesApi: FilesApiRoutesConstruct;
     public readonly recipesApi: RecipesApiRoutesConstruct;
+    public readonly campingApi: CampingApiRoutesConstruct;
     public readonly dnd: DndConstruct;
     /** Custom DnD races (nested traits) and subclasses (nested features) for glossary + character form. */
     public readonly dndGlossary: DndGlossaryConstruct;
@@ -54,6 +58,7 @@ export class FargopolisApiStack extends cdk.Stack {
 
         this.bounties = new BountiesConstruct(this, 'Bounties');
         this.recipes = new RecipesConstruct(this, 'Recipes');
+        this.campsites = new CampsitesConstruct(this, 'Campsites');
         this.files = new FilesConstruct(this, 'Files');
         this.dnd = new DndConstruct(this, 'Dnd');
         this.dndGlossary = new DndGlossaryConstruct(this, 'DndGlossary');
@@ -91,6 +96,11 @@ export class FargopolisApiStack extends cdk.Stack {
             httpApi: this.httpApiGateway.httpApi,
             recipeTable: this.recipes.recipeTable,
             fileTable: this.files.fileTable,
+        });
+        this.campingApi = new CampingApiRoutesConstruct(this, 'CampingApi', {
+            pythonSharedLayer: this.pythonSharedLayer,
+            httpApi: this.httpApiGateway.httpApi,
+            campsiteTable: this.campsites.campsiteTable,
         });
         this.dndApi = new DndApiRoutesConstruct(this, 'DndApi', {
             pythonSharedLayer: this.pythonSharedLayer,
@@ -183,6 +193,10 @@ export class FargopolisApiStack extends cdk.Stack {
         new cdk.CfnOutput(this, 'RecipesTableName', {
             description: 'DynamoDB table for recipes (single item per recipe; ingredients/steps nested)',
             value: this.recipes.recipeTable.tableName,
+        });
+        new cdk.CfnOutput(this, 'CampsitesTableName', {
+            description: 'DynamoDB table for campsites (single item per campsite; visits nested in later changes)',
+            value: this.campsites.campsiteTable.tableName,
         });
         new cdk.CfnOutput(this, 'FilesTableName', {
             description: 'DynamoDB table for shared file metadata (recipes + DnD)',

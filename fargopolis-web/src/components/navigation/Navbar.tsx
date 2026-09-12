@@ -10,6 +10,7 @@ import { NAVBAR_BREAK } from "@/constants/Media";
 const NAV_ITEMS = [
     { label: "Recipe Box",   path: "/recipes" },
     { label: "Bounties",     path: "/bounties" },
+    { label: "Camping",      path: "/camping" },
     { label: "DnD",          path: "/dnd" },
     { label: "About",        path: "/about" },
     { label: "Split Check",  path: "/split-check" },

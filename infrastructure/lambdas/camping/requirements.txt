@@ -1,0 +1,3 @@
+# Per-function packages for the camping Lambda zip (installed with `pip -t` during CDK bundling).
+# Shared modules and common wheels live in the Fargopolis Python shared layer (`shared/requirements.txt`).
+# boto3/botocore are provided by the Lambda runtime.
