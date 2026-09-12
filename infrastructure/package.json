@@ -7,7 +7,8 @@
     "watch": "tsc -w",
     "cdk": "cdk",
     "synth": "cdk synth",
-    "deploy": "cdk deploy"
+    "deploy": "cdk deploy",
+    "test": "../.venv/bin/python -m pytest lambdas"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

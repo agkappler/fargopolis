@@ -2,3 +2,5 @@
 -r bounties/requirements.txt
 -r clerk_authorizer/requirements.txt
 boto3
+pytest==8.3.4
+moto[dynamodb]==5.0.28
