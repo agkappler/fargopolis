@@ -23,18 +23,25 @@ from typing import Any, Callable
 import boto3
 import pytest
 
+os.environ.setdefault("AWS_ACCESS_KEY_ID", "testing")
+os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "testing")
+os.environ.setdefault("AWS_SECURITY_TOKEN", "testing")
+os.environ.setdefault("AWS_SESSION_TOKEN", "testing")
+os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
+
+
 @pytest.fixture(scope="session")
 def dynamodb_resource() -> Any:
     """A single `boto3.resource("dynamodb")`, reused across every test and `mock_aws()` activation.
 
     Constructing a boto3 resource (rather than a client) loads botocore's DynamoDB service and
-    resource JSON models, which dominates per-test fixture cost. moto's `mock_aws()` patches
+    resource JSON models, which dominates per-test fixture cost (~125ms measured, vs ~3ms for
+    `mock_aws()` itself and single-digit ms per `create_table`). moto's `mock_aws()` patches
     request dispatch per-activation regardless of which resource object issues the calls, so one
     resource constructed once (even outside any `mock_aws()` context -- construction makes no AWS
     call) is safe to reuse across every test's own fresh `mock_aws()` context.
     """
-    session = boto3.Session(region_name="us-east-1", aws_access_key_id="testing", aws_secret_access_key="testing", aws_session_token="testing")
-    return session.resource("dynamodb", region_name="us-east-1")
+    return boto3.resource("dynamodb")
 
 
 @pytest.fixture
