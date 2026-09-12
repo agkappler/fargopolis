@@ -8,6 +8,7 @@ import { BasicForm } from "../inputs/BasicForm";
 import { DropdownInput } from "../inputs/DropdownInput";
 import { TextInput } from "../inputs/TextInput";
 import { SimpleDialog } from "../ui/SimpleDialog";
+import { CampsiteFormMapPreview } from "./CampsiteFormMapPreview";
 import { CoordinateField } from "./CoordinateField";
 import { RegionField } from "./RegionField";
 import { parseCoordinates } from "./helpers/parseCoordinates";
@@ -137,6 +138,9 @@ export const CampsiteForm: React.FC<CampsiteFormProps> = ({
                     </GridItem>
                     <GridItem colSpan={12}>
                         <CoordinateField />
+                    </GridItem>
+                    <GridItem colSpan={12}>
+                        <CampsiteFormMapPreview />
                     </GridItem>
                     <GridItem colSpan={{ base: 12, sm: 6 }}>
                         <RegionField options={regionOptions} />

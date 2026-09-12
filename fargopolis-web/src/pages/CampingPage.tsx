@@ -1,5 +1,6 @@
 import { CampsiteCard } from "@/components/camping/CampsiteCard";
 import { CampsiteForm } from "@/components/camping/CampsiteForm";
+import { CampsiteMap } from "@/components/camping/CampsiteMap";
 import { AddModelCard } from "@/components/ui/AddModelCard";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorWrapper } from "@/components/ui/ErrorWrapper";
@@ -31,6 +32,7 @@ export function CampingPage() {
             <Box maxW="fp.container" mx="auto" px="6" py="8">
                 <LoadingWrapper isLoading={isLoading}>
                     <ErrorWrapper error={error} errorMessage="Failed to load campsites.">
+                        <CampsiteMap campsites={campsites ?? []} />
                         <Grid
                             templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
                             gap="4"

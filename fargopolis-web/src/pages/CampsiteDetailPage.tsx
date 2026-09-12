@@ -1,5 +1,6 @@
 import { CampsiteForm } from "@/components/camping/CampsiteForm";
 import { formatTravelTime } from "@/components/camping/helpers/travelTime";
+import { MiniMap } from "@/components/camping/MiniMap";
 import { VisitTimeline } from "@/components/camping/VisitTimeline";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
@@ -125,6 +126,10 @@ export function CampsiteDetailPage() {
                 <Text fontSize="sm" textAlign="center" color="fg.muted" mb={3}>
                     {campsite.lat}, {campsite.lng}
                 </Text>
+
+                <Box maxW="500px" mx="auto" mb={3}>
+                    <MiniMap lat={campsite.lat} lng={campsite.lng} />
+                </Box>
 
                 {campsite.notes && (
                     <Box {...surfaceBorderProps} p={3} mb={3}>
