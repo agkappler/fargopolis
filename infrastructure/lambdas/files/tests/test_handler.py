@@ -43,6 +43,43 @@ def test_get_file_url_by_id_success(files_handler, files_table, make_event):
     assert "uuid-1_chili.jpg" in body["url"]
 
 
+def test_get_file_url_by_id_campsite_photo_requires_auth(files_handler, files_table, make_event):
+    files_table.put_item(
+        Item={
+            "fileId": "photo1",
+            "uuId": "uuid-2",
+            "filename": "campsite.jpg",
+            "contentType": "image/jpeg",
+            "sizeBytes": 2048,
+            "fileRole": "CAMPSITE_PHOTO",
+        }
+    )
+
+    resp = files_handler.handler(make_event("GET", "/api/fileUrl/photo1"), None)
+    assert resp["statusCode"] == 401
+
+
+def test_get_file_url_by_id_campsite_photo_success_when_authenticated(files_handler, files_table, make_event):
+    files_table.put_item(
+        Item={
+            "fileId": "photo1",
+            "uuId": "uuid-2",
+            "filename": "campsite.jpg",
+            "contentType": "image/jpeg",
+            "sizeBytes": 2048,
+            "fileRole": "CAMPSITE_PHOTO",
+        }
+    )
+
+    event = make_event("GET", "/api/fileUrl/photo1", authenticated=True)
+    resp = files_handler.handler(event, None)
+    assert resp["statusCode"] == 200
+    body = json.loads(resp["body"])
+    assert body["fileId"] == "photo1"
+    assert body["fileRole"] == "CAMPSITE_PHOTO"
+    assert "uuid-2_campsite.jpg" in body["url"]
+
+
 # --- GET /api/getLatestResumeUrl ------------------------------------------------------------------
 
 

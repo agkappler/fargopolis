@@ -2,7 +2,7 @@
 Files HTTP API for uploads + file metadata reads.
 
 Routes:
-- GET /api/fileUrl/{fileId}
+- GET /api/fileUrl/{fileId}  (public, except CAMPSITE_PHOTO which requires a signed-in user)
 - GET /api/getLatestResumeUrl  (public; latest RESUME role, same shape as legacy Java ImageUrl)
 - POST /api/files/presignPut
 """
@@ -114,7 +114,7 @@ def _get_latest_resume_url() -> dict[str, Any]:
     return json_response(200, {"url": url})
 
 
-def _get_file_url_by_id(raw_path: str) -> dict[str, Any]:
+def _get_file_url_by_id(event: dict[str, Any], raw_path: str) -> dict[str, Any]:
     file_id = raw_path[len(FILE_URL_ROUTE_PREFIX) :].strip()
     if not file_id:
         raise ValueError("fileId is required")
@@ -123,6 +123,10 @@ def _get_file_url_by_id(raw_path: str) -> dict[str, Any]:
     item = resp.get("Item")
     if not item:
         return json_response(404, {"message": f"File metadata not found for id: {file_id}"})
+    if item.get("fileRole") == "CAMPSITE_PHOTO":
+        err = require_clerk_writer(event)
+        if err:
+            return err
     return json_response(200, _metadata_with_url(item))
 
 
@@ -172,7 +176,7 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             return _get_latest_resume_url()
 
         if method == "GET" and raw_path.startswith(FILE_URL_ROUTE_PREFIX):
-            return _get_file_url_by_id(raw_path)
+            return _get_file_url_by_id(event, raw_path)
 
         if method == "POST" and raw_path == "/api/files/presignPut":
             err = require_clerk_writer(event)

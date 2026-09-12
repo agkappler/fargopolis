@@ -1,5 +1,6 @@
 import { useFileUrl } from "@/helpers/useFileMetadata";
 import Campsite from "@/models/Campsite";
+import { useAuth } from "@clerk/react";
 import { Badge, Box, Flex, Text } from "@chakra-ui/react";
 import { Mountain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -19,10 +20,11 @@ function formatMonthYear(iso: string | null | undefined): string {
 
 export const CampsiteCard: React.FC<CampsiteCardProps> = ({ campsite }) => {
     const navigate = useNavigate();
+    const { isSignedIn } = useAuth();
     const driveTime = formatTravelTime(campsite.travelTimeMinutes);
     const lastVisit = formatMonthYear(campsite.lastVisitDate);
     const visitCount = campsite.visitCount ?? 0;
-    const { url: coverUrl } = useFileUrl(campsite.coverPhotoId);
+    const { url: coverUrl } = useFileUrl(isSignedIn ? campsite.coverPhotoId : undefined);
 
     return (
         <ModelCard
