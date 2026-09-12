@@ -1,0 +1,54 @@
+# Gates PRs that touch fargopolis-web/ on the same checks `deploy-static-frontend.yml` implicitly
+# relies on (tsc + vite build, eslint) — those only ran on push to main, so a broken build/lint
+# could merge silently and only surface at deploy time.
+
+name: Test Frontend
+
+on:
+  pull_request:
+    paths:
+      - 'fargopolis-web/**'
+      - '.github/workflows/test-frontend.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'fargopolis-web/**'
+      - '.github/workflows/test-frontend.yml'
+
+concurrency:
+  group: test-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: fargopolis-web/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: fargopolis-web
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: fargopolis-web
+        run: pnpm run lint
+
+      - name: Build
+        working-directory: fargopolis-web
+        run: pnpm run build
