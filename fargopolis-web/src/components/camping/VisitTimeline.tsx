@@ -8,6 +8,8 @@ import { Badge, Box, Button, Flex, Heading, IconButton, Text } from "@chakra-ui/
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { formatVisitDateRange } from "./helpers/visitDates";
+import { PhotoGallery } from "./PhotoGallery";
+import { PhotoUploader } from "./PhotoUploader";
 import { VisitForm } from "./VisitForm";
 import { ErrorMessage } from "../ui/ErrorMessage";
 import { SimpleDialog } from "../ui/SimpleDialog";
@@ -112,6 +114,9 @@ export const VisitTimeline: React.FC<VisitTimelineProps> = ({ campsite, onChange
                                 {visit.notes}
                             </Text>
                         )}
+
+                        <PhotoGallery campsite={campsite} visit={visit} onChanged={onChanged} />
+                        <PhotoUploader campsite={campsite} visit={visit} onSaved={onChanged} />
                     </Box>
                 ))}
             </Flex>

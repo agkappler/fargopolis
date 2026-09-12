@@ -63,6 +63,8 @@ export class CampingApiRoutesConstruct extends Construct {
             { path: '/api/addVisitToCampsite/{campsiteId}', methods: [apigwv2.HttpMethod.POST] },
             { path: '/api/updateVisit', methods: [apigwv2.HttpMethod.POST] },
             { path: '/api/deleteVisit', methods: [apigwv2.HttpMethod.POST] },
+            { path: '/api/updateVisitPhotos', methods: [apigwv2.HttpMethod.POST] },
+            { path: '/api/updateCampsiteCover', methods: [apigwv2.HttpMethod.POST] },
         ];
 
         for (const spec of routeSpecs) {

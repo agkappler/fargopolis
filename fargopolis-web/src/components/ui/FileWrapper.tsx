@@ -1,8 +1,6 @@
-import RequestManager from "@/helpers/RequestManager";
-import FileMetadata from "@/models/FileMetadata";
+import { useFileMetadata } from "@/helpers/useFileMetadata";
 import { Link } from "@chakra-ui/react";
 import { File } from "lucide-react";
-import useSWR from "swr";
 import { LoadingWrapper } from "./LoadingWrapper";
 
 interface FileWrapperProps {
@@ -10,10 +8,7 @@ interface FileWrapperProps {
 }
 
 export const FileWrapper: React.FC<FileWrapperProps> = ({ fileId }) => {
-    const { data: fileMetadata, isLoading } = useSWR<FileMetadata>(
-        `gw/fileUrl/${fileId}`,
-        () => RequestManager.get<FileMetadata>(`/fileUrl/${fileId}`)
-    );
+    const { data: fileMetadata, isLoading } = useFileMetadata(fileId);
     const isImage = (filename: string) => ["jpg", "jpeg", "png", "gif", "webp"].includes(filename.split('.').pop()?.toLowerCase() || "");
 
     return <LoadingWrapper isLoading={isLoading} size={100}>

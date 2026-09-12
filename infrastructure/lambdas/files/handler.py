@@ -18,7 +18,7 @@ from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from shared.lambda_utils import generate_ulid, json_response, parse_body, require_clerk_writer, scan_all_items, table_from_env
 
-VALID_FILE_ROLES = frozenset({"RECIPE_IMAGE", "CHARACTER_AVATAR", "CHARACTER_RESOURCE", "RESUME"})
+VALID_FILE_ROLES = frozenset({"RECIPE_IMAGE", "CHARACTER_AVATAR", "CHARACTER_RESOURCE", "RESUME", "CAMPSITE_PHOTO"})
 FILES_TABLE_ENV = "FILES_TABLE_NAME"
 UPLOADS_BUCKET_ENV = "FARGOPOLIS_UPLOADS_BUCKET_NAME"
 FILE_URL_ROUTE_PREFIX = "/api/fileUrl/"
@@ -58,10 +58,10 @@ def presign_put_object_url(key: str, *, content_type: str, expires_in: int = 15 
 
 def _normalize_file_role(raw: Any) -> str:
     if not isinstance(raw, str):
-        raise ValueError("fileRole must be one of: RECIPE_IMAGE, CHARACTER_AVATAR, CHARACTER_RESOURCE, RESUME")
+        raise ValueError("fileRole must be one of: RECIPE_IMAGE, CHARACTER_AVATAR, CHARACTER_RESOURCE, RESUME, CAMPSITE_PHOTO")
     role = raw.strip().upper()
     if role not in VALID_FILE_ROLES:
-        raise ValueError("fileRole must be one of: RECIPE_IMAGE, CHARACTER_AVATAR, CHARACTER_RESOURCE, RESUME")
+        raise ValueError("fileRole must be one of: RECIPE_IMAGE, CHARACTER_AVATAR, CHARACTER_RESOURCE, RESUME, CAMPSITE_PHOTO")
     return role
 
 
