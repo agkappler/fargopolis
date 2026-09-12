@@ -1,3 +1,5 @@
+import Visit from "@/models/Visit";
+
 /**
  * One physical place we have camped. Place-centric: trip history (`visits`),
  * photo references, and the cover photo are populated by later changes.
@@ -25,6 +27,6 @@ export default interface Campsite {
     coverPhotoId?: string | null;
     visitCount?: number;
     lastVisitDate?: string | null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    visits?: any[];
+    /** Full trip history, newest first. Present on the single-campsite response, absent on list entries. */
+    visits?: Visit[];
 }

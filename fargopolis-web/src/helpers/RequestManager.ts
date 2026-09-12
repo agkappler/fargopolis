@@ -8,6 +8,17 @@ interface PresignPutResponse extends FileMetadata {
     objectKey: string;
 }
 
+/** An API error response, carrying the HTTP status so callers can branch on it (e.g. a 409 version conflict). */
+export class ApiError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+    }
+}
+
 export default class RequestManager {
     private static baseUrl = import.meta.env.VITE_API_URL ?? "";
     private static apiUrl = `${this.baseUrl}/api`;
@@ -170,7 +181,7 @@ export default class RequestManager {
             }
 
             const msg = errorData.errorMessage ?? errorData.message ?? "An error occurred while fetching data.";
-            throw new Error(msg);
+            throw new ApiError(msg, response.status);
         }
 
         const text = await response.text();
