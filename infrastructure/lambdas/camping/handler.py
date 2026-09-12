@@ -1,8 +1,8 @@
 """
 Camping HTTP API backed by the FargopolisCampsites DynamoDB table.
 
-One item per campsite (place-centric). Later changes nest a `visits` list on the
-same item and add photo references.
+One item per campsite (place-centric), with a nested `visits` list recording
+each stay. Later changes add photo references.
 
 Routes:
 - GET    /api/campsites
@@ -10,11 +10,15 @@ Routes:
 - POST   /api/createCampsite
 - POST   /api/updateCampsite
 - DELETE /api/campsite/{campsiteId}
+- POST   /api/addVisitToCampsite/{campsiteId}
+- POST   /api/updateVisit
+- POST   /api/deleteVisit
 """
 
 from __future__ import annotations
 
 import json
+from datetime import date
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -32,6 +36,7 @@ CAMPSITES_TABLE_ENV = "CAMPSITES_TABLE_NAME"
 CAMPSITES_BY_NAME_INDEX = "CampsitesByNameIndex"
 ENTITY_CAMPSITE = "CAMPSITE"
 CAMPSITE_ROUTE_PREFIX = "/api/campsite/"
+ADD_VISIT_ROUTE_PREFIX = "/api/addVisitToCampsite/"
 
 _RATING_FIELDS = ("views", "privacy", "space")
 
@@ -87,6 +92,23 @@ def _opt_str(value: Any) -> str | None:
     return text or None
 
 
+def _iso_date(value: Any, label: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        raise ValueError(f"{label} is required")
+    try:
+        date.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError(f"{label} must be a valid date (YYYY-MM-DD)") from exc
+    return text
+
+
+def _opt_iso_date(value: Any, label: str) -> str | None:
+    if value is None or value == "":
+        return None
+    return _iso_date(value, label)
+
+
 def _opt_bool(value: Any) -> bool | None:
     if value is None or value == "":
         return None
@@ -122,6 +144,46 @@ def _campsite_fields_from_body(body: dict[str, Any]) -> dict[str, Any]:
     return fields
 
 
+def _visit_from_body(body: dict[str, Any], *, visit_id: str | None = None) -> dict[str, Any]:
+    start_date = _iso_date(body.get("startDate"), "startDate")
+    end_date = _opt_iso_date(body.get("endDate"), "endDate")
+    if end_date is not None and end_date < start_date:
+        raise ValueError("endDate must be on or after startDate")
+
+    people_raw = body.get("people") or []
+    if not isinstance(people_raw, list):
+        raise ValueError("people must be a list of names")
+    people = [str(p).strip() for p in people_raw if str(p).strip()]
+
+    return {
+        "visitId": visit_id or str(body.get("visitId") or "").strip() or generate_ulid(),
+        "startDate": start_date,
+        "endDate": end_date,
+        "people": people,
+        "notes": _opt_str(body.get("notes")) or "",
+        "weather": _opt_str(body.get("weather")),
+        "rating": _opt_rating(body.get("rating"), "rating"),
+    }
+
+
+def _recompute_visit_summary(visits: list[dict[str, Any]]) -> tuple[int, str | None]:
+    if not visits:
+        return 0, None
+    return len(visits), max(v["startDate"] for v in visits)
+
+
+def _to_api_visit(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "visitId": str(item.get("visitId", "")),
+        "startDate": item.get("startDate"),
+        "endDate": item.get("endDate"),
+        "people": list(item.get("people") or []),
+        "notes": item.get("notes", ""),
+        "weather": item.get("weather"),
+        "rating": item.get("rating"),
+    }
+
+
 def _to_api_campsite(item: dict[str, Any]) -> dict[str, Any]:
     return {
         "campsiteId": str(item["campsiteId"]),
@@ -140,6 +202,10 @@ def _to_api_campsite(item: dict[str, Any]) -> dict[str, Any]:
         "coverPhotoId": item.get("coverPhotoId"),
         "visitCount": int(item.get("visitCount") or 0),
         "lastVisitDate": item.get("lastVisitDate"),
+        "visits": [
+            _to_api_visit(v)
+            for v in sorted(item.get("visits") or [], key=lambda v: v.get("startDate") or "", reverse=True)
+        ],
     }
 
 
@@ -182,6 +248,107 @@ def _get_campsite(campsite_id: str) -> dict[str, Any]:
     if not item:
         return json_response(404, {"message": f"Campsite not found: {campsite_id}"})
     return json_response(200, _to_api_campsite(item))
+
+
+def _get_campsite_item_or_404(campsite_id: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    table = table_from_env(CAMPSITES_TABLE_ENV)
+    response = table.get_item(Key={"campsiteId": campsite_id})
+    item = response.get("Item")
+    if not item:
+        return None, json_response(404, {"message": f"Campsite not found: {campsite_id}"})
+    return item, None
+
+
+def _write_visits(campsite_id: str, visits: list[dict[str, Any]], old_version: Any) -> dict[str, Any] | None:
+    """Persist a mutated visits list under the campsite's optimistic-concurrency version.
+
+    Returns an error response (404 if the campsite vanished, 409 if the version
+    is stale) or ``None`` on success.
+    """
+    visit_count, last_visit_date = _recompute_visit_summary(visits)
+    expr_values: dict[str, Any] = {":visits": visits, ":vc": visit_count, ":one": 1, ":old": old_version}
+    if last_visit_date is None:
+        update_expr = "SET visits = :visits, visitCount = :vc REMOVE lastVisitDate ADD version :one"
+    else:
+        expr_values[":lvd"] = last_visit_date
+        update_expr = "SET visits = :visits, visitCount = :vc, lastVisitDate = :lvd ADD version :one"
+
+    table = table_from_env(CAMPSITES_TABLE_ENV)
+    try:
+        table.update_item(
+            Key={"campsiteId": campsite_id},
+            UpdateExpression=update_expr,
+            ExpressionAttributeValues=expr_values,
+            ConditionExpression="version = :old",
+        )
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+            _, missing_err = _get_campsite_item_or_404(campsite_id)
+            if missing_err:
+                return missing_err
+            return json_response(409, {"message": "Campsite changed elsewhere; reload and try again."})
+        raise
+    return None
+
+
+def _add_visit(campsite_id: str, body: dict[str, Any]) -> dict[str, Any]:
+    campsite_id = campsite_id.strip()
+    if not campsite_id:
+        raise ValueError("campsiteId is required")
+    item, err = _get_campsite_item_or_404(campsite_id)
+    if err:
+        return err
+    visits = list(item.get("visits") or [])
+    visits.append(_visit_from_body(body))
+    write_err = _write_visits(campsite_id, visits, item.get("version"))
+    if write_err:
+        return write_err
+    return _get_campsite(campsite_id)
+
+
+def _update_visit(body: dict[str, Any]) -> dict[str, Any]:
+    campsite_id = str(body.get("campsiteId") or "").strip()
+    visit_id = str(body.get("visitId") or "").strip()
+    if not campsite_id:
+        raise ValueError("campsiteId is required")
+    if not visit_id:
+        raise ValueError("visitId is required")
+
+    item, err = _get_campsite_item_or_404(campsite_id)
+    if err:
+        return err
+    visits = list(item.get("visits") or [])
+    index = next((i for i, v in enumerate(visits) if str(v.get("visitId")) == visit_id), None)
+    if index is None:
+        return json_response(404, {"message": f"Visit not found: {visit_id}"})
+    visits[index] = _visit_from_body(body, visit_id=visit_id)
+
+    write_err = _write_visits(campsite_id, visits, item.get("version"))
+    if write_err:
+        return write_err
+    return _get_campsite(campsite_id)
+
+
+def _delete_visit(body: dict[str, Any]) -> dict[str, Any]:
+    campsite_id = str(body.get("campsiteId") or "").strip()
+    visit_id = str(body.get("visitId") or "").strip()
+    if not campsite_id:
+        raise ValueError("campsiteId is required")
+    if not visit_id:
+        raise ValueError("visitId is required")
+
+    item, err = _get_campsite_item_or_404(campsite_id)
+    if err:
+        return err
+    original_visits = item.get("visits") or []
+    visits = [v for v in original_visits if str(v.get("visitId")) != visit_id]
+    if len(visits) == len(original_visits):
+        return json_response(404, {"message": f"Visit not found: {visit_id}"})
+
+    write_err = _write_visits(campsite_id, visits, item.get("version"))
+    if write_err:
+        return write_err
+    return _get_campsite(campsite_id)
 
 
 def _create_campsite(body: dict[str, Any]) -> dict[str, Any]:
@@ -274,6 +441,22 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             if err:
                 return err
             return _delete_campsite(raw_path[len(CAMPSITE_ROUTE_PREFIX):].strip())
+        if method == "POST" and raw_path.startswith(ADD_VISIT_ROUTE_PREFIX):
+            err = require_clerk_writer(event)
+            if err:
+                return err
+            campsite_id = raw_path[len(ADD_VISIT_ROUTE_PREFIX):].strip()
+            return _add_visit(campsite_id, parse_body(event))
+        if route_key == "POST /api/updateVisit":
+            err = require_clerk_writer(event)
+            if err:
+                return err
+            return _update_visit(parse_body(event))
+        if route_key == "POST /api/deleteVisit":
+            err = require_clerk_writer(event)
+            if err:
+                return err
+            return _delete_visit(parse_body(event))
 
         return json_response(404, {"message": "Not found", "routeKey": route_key})
     except json.JSONDecodeError:

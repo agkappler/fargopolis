@@ -1,5 +1,6 @@
 import { CampsiteForm } from "@/components/camping/CampsiteForm";
 import { formatTravelTime } from "@/components/camping/helpers/travelTime";
+import { VisitTimeline } from "@/components/camping/VisitTimeline";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -126,13 +127,15 @@ export function CampsiteDetailPage() {
                 </Text>
 
                 {campsite.notes && (
-                    <Box {...surfaceBorderProps} p={3}>
+                    <Box {...surfaceBorderProps} p={3} mb={3}>
                         <Heading size="md" textAlign="center" mb={2}>
                             Notes
                         </Heading>
                         <Text whiteSpace="pre-wrap">{campsite.notes}</Text>
                     </Box>
                 )}
+
+                <VisitTimeline campsite={campsite} onChanged={(saved) => mutate(saved)} />
             </Box>
 
             <CampsiteForm
