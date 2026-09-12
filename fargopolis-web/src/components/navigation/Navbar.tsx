@@ -1,6 +1,6 @@
 import { Show, UserButton } from "@clerk/react";
 import { Box, Drawer, Flex, IconButton, Text, useMediaQuery } from "@chakra-ui/react";
-import { Menu } from "lucide-react";
+import { CircleUserRound, Menu } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
@@ -14,8 +14,29 @@ const NAV_ITEMS = [
     { label: "DnD",          path: "/dnd" },
     { label: "About",        path: "/about" },
     { label: "Split Check",  path: "/split-check" },
-    { label: "Login",        path: "/login" },
 ];
+
+const SignInAvatar: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+    <Flex
+        as="button"
+        role="button"
+        aria-label="Sign in"
+        w="8"
+        h="8"
+        borderRadius="full"
+        border="1px solid"
+        borderColor="border"
+        bg="transparent"
+        color="fg.secondary"
+        align="center"
+        justify="center"
+        flexShrink="0"
+        cursor="pointer"
+        onClick={onClick}
+    >
+        <CircleUserRound size={18} />
+    </Flex>
+);
 
 export const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -25,14 +46,6 @@ export const Navbar: React.FC = () => {
     const [loginOpen, setLoginOpen] = useState(false);
 
     const isActive = (path: string) => pathname.startsWith(path);
-
-    const handleNav = (path: string) => {
-        if (!isMobile && path === "/login") {
-            setLoginOpen(true);
-        } else {
-            navigate(path);
-        }
-    };
 
     return (
         <Flex
@@ -73,6 +86,9 @@ export const Navbar: React.FC = () => {
                 <>
                     <Flex ml="auto" align="center" gap="2">
                         <Show when="signed-in"><UserButton /></Show>
+                        <Show when="signed-out">
+                            <SignInAvatar onClick={() => setLoginOpen(true)} />
+                        </Show>
                         <IconButton variant="ghost" aria-label="Open menu" onClick={() => setDrawerOpen(true)}>
                             <Menu />
                         </IconButton>
@@ -107,7 +123,7 @@ export const Navbar: React.FC = () => {
                                             _hover={{ color: "fg", bg: "bg.sunk" }}
                                             onClick={() => {
                                                 setDrawerOpen(false);
-                                                handleNav(item.path);
+                                                navigate(item.path);
                                             }}
                                         >
                                             {item.label}
@@ -140,7 +156,7 @@ export const Navbar: React.FC = () => {
                                 cursor="pointer"
                                 transition="color 200ms"
                                 _hover={{ color: "fg" }}
-                                onClick={() => handleNav(item.path)}
+                                onClick={() => navigate(item.path)}
                             >
                                 {item.label}
                             </Box>
@@ -148,21 +164,7 @@ export const Navbar: React.FC = () => {
                     </Flex>
                     <Show when="signed-in"><UserButton /></Show>
                     <Show when="signed-out">
-                        <Flex
-                            w="8"
-                            h="8"
-                            borderRadius="full"
-                            bg="pine.500"
-                            color="white"
-                            align="center"
-                            justify="center"
-                            fontFamily="mono"
-                            fontSize="xs"
-                            fontWeight="600"
-                            flexShrink="0"
-                        >
-                            AK
-                        </Flex>
+                        <SignInAvatar onClick={() => setLoginOpen(true)} />
                     </Show>
                 </>
             )}
