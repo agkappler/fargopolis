@@ -48,7 +48,8 @@ def authorizer_lambda_context(event: dict[str, Any]) -> dict[str, str]:
 
 
 def require_clerk_writer(event: dict[str, Any]) -> dict[str, Any] | None:
-    """POST routes: authorizer must have validated Clerk session JWT (any logged-in user)."""
+    """POST/PUT/DELETE routes, or a GET that must not be served anonymously: authorizer
+    must have validated Clerk session JWT (any logged-in user)."""
     context = authorizer_lambda_context(event)
     if context.get("authenticated") != "true" or not context.get("sub"):
         return json_response(401, {"message": "Unauthorized"})
