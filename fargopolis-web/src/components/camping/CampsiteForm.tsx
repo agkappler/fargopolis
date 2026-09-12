@@ -2,7 +2,7 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Campsite from "@/models/Campsite";
 import { useAuth } from "@clerk/react";
-import { Combobox, createListCollection, Field, Grid, GridItem, Input, Text } from "@chakra-ui/react";
+import { Combobox, createListCollection, Field, Grid, GridItem, Input } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { BasicForm } from "../inputs/BasicForm";
@@ -266,12 +266,6 @@ export const CampsiteForm: React.FC<CampsiteFormProps> = ({
                     </GridItem>
                     <GridItem colSpan={12}>
                         <TextInput label="Notes" fieldName="notes" multilineRows={4} />
-                    </GridItem>
-                    <GridItem colSpan={12}>
-                        <Text fontSize="xs" color="fg.muted">
-                            Views, privacy, and space describe the site itself. Trips, people, and photos
-                            are added on the campsite page.
-                        </Text>
                     </GridItem>
                 </Grid>
             </BasicForm>

@@ -2,8 +2,8 @@ import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { RecipeForm } from "@/components/recipes/RecipeForm";
 import { AddModelCard } from "@/components/ui/AddModelCard";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
-import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ErrorWrapper } from "@/components/ui/ErrorWrapper";
+import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Project } from "@/constants/Projects";
 import RequestManager from "@/helpers/RequestManager";
@@ -20,11 +20,6 @@ export function RecipesPage() {
         () => RequestManager.get<Recipe[]>("/recipes"),
     );
 
-    if (isLoading) return <LoadingSpinner message="Loading recipes..." />;
-    if (error || recipes === undefined) {
-        return <ErrorMessage errorMessage={error?.message ?? "Failed to load recipes."} />;
-    }
-
     return (
         <>
             <PageHeader
@@ -32,17 +27,21 @@ export function RecipesPage() {
                 rightContainer={<LinkButton url={`/projects/${Project.Recipes}`} label="Project Details" />}
             />
             <Box maxW="fp.container" mx="auto" px="6" py="8">
-                <Grid
-                    templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
-                    gap="4"
-                >
-                    <AddModelCard onClick={() => setIsOpen(true)} title="Slip a new card in" />
+                <LoadingWrapper isLoading={isLoading}>
+                    <ErrorWrapper error={error} errorMessage="Failed to load recipes.">
+                        <Grid
+                            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+                            gap="4"
+                        >
+                            <AddModelCard onClick={() => setIsOpen(true)} title="Slip a new card in" />
 
-                    {/* Recipe index cards */}
-                    {recipes.map((r) => (
-                        <RecipeCard key={r.recipeId} recipeData={r} />
-                    ))}
-                </Grid>
+                            {/* Recipe index cards */}
+                            {recipes?.map((r) => (
+                                <RecipeCard key={r.recipeId} recipeData={r} />
+                            ))}
+                        </Grid>
+                    </ErrorWrapper>
+                </LoadingWrapper>
             </Box>
 
             <RecipeForm isOpen={isOpen} onClose={() => setIsOpen(false)} recipeData={undefined} updateRecipe={mutate} />
