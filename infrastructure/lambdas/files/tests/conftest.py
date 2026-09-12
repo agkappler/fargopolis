@@ -20,6 +20,17 @@ FILES_DIR = Path(__file__).resolve().parent.parent
 FILES_TABLE_NAME = "test-files"
 UPLOADS_BUCKET_NAME = "test-fargopolis-uploads"
 
+# Mirrors infrastructure/lib/constructs/files-construct.ts's `FileRoleIndex` exactly, including
+# its `INCLUDE` projection. `GET /api/getLatestResumeUrl` queries this GSI.
+FILE_ROLE_INDEX_SPEC = {
+    "IndexName": "FileRoleIndex",
+    "KeySchema": [{"AttributeName": "fileRole", "KeyType": "HASH"}],
+    "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": ["fileId", "uuId", "filename"],
+    },
+}
+
 
 @pytest.fixture(scope="session")
 def files_handler_module() -> Any:
@@ -43,7 +54,12 @@ def files_handler(files_handler_module: Any, dynamodb_resource: Any, monkeypatch
     monkeypatch.setenv("FARGOPOLIS_UPLOADS_BUCKET_NAME", UPLOADS_BUCKET_NAME)
 
     with mock_aws():
-        create_table(dynamodb_resource, FILES_TABLE_NAME, partition_key="fileId")
+        create_table(
+            dynamodb_resource,
+            FILES_TABLE_NAME,
+            partition_key="fileId",
+            global_secondary_indexes=[FILE_ROLE_INDEX_SPEC],
+        )
 
         yield files_handler_module
 

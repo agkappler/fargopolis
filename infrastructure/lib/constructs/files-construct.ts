@@ -9,6 +9,8 @@ import { Construct } from 'constructs';
  */
 const FILES_TABLE_LOGICAL_ID = 'FargopolisFilesTable';
 
+export const FILE_ROLE_INDEX = 'FileRoleIndex';
+
 /**
  * Shared file-metadata table used across verticals (recipes today; DnD characters next).
  *
@@ -16,8 +18,11 @@ const FILES_TABLE_LOGICAL_ID = 'FargopolisFilesTable';
  * existing S3 key shape `{uuId}_{filename}` keeps working without copying objects during the
  * Postgres -> Dynamo backfill. Other recipe/character items reference a row here by `fileId`.
  *
- * No GSI in v1; files are only fetched by id from the SPA. Add an index later if admin tooling
- * ever needs "list all files for role X".
+ * `FileRoleIndex` supports "list all files for role X" (e.g. the latest RESUME) with a `Query`
+ * instead of a table-wide `Scan`. Only string-typed `fileRole` values are indexed by it -- a
+ * handful of pre-migration Postgres rows may still carry a DynamoDB Number `fileRole` and won't
+ * show up in the index (see `files/handler.py`'s `_get_latest_resume_url`; normalizing those rows
+ * is the `migration-leftovers` cleanup item in `post_migration_cleanup.plan.md`).
  */
 export class FilesConstruct extends Construct {
     public readonly fileTable: dynamodb.Table;
@@ -32,5 +37,12 @@ export class FilesConstruct extends Construct {
             removalPolicy: cdk.RemovalPolicy.RETAIN,
         });
         (this.fileTable.node.defaultChild as dynamodb.CfnTable).overrideLogicalId(FILES_TABLE_LOGICAL_ID);
+
+        this.fileTable.addGlobalSecondaryIndex({
+            indexName: FILE_ROLE_INDEX,
+            partitionKey: { name: 'fileRole', type: dynamodb.AttributeType.STRING },
+            projectionType: dynamodb.ProjectionType.INCLUDE,
+            nonKeyAttributes: ['fileId', 'uuId', 'filename'],
+        });
     }
 }

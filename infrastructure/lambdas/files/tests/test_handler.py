@@ -89,18 +89,15 @@ def test_get_latest_resume_url_empty(files_handler, make_event):
     assert json.loads(resp["body"]) == {"url": ""}
 
 
-def test_get_latest_resume_url_matches_legacy_numeric_role_variants(files_handler, files_table, make_event):
-    """`_get_latest_resume_url`'s filter matches `fileRole` stored as the string `"RESUME"` (new
-    records) or the legacy Postgres role code, as either a DynamoDB Number (4) or String ("4").
-    Each item added below has a lexicographically later `fileId` than the last, so if the latest
-    result advances each time, that specific role representation was included by the filter."""
+def test_get_latest_resume_url_matches_string_role_variants(files_handler, files_table, make_event):
+    """`_get_latest_resume_url` queries `FileRoleIndex` (keyed on the String `fileRole` attribute),
+    so it matches `fileRole` stored as `"RESUME"` (new records) or the legacy Postgres role code
+    left as the *string* `"4"` by the one-time backfill. Each item added below has a
+    lexicographically later `fileId` than the last, so if the latest result advances each time,
+    that specific role representation was included by the query."""
     files_table.put_item(Item={"fileId": "a", "uuId": "u-a", "filename": "resume-a.pdf", "fileRole": "RESUME"})
     resp = files_handler.handler(make_event("GET", "/api/getLatestResumeUrl"), None)
     assert "u-a_resume-a.pdf" in json.loads(resp["body"])["url"]
-
-    files_table.put_item(Item={"fileId": "b", "uuId": "u-b", "filename": "resume-b.pdf", "fileRole": 4})
-    resp = files_handler.handler(make_event("GET", "/api/getLatestResumeUrl"), None)
-    assert "u-b_resume-b.pdf" in json.loads(resp["body"])["url"]
 
     files_table.put_item(Item={"fileId": "c", "uuId": "u-c", "filename": "resume-c.pdf", "fileRole": "4"})
     resp = files_handler.handler(make_event("GET", "/api/getLatestResumeUrl"), None)
@@ -109,6 +106,15 @@ def test_get_latest_resume_url_matches_legacy_numeric_role_variants(files_handle
     files_table.put_item(Item={"fileId": "d", "uuId": "u-d", "filename": "not-a-resume.pdf", "fileRole": "RECIPE_IMAGE"})
     resp = files_handler.handler(make_event("GET", "/api/getLatestResumeUrl"), None)
     assert "u-c_resume-c.pdf" in json.loads(resp["body"])["url"]
+
+
+def test_get_latest_resume_url_ignores_native_number_role(files_handler, files_table, make_event):
+    """A literal DynamoDB Number `fileRole` (the other shape the legacy Postgres backfill could
+    have produced) can't share `FileRoleIndex`'s String-typed key, so it's a known gap rather than
+    a table-wide `Scan` on every call -- see `FilesConstruct`'s `FileRoleIndex` doc comment."""
+    files_table.put_item(Item={"fileId": "z", "uuId": "u-z", "filename": "resume-z.pdf", "fileRole": 4})
+    resp = files_handler.handler(make_event("GET", "/api/getLatestResumeUrl"), None)
+    assert json.loads(resp["body"]) == {"url": ""}
 
 
 def test_get_latest_resume_url_prefers_ulid_over_legacy_numeric_id(files_handler, files_table, make_event):
