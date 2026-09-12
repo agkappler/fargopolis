@@ -1,9 +1,9 @@
+import { useFileUrl } from "@/helpers/useFileMetadata";
 import Campsite from "@/models/Campsite";
 import { Badge, Box, Flex, Text } from "@chakra-ui/react";
 import { Mountain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModelCard } from "../ui/ModelCard";
-import { useFileUrl } from "./helpers/useFileUrl";
 import { formatTravelTime } from "./helpers/travelTime";
 
 interface CampsiteCardProps {

@@ -1,7 +1,5 @@
-import RequestManager from "@/helpers/RequestManager";
-import FileMetadata from "@/models/FileMetadata";
+import { useFileMetadata } from "@/helpers/useFileMetadata";
 import { Avatar, Box } from "@chakra-ui/react";
-import useSWR from "swr";
 import { LoadingWrapper } from "./LoadingWrapper";
 
 interface ImageBoxProps {
@@ -10,10 +8,7 @@ interface ImageBoxProps {
 }
 
 export const ImageBox: React.FC<ImageBoxProps> = ({ fileId, altText }) => {
-    const { data: fileMetadata, isLoading } = useSWR<FileMetadata>(
-        `gw/fileUrl/${fileId}`,
-        () => RequestManager.get<FileMetadata>(`/fileUrl/${fileId}`)
-    );
+    const { data: fileMetadata, isLoading } = useFileMetadata(fileId);
     return <LoadingWrapper isLoading={isLoading} size={100}>
         <Box margin="auto" width={100}>
             <Avatar.Root boxSize="100px">

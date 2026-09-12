@@ -1,11 +1,11 @@
 import { FileRole } from "@/constants/FileRole";
 import RequestManager from "@/helpers/RequestManager";
+import { useFileMetadata } from "@/helpers/useFileMetadata";
 import FileMetadata from "@/models/FileMetadata";
 import { useAuth } from "@clerk/react";
 import { Avatar, Button, Flex, IconButton } from "@chakra-ui/react";
 import { UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
-import useSWR from "swr";
 
 interface FileUploadButtonProps {
     fileRole: FileRole;
@@ -32,13 +32,7 @@ export const FileUpload: React.FC<FileUploadButtonProps> = ({
         return fileMetadata.url ?? "";
     }
 
-    const { data: currentAvatarUrl } = useSWR<FileMetadata | undefined>(
-        `gw/fileUrl/${currentAvatarId}`,
-        currentAvatarId !== undefined
-            ? () => RequestManager.get<FileMetadata>(`/fileUrl/${currentAvatarId}`)
-            : () => Promise.resolve(undefined),
-        { onSuccess: (data) => setImageUrl(data?.url) }
-    );
+    const { data: currentAvatarUrl } = useFileMetadata(currentAvatarId);
     const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
     const inputRef = useRef<HTMLInputElement>(null);
 
