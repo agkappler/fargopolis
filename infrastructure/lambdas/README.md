@@ -1,9 +1,12 @@
 # Lambda unit tests
 
 Python Lambda handlers in this directory are unit-tested with `pytest` + [`moto`](https://github.com/getmoto/moto)
-(mocked DynamoDB) — no AWS credentials or network calls, no deploy required. `bounties/tests/` is
-the reference implementation; `recipes/tests/` is a second vertical built on the same shared
-fixtures/helpers, proving the pattern generalizes. Copy either as a starting point for a new one.
+(mocked DynamoDB and S3 — no AWS credentials or network calls, no deploy required). `bounties/tests/`
+is the reference implementation; `camping/`, `dnd/`, `dnd_glossary/`, `files/`, and `recipes/` each
+have their own `tests/` built on the same shared fixtures/helpers. Copy any of them as a starting
+point for a new vertical (`recipes/` or `dnd_glossary/` if it has a GSI; `files/` if it touches S3).
+`clerk_authorizer/` is the one exception — it does JWT/JWKS verification, not DynamoDB access, so
+it needs a different test setup (signed test JWTs + a mocked JWKS endpoint) and isn't covered here.
 
 ## Running
 
