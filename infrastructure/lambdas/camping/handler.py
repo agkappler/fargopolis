@@ -2,7 +2,7 @@
 Camping HTTP API backed by the FargopolisCampsites DynamoDB table.
 
 One item per campsite (place-centric), with a nested `visits` list recording
-each stay. Later changes add photo references.
+each stay, each carrying an ordered `photoIds` list.
 
 Routes:
 - GET    /api/campsites
@@ -13,6 +13,8 @@ Routes:
 - POST   /api/addVisitToCampsite/{campsiteId}
 - POST   /api/updateVisit
 - POST   /api/deleteVisit
+- POST   /api/updateVisitPhotos
+- POST   /api/updateCampsiteCover
 """
 
 from __future__ import annotations
@@ -144,7 +146,9 @@ def _campsite_fields_from_body(body: dict[str, Any]) -> dict[str, Any]:
     return fields
 
 
-def _visit_from_body(body: dict[str, Any], *, visit_id: str | None = None) -> dict[str, Any]:
+def _visit_from_body(
+    body: dict[str, Any], *, visit_id: str | None = None, photo_ids: list[str] | None = None
+) -> dict[str, Any]:
     start_date = _iso_date(body.get("startDate"), "startDate")
     end_date = _opt_iso_date(body.get("endDate"), "endDate")
     if end_date is not None and end_date < start_date:
@@ -163,6 +167,7 @@ def _visit_from_body(body: dict[str, Any], *, visit_id: str | None = None) -> di
         "notes": _opt_str(body.get("notes")) or "",
         "weather": _opt_str(body.get("weather")),
         "rating": _opt_rating(body.get("rating"), "rating"),
+        "photoIds": list(photo_ids) if photo_ids is not None else [],
     }
 
 
@@ -181,6 +186,7 @@ def _to_api_visit(item: dict[str, Any]) -> dict[str, Any]:
         "notes": item.get("notes", ""),
         "weather": item.get("weather"),
         "rating": item.get("rating"),
+        "photoIds": list(item.get("photoIds") or []),
     }
 
 
@@ -259,19 +265,36 @@ def _get_campsite_item_or_404(campsite_id: str) -> tuple[dict[str, Any] | None, 
     return item, None
 
 
-def _write_visits(campsite_id: str, visits: list[dict[str, Any]], old_version: Any) -> dict[str, Any] | None:
+def _write_visits(campsite_id: str, visits: list[dict[str, Any]], item: dict[str, Any]) -> dict[str, Any] | None:
     """Persist a mutated visits list under the campsite's optimistic-concurrency version.
+
+    Recomputes visitCount/lastVisitDate, and clears coverPhotoId when it no
+    longer points at any of the visits' photos (deleting a visit, or dropping a
+    photo from one, can invalidate the cover).
 
     Returns an error response (404 if the campsite vanished, 409 if the version
     is stale) or ``None`` on success.
     """
     visit_count, last_visit_date = _recompute_visit_summary(visits)
-    expr_values: dict[str, Any] = {":visits": visits, ":vc": visit_count, ":one": 1, ":old": old_version}
+    valid_photo_ids = {pid for v in visits for pid in (v.get("photoIds") or [])}
+    current_cover = item.get("coverPhotoId")
+    clear_cover = current_cover is not None and current_cover not in valid_photo_ids
+
+    expr_values: dict[str, Any] = {":visits": visits, ":vc": visit_count, ":one": 1, ":old": item.get("version")}
+    set_clauses = ["visits = :visits", "visitCount = :vc"]
+    remove_clauses: list[str] = []
     if last_visit_date is None:
-        update_expr = "SET visits = :visits, visitCount = :vc REMOVE lastVisitDate ADD version :one"
+        remove_clauses.append("lastVisitDate")
     else:
         expr_values[":lvd"] = last_visit_date
-        update_expr = "SET visits = :visits, visitCount = :vc, lastVisitDate = :lvd ADD version :one"
+        set_clauses.append("lastVisitDate = :lvd")
+    if clear_cover:
+        remove_clauses.append("coverPhotoId")
+
+    update_expr = "SET " + ", ".join(set_clauses)
+    if remove_clauses:
+        update_expr += " REMOVE " + ", ".join(remove_clauses)
+    update_expr += " ADD version :one"
 
     table = table_from_env(CAMPSITES_TABLE_ENV)
     try:
@@ -300,7 +323,7 @@ def _add_visit(campsite_id: str, body: dict[str, Any]) -> dict[str, Any]:
         return err
     visits = list(item.get("visits") or [])
     visits.append(_visit_from_body(body))
-    write_err = _write_visits(campsite_id, visits, item.get("version"))
+    write_err = _write_visits(campsite_id, visits, item)
     if write_err:
         return write_err
     return _get_campsite(campsite_id)
@@ -321,9 +344,10 @@ def _update_visit(body: dict[str, Any]) -> dict[str, Any]:
     index = next((i for i, v in enumerate(visits) if str(v.get("visitId")) == visit_id), None)
     if index is None:
         return json_response(404, {"message": f"Visit not found: {visit_id}"})
-    visits[index] = _visit_from_body(body, visit_id=visit_id)
+    existing_photo_ids = visits[index].get("photoIds") or []
+    visits[index] = _visit_from_body(body, visit_id=visit_id, photo_ids=existing_photo_ids)
 
-    write_err = _write_visits(campsite_id, visits, item.get("version"))
+    write_err = _write_visits(campsite_id, visits, item)
     if write_err:
         return write_err
     return _get_campsite(campsite_id)
@@ -345,9 +369,78 @@ def _delete_visit(body: dict[str, Any]) -> dict[str, Any]:
     if len(visits) == len(original_visits):
         return json_response(404, {"message": f"Visit not found: {visit_id}"})
 
-    write_err = _write_visits(campsite_id, visits, item.get("version"))
+    write_err = _write_visits(campsite_id, visits, item)
     if write_err:
         return write_err
+    return _get_campsite(campsite_id)
+
+
+def _update_visit_photos(body: dict[str, Any]) -> dict[str, Any]:
+    campsite_id = str(body.get("campsiteId") or "").strip()
+    visit_id = str(body.get("visitId") or "").strip()
+    if not campsite_id:
+        raise ValueError("campsiteId is required")
+    if not visit_id:
+        raise ValueError("visitId is required")
+
+    photo_ids_raw = body.get("photoIds")
+    if not isinstance(photo_ids_raw, list):
+        raise ValueError("photoIds must be a list")
+    photo_ids = [str(p).strip() for p in photo_ids_raw if str(p).strip()]
+
+    item, err = _get_campsite_item_or_404(campsite_id)
+    if err:
+        return err
+    visits = list(item.get("visits") or [])
+    index = next((i for i, v in enumerate(visits) if str(v.get("visitId")) == visit_id), None)
+    if index is None:
+        return json_response(404, {"message": f"Visit not found: {visit_id}"})
+    visits[index] = {**visits[index], "photoIds": photo_ids}
+
+    write_err = _write_visits(campsite_id, visits, item)
+    if write_err:
+        return write_err
+    return _get_campsite(campsite_id)
+
+
+def _update_campsite_cover(body: dict[str, Any]) -> dict[str, Any]:
+    campsite_id = str(body.get("campsiteId") or "").strip()
+    if not campsite_id:
+        raise ValueError("campsiteId is required")
+    raw_cover = body.get("coverPhotoId")
+    cover_photo_id = str(raw_cover).strip() if raw_cover else None
+
+    item, err = _get_campsite_item_or_404(campsite_id)
+    if err:
+        return err
+
+    if cover_photo_id is not None:
+        valid_photo_ids = {pid for v in (item.get("visits") or []) for pid in (v.get("photoIds") or [])}
+        if cover_photo_id not in valid_photo_ids:
+            raise ValueError("coverPhotoId must belong to one of this campsite's visit photos")
+
+    expr_values: dict[str, Any] = {":one": 1, ":old": item.get("version")}
+    if cover_photo_id is None:
+        update_expr = "REMOVE coverPhotoId ADD version :one"
+    else:
+        expr_values[":cid"] = cover_photo_id
+        update_expr = "SET coverPhotoId = :cid ADD version :one"
+
+    table = table_from_env(CAMPSITES_TABLE_ENV)
+    try:
+        table.update_item(
+            Key={"campsiteId": campsite_id},
+            UpdateExpression=update_expr,
+            ExpressionAttributeValues=expr_values,
+            ConditionExpression="version = :old",
+        )
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+            _, missing_err = _get_campsite_item_or_404(campsite_id)
+            if missing_err:
+                return missing_err
+            return json_response(409, {"message": "Campsite changed elsewhere; reload and try again."})
+        raise
     return _get_campsite(campsite_id)
 
 
@@ -457,6 +550,16 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             if err:
                 return err
             return _delete_visit(parse_body(event))
+        if route_key == "POST /api/updateVisitPhotos":
+            err = require_clerk_writer(event)
+            if err:
+                return err
+            return _update_visit_photos(parse_body(event))
+        if route_key == "POST /api/updateCampsiteCover":
+            err = require_clerk_writer(event)
+            if err:
+                return err
+            return _update_campsite_cover(parse_body(event))
 
         return json_response(404, {"message": "Not found", "routeKey": route_key})
     except json.JSONDecodeError:

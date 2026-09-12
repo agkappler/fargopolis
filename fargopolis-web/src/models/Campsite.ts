@@ -1,9 +1,6 @@
 import Visit from "@/models/Visit";
 
-/**
- * One physical place we have camped. Place-centric: trip history (`visits`),
- * photo references, and the cover photo are populated by later changes.
- */
+/** One physical place we have camped. Place-centric: trip history (`visits`) and a cover photo pointer. */
 export default interface Campsite {
     campsiteId: string;
     name: string;
@@ -23,7 +20,7 @@ export default interface Campsite {
     space?: number | null;
     notes?: string | null;
 
-    // Populated by later changes; optional here so the model does not reshape.
+    /** File id of the visit photo used as this campsite's cover, if any. */
     coverPhotoId?: string | null;
     visitCount?: number;
     lastVisitDate?: string | null;

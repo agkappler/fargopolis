@@ -9,4 +9,6 @@ export default interface Visit {
     weather?: string | null;
     /** Overall feel of the stay, 1–5. */
     rating?: number | null;
+    /** Ordered file ids of photos attached to this visit. */
+    photoIds: string[];
 }
