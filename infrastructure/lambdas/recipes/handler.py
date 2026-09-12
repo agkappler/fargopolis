@@ -24,7 +24,6 @@ from shared.lambda_utils import (
     json_response,
     parse_body,
     require_clerk_writer,
-    scan_all_items,
     table_from_env,
 )
 
@@ -176,24 +175,13 @@ def _add_ingredient(recipe_id: str, body: dict[str, Any]) -> dict[str, Any]:
     return json_response(200, _to_api_ingredient(ingredient))
 
 
-def _find_recipe_id_for_ingredient(ingredient_id: str) -> str | None:
-    table = table_from_env(RECIPES_TABLE_ENV)
-    for item in scan_all_items(table):
-        for ing in item.get("ingredients") or []:
-            if str(ing.get("ingredientId", "")) == ingredient_id:
-                return str(item.get("recipeId", ""))
-    return None
-
-
 def _update_ingredient(body: dict[str, Any]) -> dict[str, Any]:
     ingredient_id = str(body.get("ingredientId") or "").strip()
     if not ingredient_id:
         raise ValueError("ingredientId is required")
     recipe_id = str(body.get("recipeId") or "").strip()
     if not recipe_id:
-        recipe_id = _find_recipe_id_for_ingredient(ingredient_id) or ""
-    if not recipe_id:
-        return json_response(404, {"message": f"Ingredient not found: {ingredient_id}"})
+        raise ValueError("recipeId is required")
 
     item, err = _get_recipe_or_404(recipe_id)
     if err:
