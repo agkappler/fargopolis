@@ -18,7 +18,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ campsite, visit, onC
     const { getToken, isSignedIn } = useAuth();
     const [dragIndex, setDragIndex] = useState<number>();
 
-    if (visit.photoIds.length === 0) return null;
+    if (!isSignedIn || visit.photoIds.length === 0) return null;
 
     const persistOrder = async (photoIds: string[]) => {
         try {
