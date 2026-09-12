@@ -49,7 +49,9 @@ def make_event() -> Callable[..., dict[str, Any]]:
     """Build a minimal API Gateway HTTP API v2 (payload format 2.0) event.
 
     `body`, when given, is JSON-encoded unless already a `str` (pass a raw string to exercise
-    malformed-JSON handling). `query`, when given, becomes `queryStringParameters`.
+    malformed-JSON handling). `query`, when given, becomes `queryStringParameters`. `path_params`,
+    when given, becomes `pathParameters` (API Gateway's resolved `{proxy}`-style route
+    placeholders -- some handlers read these directly rather than parsing `rawPath` themselves).
     `authenticated=True` mirrors the Clerk authorizer's lambda context contract read by
     `shared.lambda_utils.authorizer_lambda_context`.
     """
@@ -59,6 +61,7 @@ def make_event() -> Callable[..., dict[str, Any]]:
         path: str,
         body: Any = None,
         query: dict[str, str] | None = None,
+        path_params: dict[str, str] | None = None,
         authenticated: bool = False,
         sub: str | None = None,
     ) -> dict[str, Any]:
@@ -71,6 +74,8 @@ def make_event() -> Callable[..., dict[str, Any]]:
             event["body"] = body if isinstance(body, str) else json.dumps(body)
         if query is not None:
             event["queryStringParameters"] = query
+        if path_params is not None:
+            event["pathParameters"] = path_params
         if authenticated:
             event["requestContext"]["authorizer"] = {
                 "lambda": {"authenticated": "true", "sub": sub or "user_test123"}
