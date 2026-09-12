@@ -1,11 +1,12 @@
 import { Show, UserButton } from "@clerk/react";
 import { Box, Drawer, Flex, IconButton, Text, useMediaQuery } from "@chakra-ui/react";
-import { CircleUserRound, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
 import { SimpleDialog } from "../ui/SimpleDialog";
 import { NAVBAR_BREAK } from "@/constants/Media";
+import { SignInAvatar } from "./SignInAvatar";
 
 const NAV_ITEMS = [
     { label: "Recipe Box",   path: "/recipes" },
@@ -15,28 +16,6 @@ const NAV_ITEMS = [
     { label: "About",        path: "/about" },
     { label: "Split Check",  path: "/split-check" },
 ];
-
-const SignInAvatar: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-    <Flex
-        as="button"
-        role="button"
-        aria-label="Sign in"
-        w="8"
-        h="8"
-        borderRadius="full"
-        border="1px solid"
-        borderColor="border"
-        bg="transparent"
-        color="fg.secondary"
-        align="center"
-        justify="center"
-        flexShrink="0"
-        cursor="pointer"
-        onClick={onClick}
-    >
-        <CircleUserRound size={18} />
-    </Flex>
-);
 
 export const Navbar: React.FC = () => {
     const navigate = useNavigate();
