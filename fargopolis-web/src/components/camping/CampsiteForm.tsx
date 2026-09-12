@@ -2,18 +2,18 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Campsite from "@/models/Campsite";
 import { useAuth } from "@clerk/react";
-import { Combobox, createListCollection, Field, Grid, GridItem, Input } from "@chakra-ui/react";
+import { Grid, GridItem } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
 import { BasicForm } from "../inputs/BasicForm";
 import { DropdownInput } from "../inputs/DropdownInput";
-import { fieldBorderProps } from "../inputs/fieldStyle";
 import { TextInput } from "../inputs/TextInput";
 import { SimpleDialog } from "../ui/SimpleDialog";
+import { CoordinateField } from "./CoordinateField";
+import { RegionField } from "./RegionField";
 import { parseCoordinates } from "./helpers/parseCoordinates";
 import { formatTravelTime, parseTravelTimeMinutes } from "./helpers/travelTime";
 
-interface CampsiteFormValues {
+export interface CampsiteFormValues {
     name: string;
     coordinates: string;
     region: string;
@@ -72,100 +72,6 @@ function toDefaults(campsite: CampsiteFormProps["campsiteData"]): Partial<Campsi
         notes: campsite.notes ?? "",
     };
 }
-
-/** Coordinate paste field: parses on change, shows the resolved pair, blocks submit when invalid. */
-const CoordinateField: React.FC = () => {
-    const { register, formState: { errors } } = useFormContext<CampsiteFormValues>();
-    const [resolved, setResolved] = useState<string>();
-
-    const reg = register("coordinates", {
-        required: "Coordinates are required",
-        validate: (value: string) => {
-            const result = parseCoordinates(value ?? "");
-            return result.ok ? true : result.error;
-        },
-    });
-
-    return (
-        <Field.Root invalid={!!errors.coordinates} w="full">
-            <Field.Label>Coordinates*</Field.Label>
-            <Input
-                px="3.5"
-                placeholder="44.63, -110.72"
-                {...fieldBorderProps}
-                {...reg}
-                onChange={(e) => {
-                    reg.onChange(e);
-                    const result = parseCoordinates(e.target.value);
-                    setResolved(result.ok ? `${result.value.lat}, ${result.value.lng}` : undefined);
-                }}
-            />
-            {errors.coordinates ? (
-                <Field.ErrorText>{errors.coordinates.message as string}</Field.ErrorText>
-            ) : (
-                <Field.HelperText>
-                    {resolved ? `Resolved: ${resolved}` : "Paste a lat, lng pair"}
-                </Field.HelperText>
-            )}
-        </Field.Root>
-    );
-};
-
-/** Region field: free text with suggestions drawn from regions other campsites already use. */
-const RegionField: React.FC<{ options: string[] }> = ({ options }) => {
-    const { control } = useFormContext<CampsiteFormValues>();
-    const collection = useMemo(
-        () => createListCollection({ items: options.map((o) => ({ value: o, label: o })) }),
-        [options],
-    );
-
-    return (
-        <Controller
-            name="region"
-            control={control}
-            render={({ field }) => (
-                <Field.Root w="full">
-                    <Field.Label>Region</Field.Label>
-                    <Combobox.Root
-                        collection={collection}
-                        allowCustomValue
-                        defaultInputValue={typeof field.value === "string" ? field.value : ""}
-                        onInputValueChange={({ inputValue, reason }) => {
-                            if (reason === "input-change") {
-                                field.onChange(inputValue);
-                            }
-                        }}
-                        onValueChange={(details) => field.onChange(details.value[0] ?? "")}
-                        onInteractOutside={field.onBlur}
-                    >
-                        <Combobox.Control>
-                            <Combobox.Input
-                                px="3.5"
-                                placeholder="Breckenridge, Lyons, …"
-                                {...fieldBorderProps}
-                            />
-                            <Combobox.IndicatorGroup>
-                                <Combobox.ClearTrigger />
-                                <Combobox.Trigger />
-                            </Combobox.IndicatorGroup>
-                        </Combobox.Control>
-                        <Combobox.Positioner>
-                            <Combobox.Content>
-                                {options.map((option) => (
-                                    <Combobox.Item item={{ value: option, label: option }} key={option}>
-                                        <Combobox.ItemText>{option}</Combobox.ItemText>
-                                        <Combobox.ItemIndicator />
-                                    </Combobox.Item>
-                                ))}
-                                <Combobox.Empty>Type a new region</Combobox.Empty>
-                            </Combobox.Content>
-                        </Combobox.Positioner>
-                    </Combobox.Root>
-                </Field.Root>
-            )}
-        />
-    );
-};
 
 export const CampsiteForm: React.FC<CampsiteFormProps> = ({
     isOpen,
