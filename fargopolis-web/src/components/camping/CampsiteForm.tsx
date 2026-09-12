@@ -11,6 +11,7 @@ import { SimpleDialog } from "../ui/SimpleDialog";
 import { CoordinateField } from "./CoordinateField";
 import { RegionField } from "./RegionField";
 import { parseCoordinates } from "./helpers/parseCoordinates";
+import { RATING_OPTIONS } from "./helpers/ratingOptions";
 import { formatTravelTime, parseTravelTimeMinutes } from "./helpers/travelTime";
 
 export interface CampsiteFormValues {
@@ -40,15 +41,6 @@ const FIREPIT_OPTIONS = [
     { value: "", label: "Unknown" },
     { value: "yes", label: "Yes" },
     { value: "no", label: "No" },
-];
-
-const RATING_OPTIONS = [
-    { value: "", label: "—" },
-    { value: "1", label: "1" },
-    { value: "2", label: "2" },
-    { value: "3", label: "3" },
-    { value: "4", label: "4" },
-    { value: "5", label: "5" },
 ];
 
 function toDefaults(campsite: CampsiteFormProps["campsiteData"]): Partial<CampsiteFormValues> {
