@@ -5,19 +5,23 @@ from __future__ import annotations
 import json
 import os
 from decimal import Decimal
+from functools import lru_cache
 from typing import Any
 
 import boto3
 from ulid import ULID
 
-dynamodb: Any = boto3.resource("dynamodb")
+
+@lru_cache(maxsize=1)
+def _dynamodb_resource() -> Any:
+    return boto3.resource("dynamodb")
 
 
 def table_from_env(name_env: str):
     table_name = os.environ.get(name_env)
     if not table_name:
         raise RuntimeError(f"Missing env {name_env}")
-    return dynamodb.Table(table_name)
+    return _dynamodb_resource().Table(table_name)
 
 
 def json_response(status_code: int, body: Any) -> dict[str, Any]:

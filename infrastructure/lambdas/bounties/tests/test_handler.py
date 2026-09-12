@@ -7,7 +7,32 @@ tested through the authorizer-context contract `require_clerk_writer` reads.
 
 from __future__ import annotations
 
+import importlib.util
 import json
+
+from .conftest import BOUNTIES_DIR
+
+
+# --- Import-time behavior ------------------------------------------------------------------------
+
+
+def test_handler_module_imports_without_table_env_vars(monkeypatch) -> None:
+    """Regression guard for the session-scoped `bounties_handler_module` fixture: importing
+    `handler.py` must not depend on BOUNTIES_TABLE_NAME / BOUNTY_CATEGORIES_TABLE_NAME (or any
+    other env state) at import time -- only lazily, inside route functions. The session-scoped
+    fixture imports the module once, before any test has set those vars; if a future change
+    reintroduced an import-time dependency on them, it would fail here loudly instead of silently
+    breaking whichever test happens to resolve that fixture first.
+    """
+    monkeypatch.delenv("BOUNTIES_TABLE_NAME", raising=False)
+    monkeypatch.delenv("BOUNTY_CATEGORIES_TABLE_NAME", raising=False)
+
+    spec = importlib.util.spec_from_file_location(
+        "bounties_handler_import_check", BOUNTIES_DIR / "handler.py"
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)  # must not raise
 
 
 # --- GET /api/bounties ------------------------------------------------------------------------
