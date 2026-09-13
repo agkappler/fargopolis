@@ -13,7 +13,6 @@ export const FitMapBounds: React.FC<FitMapBoundsProps> = ({ positions, maxZoom }
     useEffect(() => {
         if (positions.length === 0) return;
         map.fitBounds(positions, { maxZoom, padding: [24, 24] });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map, positions, maxZoom]);
 
     return null;

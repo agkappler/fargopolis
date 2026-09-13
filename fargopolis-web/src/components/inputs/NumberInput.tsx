@@ -2,12 +2,7 @@ import { BaseInputProps } from "@/helpers/BaseInputProps";
 import { Field, Input, InputGroup } from "@chakra-ui/react";
 import { useFormContext } from "react-hook-form";
 import { fieldBorderProps } from "./fieldStyle";
-
-export enum NumberInputType {
-    Currency,
-    Percentage,
-    WholeNumber
-}
+import { NumberInputType } from "./numberInputType";
 
 interface NumberInputProps extends BaseInputProps {
     type?: NumberInputType;

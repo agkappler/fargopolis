@@ -13,7 +13,6 @@ export const MapRecenter: React.FC<MapRecenterProps> = ({ lat, lng, zoom }) => {
 
     useEffect(() => {
         map.flyTo([lat, lng], zoom ?? map.getZoom());
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map, lat, lng, zoom]);
 
     return null;
