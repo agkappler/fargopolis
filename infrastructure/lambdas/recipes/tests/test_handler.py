@@ -218,21 +218,44 @@ def test_update_ingredient_requires_ingredient_id(recipes_handler, make_event):
     assert resp["statusCode"] == 400
 
 
-def test_update_ingredient_not_found_is_404(recipes_handler, make_event):
+def test_update_ingredient_requires_recipe_id(recipes_handler, make_event):
     event = make_event(
-        "POST", "/api/updateIngredient", body={"ingredientId": "does-not-exist"}, authenticated=True
+        "POST", "/api/updateIngredient", body={"ingredientId": "i1"}, authenticated=True
+    )
+    resp = recipes_handler.handler(event, None)
+    assert resp["statusCode"] == 400
+
+
+def test_update_ingredient_unknown_recipe_is_404(recipes_handler, make_event):
+    event = make_event(
+        "POST",
+        "/api/updateIngredient",
+        body={"ingredientId": "does-not-exist", "recipeId": "does-not-exist"},
+        authenticated=True,
     )
     resp = recipes_handler.handler(event, None)
     assert resp["statusCode"] == 404
 
 
-def test_update_ingredient_success_falls_back_to_scan_when_recipe_id_omitted(recipes_handler, make_event):
-    """`_update_ingredient` scans the whole table for the owning recipe when `recipeId` isn't
-    given (`_find_recipe_id_for_ingredient`) -- exercise that path explicitly, with a second,
-    unrelated recipe present to prove the scan doesn't just get lucky with a single-item table."""
-    recipes_handler.handler(
-        make_event("POST", "/api/createRecipe", body={"name": "Unrelated"}, authenticated=True), None
+def test_update_ingredient_unknown_ingredient_is_404(recipes_handler, make_event):
+    create = recipes_handler.handler(
+        make_event("POST", "/api/createRecipe", body={"name": "Chili"}, authenticated=True), None
     )
+    recipe_id = json.loads(create["body"])["recipeId"]
+
+    resp = recipes_handler.handler(
+        make_event(
+            "POST",
+            "/api/updateIngredient",
+            body={"ingredientId": "does-not-exist", "recipeId": recipe_id},
+            authenticated=True,
+        ),
+        None,
+    )
+    assert resp["statusCode"] == 404
+
+
+def test_update_ingredient_success(recipes_handler, make_event):
     create = recipes_handler.handler(
         make_event("POST", "/api/createRecipe", body={"name": "Chili"}, authenticated=True), None
     )
@@ -252,7 +275,7 @@ def test_update_ingredient_success_falls_back_to_scan_when_recipe_id_omitted(rec
         make_event(
             "POST",
             "/api/updateIngredient",
-            body={"ingredientId": ingredient_id, "quantity": "2 cans"},
+            body={"ingredientId": ingredient_id, "recipeId": recipe_id, "quantity": "2 cans"},
             authenticated=True,
         ),
         None,

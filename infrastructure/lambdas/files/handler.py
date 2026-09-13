@@ -14,14 +14,15 @@ import os
 from typing import Any
 
 import boto3
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from shared.lambda_utils import generate_ulid, json_response, parse_body, require_clerk_writer, scan_all_items, table_from_env
+from shared.lambda_utils import generate_ulid, json_response, parse_body, require_clerk_writer, table_from_env
 
 VALID_FILE_ROLES = frozenset({"RECIPE_IMAGE", "CHARACTER_AVATAR", "CHARACTER_RESOURCE", "RESUME", "CAMPSITE_PHOTO"})
 FILES_TABLE_ENV = "FILES_TABLE_NAME"
 UPLOADS_BUCKET_ENV = "FARGOPOLIS_UPLOADS_BUCKET_NAME"
 FILE_URL_ROUTE_PREFIX = "/api/fileUrl/"
+FILE_ROLE_INDEX = "FileRoleIndex"
 
 _s3_client: Any = None
 
@@ -87,7 +88,10 @@ def _metadata_with_url(item: dict[str, Any]) -> dict[str, Any]:
 
 
 def _latest_resume_item(items: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Prefer highest numeric fileId (Postgres-era); else lexicographic max (ULID time-order)."""
+    """Any ULID fileId (post-migration upload) outranks any digit-only legacy fileId, since every
+    ULID was necessarily created after the one-time Postgres backfill; within each group, higher
+    sorts later (numerically for legacy ids, lexicographically -- i.e. by creation time -- for
+    ULIDs)."""
     if not items:
         return None
 
@@ -100,13 +104,30 @@ def _latest_resume_item(items: list[dict[str, Any]]) -> dict[str, Any] | None:
     return max(items, key=sort_key)
 
 
+def _query_files_by_role(table: Any, role: str | int) -> list[dict[str, Any]]:
+    response = table.query(
+        IndexName=FILE_ROLE_INDEX,
+        KeyConditionExpression=Key("fileRole").eq(role),
+    )
+    return response.get("Items", [])
+
+
 def _get_latest_resume_url() -> dict[str, Any]:
     table = table_from_env(FILES_TABLE_ENV)
-    # Dynamo uses string "RESUME"; legacy Postgres may have stored role as N(4) or string "4".
-    resume_filter = (
-        Attr("fileRole").eq("RESUME") | Attr("fileRole").eq(4) | Attr("fileRole").eq("4")
-    )
-    items = scan_all_items(table, FilterExpression=resume_filter)
+
+    # FileRoleIndex is keyed on the String fileRole attribute: "RESUME" is everything
+    # _create_presign_put has ever written (see _normalize_file_role), and "4" is the legacy
+    # Postgres role code left as a string by the one-time backfill. A resume can have either
+    # value regardless of whether its fileId is a ULID or a legacy numeric id (a fresh upload
+    # doesn't retroactively touch old rows), so both are queried and merged before picking the
+    # overall latest -- a single value can't be assumed to already be the max.
+    #
+    # A literal DynamoDB *Number* 4 -- the other shape the same backfill could have produced --
+    # can't share this String-typed GSI key, so it isn't indexed and isn't queried here. Matching
+    # it would mean scanning the whole table on every call, which defeats the point of this index;
+    # normalizing any such rows to the string "RESUME" is tracked as the `migration-leftovers`
+    # cleanup item in post_migration_cleanup.plan.md.
+    items = _query_files_by_role(table, "RESUME") + _query_files_by_role(table, "4")
     latest = _latest_resume_item(items)
     if not latest:
         return json_response(200, {"url": ""})

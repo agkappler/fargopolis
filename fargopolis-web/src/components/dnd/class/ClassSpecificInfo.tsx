@@ -9,8 +9,9 @@ interface ClassSpecificInfoProps {
 export const ClassSpecificInfo: React.FC<ClassSpecificInfoProps> = ({ levelInfo }) => {
     const classIndex = levelInfo.class.index;
     const info = levelInfo.class_specific;
+    if (!info) return null;
 
-    let classInfo: { label: string, value: number | string }[] = [];
+    let classInfo: { label: string, value: number | string | boolean | undefined }[] = [];
     switch (classIndex) {
         case DndClass.Barbarian:
             classInfo = [
@@ -53,7 +54,7 @@ export const ClassSpecificInfo: React.FC<ClassSpecificInfoProps> = ({ levelInfo 
             classInfo = [
                 { label: 'Ki Points', value: info.ki_points },
                 { label: 'Unarmored Movement Bonus', value: `${info.unarmored_movement}ft` },
-                { label: 'Martial Arts', value: `${info.martial_arts.dice_count}d${info.martial_arts.dice_value}` }
+                { label: 'Martial Arts', value: `${info.martial_arts?.dice_count}d${info.martial_arts?.dice_value}` }
             ];
             break;
         case DndClass.Paladin:
@@ -70,7 +71,7 @@ export const ClassSpecificInfo: React.FC<ClassSpecificInfoProps> = ({ levelInfo 
             break;
         case DndClass.Rogue:
             classInfo = [
-                { label: 'Sneak Attack', value: `${info.sneak_attack.dice_count}d${info.sneak_attack.dice_value}` }
+                { label: 'Sneak Attack', value: `${info.sneak_attack?.dice_count}d${info.sneak_attack?.dice_value}` }
             ];
             break;
         case DndClass.Sorcerer:

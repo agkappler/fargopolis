@@ -1,13 +1,9 @@
+import { SorcerySpellSlot } from "@/api/dnd5eapi";
 import { Table, Text } from "@chakra-ui/react";
 import React from "react";
 
 interface CreatingSpellSlotsTableProps {
-    creatingSpellSlots: { spell_slot_level: number, sorcery_point_cost: number }[]
-}
-
-interface SorcerySpellSlot {
-    spell_slot_level: number;
-    sorcery_point_cost: number;
+    creatingSpellSlots: SorcerySpellSlot[]
 }
 
 export const CreatingSpellSlotsTable: React.FC<CreatingSpellSlotsTableProps> = ({ creatingSpellSlots }) => {

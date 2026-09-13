@@ -1,6 +1,7 @@
 import { DropdownInput } from "@/components/inputs/DropdownInput";
 import { ListInput } from "@/components/inputs/ListInput";
-import { NumberInput, NumberInputType } from "@/components/inputs/NumberInput";
+import { NumberInput } from "@/components/inputs/NumberInput";
+import { NumberInputType } from "@/components/inputs/numberInputType";
 import { SwitchInput } from "@/components/inputs/SwitchInput";
 import { TextInput } from "@/components/inputs/TextInput";
 import { PageHeader } from "@/components/ui/PageHeader";

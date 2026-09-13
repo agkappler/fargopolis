@@ -3,7 +3,7 @@ API Gateway HTTP API v2 — Lambda authorizer (SIMPLE response).
 
 Runs on shared API routes. Forwards Clerk JWT claims as string `context` for integrations.
 - Public GETs: allow without Bearer; optional Bearer validated and passed through.
-- Writes (POST /api/*): require valid Clerk JWT or deny.
+- Writes (any non-GET method under /api/*, e.g. POST/PUT/PATCH/DELETE): require valid Clerk JWT or deny.
 """
 
 from __future__ import annotations
@@ -71,7 +71,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
                 # Invalid or expired token on a public read — still allow the GET; no user context.
                 return _allow({"authenticated": "false"})
 
-        if (method == "POST" or method == "PUT" or method == "DELETE") and raw_path.startswith("/api/"):
+        if raw_path.startswith("/api/"):
+            # Any other method (POST/PUT/PATCH/DELETE/…) is a write: default-deny, don't enumerate methods.
             if not token:
                 return _deny()
             try:

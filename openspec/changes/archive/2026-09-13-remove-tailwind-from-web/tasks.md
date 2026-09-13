@@ -53,5 +53,5 @@ then a commit. Gate: build passes, no lint errors beyond the 5 pre-existing
 ## 7. Wrap-up
 
 - [x] 7.1 Marked the "Tailwind stays" non-goal in `migrate-remaining-mui-to-chakra/design.md` as superseded by this change.
-- [ ] 7.2 **Browser smoke check** (deferred — no interactive session): About timeline, a form modal (field borders — see `fieldStyle.ts` note), a card grid, Navbar height/sticky, page max-width. Then optionally drop the now-redundant `borderWidth`/`borderStyle` from `fieldStyle.ts` if Chakra's own field border renders.
-- [ ] 7.3 Run `/opsx:archive` for this change.
+- [x] 7.2 **Browser smoke check** (deferred — no interactive session): About timeline, a form modal (field borders — see `fieldStyle.ts` note), a card grid, Navbar height/sticky, page max-width. Then optionally drop the now-redundant `borderWidth`/`borderStyle` from `fieldStyle.ts` if Chakra's own field border renders.
+- [x] 7.3 Run `/opsx:archive` for this change.

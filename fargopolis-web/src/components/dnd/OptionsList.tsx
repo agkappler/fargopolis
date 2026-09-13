@@ -1,9 +1,9 @@
-import { DndItem } from "@/api/dnd5eapi"
+import { DndChoice, DndReferenceOption } from "@/api/dnd5eapi"
 import { Table, Text } from "@chakra-ui/react"
 import { OptionCell } from "./OptionCell"
 
 interface OptionsListProps {
-    subOptions: any
+    subOptions: DndChoice
 }
 
 export const OptionsList: React.FC<OptionsListProps> = ({ subOptions }) => {
@@ -18,7 +18,7 @@ export const OptionsList: React.FC<OptionsListProps> = ({ subOptions }) => {
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                    {subOptions.from.options.map((option: { item: DndItem }, index: number) => (
+                    {subOptions.from.options.map((option: DndReferenceOption, index: number) => (
                         <Table.Row key={index}>
                             <Table.Cell>{option.item.name}</Table.Cell>
                             <OptionCell option={option.item} />
