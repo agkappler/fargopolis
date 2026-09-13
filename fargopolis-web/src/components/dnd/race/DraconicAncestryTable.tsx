@@ -1,9 +1,9 @@
-import { DndItem } from "@/api/dnd5eapi";
+import { DndChoice, DndReferenceOption } from "@/api/dnd5eapi";
 import { Table } from "@chakra-ui/react";
 import { DraconicAncestryRow } from "./DraconicAncestryRow";
 
 interface DraconicAncestryTableProps {
-    subOptions: { from: { options: { item: DndItem }[] } };
+    subOptions: DndChoice;
 }
 
 export const DraconicAncestryTable: React.FC<DraconicAncestryTableProps> = ({ subOptions }) => {
@@ -18,7 +18,7 @@ export const DraconicAncestryTable: React.FC<DraconicAncestryTableProps> = ({ su
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                    {subOptions.from.options.map((option: { item: DndItem }, index: number) => (
+                    {subOptions.from.options.map((option: DndReferenceOption, index: number) => (
                         <DraconicAncestryRow key={index} ancestryOption={option.item} />
                     ))}
                 </Table.Body>

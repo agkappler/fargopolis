@@ -23,7 +23,7 @@ export const ApiFeatureItem: React.FC<FeatureCardProps> = ({ feature, characterI
                 characterId={characterId}
                 className={className}
             >
-                {featureInfo?.index === 'flexible-casting-creating-spell-slots' &&
+                {featureInfo?.index === 'flexible-casting-creating-spell-slots' && feature.levelInfo.class_specific?.creating_spell_slots &&
                     <CreatingSpellSlotsTable creatingSpellSlots={feature.levelInfo.class_specific.creating_spell_slots} />
                 }
             </FeatureItem>

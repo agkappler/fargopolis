@@ -22,8 +22,9 @@ export const ClassFeatures: React.FC<ClassFeaturesProps> = ({ currentLevel, clas
     const { data: levelInfos, isLoading: isLoadingClassInfo } = useSWR<LevelInfo[]>(`/class/${className}/levels`, () => getLevelInfoForClass(className));
     const currentLevelInfo = levelInfos?.find(l => l.level === currentLevel);
     const activeLevelInfos = levelInfos?.filter(l => l.level <= currentLevel),
-        activeLevelFeatures = activeLevelInfos?.flatMap((l: LevelInfo) => l.features.map((f: DndItem) => ({ ...f, levelInfo: l }))),
-        nextLevelFeatures = levelInfos?.find(l => l.level === (currentLevel + 1))?.features;
+        activeLevelFeatures: FeatureAndLevel[] = activeLevelInfos?.flatMap((l: LevelInfo) => l.features.map((f: DndItem) => ({ ...f, levelInfo: l }))) ?? [],
+        nextLevelInfo = levelInfos?.find(l => l.level === (currentLevel + 1)),
+        nextLevelFeatures: FeatureAndLevel[] = nextLevelInfo?.features.map((f: DndItem) => ({ ...f, levelInfo: nextLevelInfo })) ?? [];
     const formattedClassName = getNameForClass(className);
     return <>
         <Heading size="lg" textAlign="center">{capitalize(className)}</Heading>
@@ -41,7 +42,7 @@ export const ClassFeatures: React.FC<ClassFeaturesProps> = ({ currentLevel, clas
             ))}
             {currentLevel < 20 && (<>
                 <Heading size="md">Next Level Features:</Heading>
-                {nextLevelFeatures?.map((f: any) => (
+                {nextLevelFeatures?.map((f: FeatureAndLevel) => (
                     <ApiFeatureItem
                         key={f.index}
                         feature={f}
