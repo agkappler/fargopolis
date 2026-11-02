@@ -3,7 +3,6 @@ import { RaceForm } from "@/components/dnd/race/RaceForm";
 import { RacialTraits } from "@/components/dnd/race/RacialTraits";
 import { Subraces } from "@/components/dnd/race/Subraces";
 import { CustomRaceTraits } from "@/components/dnd/race/CustomRaceTraits";
-import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
@@ -72,7 +71,7 @@ export function DndGlossaryRacesPage() {
                         Add Race
                     </Button>
                 }
-                leftContainer={<LinkButton url="/dnd/glossary" label="Glossary" isForward={false} />}
+                back={{ label: "Glossary", url: "/dnd/glossary" }}
             />
             <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomRaces}>
                 <Box display="flex" justifyContent="center" my={3}>

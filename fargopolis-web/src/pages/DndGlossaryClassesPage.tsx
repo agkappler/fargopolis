@@ -1,7 +1,6 @@
 import { BaseDndResponse, getClasses } from "@/api/dnd5eapi";
 import { ClassFeatures } from "@/components/dnd/class/ClassFeatures";
 import { Subclasses } from "@/components/dnd/class/Subclasses";
-import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DndClass } from "@/constants/DndClass";
@@ -45,7 +44,7 @@ export function DndGlossaryClassesPage() {
       <PageHeader
         title="DnD Classes"
         rightContainer={<Button variant="secondary" disabled title="Coming soon"><Plus size={16} />Add Class</Button>}
-        leftContainer={<LinkButton url="/dnd/glossary" label="Glossary" isForward={false} />}
+        back={{ label: "Glossary", url: "/dnd/glossary" }}
       />
       <LoadingWrapper isLoading={isLoadingApi || isLoadingCustomClasses}>
         <Box display="flex" justifyContent="center" my={3}>

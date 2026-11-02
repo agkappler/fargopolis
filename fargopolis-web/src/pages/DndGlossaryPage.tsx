@@ -7,7 +7,7 @@ import { Box } from "@chakra-ui/react";
 export function DndGlossaryPage() {
   return (
     <>
-      <PageHeader title="DnD Glossary" leftContainer={<LinkButton url="/dnd" label="Characters" isForward={false} />} />
+      <PageHeader title="DnD Glossary" back={{ label: "Characters", url: "/dnd" }} />
       <Box px={2} mt={2}>
         <ClassList />
         <LinkButton url="/dnd/glossary/classes" label="Classes" />

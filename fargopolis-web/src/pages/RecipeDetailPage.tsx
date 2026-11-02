@@ -1,7 +1,6 @@
 import { IngredientList } from "@/components/recipes/IngredientList";
 import { RecipeForm } from "@/components/recipes/RecipeForm";
 import { RecipeSteps } from "@/components/recipes/RecipeSteps";
-import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ImageBox } from "@/components/ui/ImageBox";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -40,7 +39,7 @@ export function RecipeDetailPage() {
         <LoadingWrapper isLoading={isLoading} message="Loading recipe data...">
             <PageHeader
                 title={recipeData.name}
-                leftContainer={<LinkButton label="All Recipes" url="/recipes" isForward={false} />}
+                back={{ label: "All Recipes", url: "/recipes" }}
                 rightContainer={
                     <IconButton variant="ghost" size="md" aria-label="edit" onClick={() => setIsOpen(true)}>
                         <Pencil size={18} />

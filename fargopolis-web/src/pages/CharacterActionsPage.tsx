@@ -1,5 +1,4 @@
 import { ActionInfo } from "@/components/dnd/ActionInfo";
-import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ImageBox } from "@/components/ui/ImageBox";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
@@ -25,7 +24,7 @@ export function CharacterActionsPage() {
         <LoadingWrapper isLoading={isLoadingCharacter}>
             <PageHeader
                 title={character?.name}
-                leftContainer={<LinkButton label="Back to Character" url={`/dnd/${id}`} isForward={false} />}
+                back={{ label: "Back to Character", url: `/dnd/${id}` }}
             />
             {character && (
                 <>

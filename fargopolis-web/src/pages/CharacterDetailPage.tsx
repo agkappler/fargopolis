@@ -1,7 +1,6 @@
 import { CharacterForm } from "@/components/dnd/CharacterForm";
 import { CharacterInfo } from "@/components/dnd/CharacterInfo";
 import { ActionMenu, MenuOption } from "@/components/ui/ActionMenu";
-import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ImageBox } from "@/components/ui/ImageBox";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
@@ -52,7 +51,7 @@ export function CharacterDetailPage() {
             <LoadingWrapper isLoading={isLoading}>
                 <PageHeader
                     title={character?.name}
-                    leftContainer={<LinkButton label="All Characters" url="/dnd" isForward={false} />}
+                    back={{ label: "All Characters", url: "/dnd" }}
                     rightContainer={<ActionMenu options={menuOptions} size="medium" ariaLabel="Character options" />}
                 />
                 {character && (
