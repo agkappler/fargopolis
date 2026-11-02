@@ -1,0 +1,14 @@
+checks:
+  - name: web
+    paths: ["fargopolis-web/**"]
+    run: cd fargopolis-web && pnpm install --frozen-lockfile && pnpm run build && pnpm run lint
+
+  - name: lambdas
+    paths: ["infrastructure/lambdas/**", "scripts/setup-python-lambdas.sh"]
+    run: ./scripts/setup-python-lambdas.sh && .venv/bin/python -m pytest infrastructure/lambdas
+
+  - name: infra
+    paths: ["infrastructure/**"]
+    run: cd infrastructure && npm ci && npm run build && npx cdk synth --all
+
+default: "true"

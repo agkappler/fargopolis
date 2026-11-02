@@ -36,7 +36,7 @@ export class FilesApiRoutesConstruct extends Construct {
             runtime: lambda.Runtime.PYTHON_3_12,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
-                bundling: bundlingForPythonHandlerInLambdasTree(FILES_ASSET.layout),
+                bundling: bundlingForPythonHandlerInLambdasTree(assetPath, FILES_ASSET.layout),
             }),
             layers: [props.pythonSharedLayer],
             architecture: lambda.Architecture.ARM_64,
