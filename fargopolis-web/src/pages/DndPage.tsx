@@ -1,5 +1,5 @@
 import { CharacterCard } from "@/components/dnd/CharacterCard";
-import { CharacterForm } from "@/components/dnd/CharacterForm";
+import { CharacterCreateWizard } from "@/components/dnd/CharacterCreateWizard";
 import { AddModelCard } from "@/components/ui/AddModelCard";
 import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorWrapper } from "@/components/ui/ErrorWrapper";
@@ -13,12 +13,7 @@ import { useState } from "react";
 import useSWR from "swr";
 
 export function DndPage() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedCharacter, setSelectedCharacter] = useState<Character>();
-    const onClose = () => {
-        setIsOpen(false);
-        setSelectedCharacter(undefined);
-    };
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
     const { data: characters, error, isLoading, mutate } = useSWR<Character[]>("/characters", () =>
         RequestManager.get<Character[]>("/characters"),
     );
@@ -41,7 +36,7 @@ export function DndPage() {
                 <LoadingWrapper isLoading={isLoading}>
                     <ErrorWrapper error={error} errorMessage="Failed to load characters.">
                         <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }} gap="4">
-                            <AddModelCard onClick={() => setIsOpen(true)} title="Create Character" />
+                            <AddModelCard onClick={() => setIsCreateOpen(true)} title="Create Character" />
                             {characters?.map((c) => (
                                 <CharacterCard key={c.characterId} character={c} />
                             ))}
@@ -49,7 +44,14 @@ export function DndPage() {
                     </ErrorWrapper>
                 </LoadingWrapper>
             </Box>
-            <CharacterForm isOpen={isOpen} onClose={onClose} updateCharacters={mutate} character={selectedCharacter} />
+            {/* Mount only while open so no wizard state carries over between openings. */}
+            {isCreateOpen && (
+                <CharacterCreateWizard
+                    isOpen
+                    onClose={() => setIsCreateOpen(false)}
+                    updateCharacters={() => void mutate()}
+                />
+            )}
         </>
     );
 }

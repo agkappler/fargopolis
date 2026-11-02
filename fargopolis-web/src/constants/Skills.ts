@@ -2,6 +2,7 @@ export type AbilityKey = "str" | "dex" | "con" | "int" | "wis" | "cha";
 
 export const ABILITY_KEYS: readonly AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"] as const;
 
+/** The 18 standard D&D 5e skills and the ability each one keys off. */
 export const SKILLS = [
     { key: "acrobatics", name: "Acrobatics", ability: "dex" },
     { key: "animalHandling", name: "Animal Handling", ability: "wis" },
