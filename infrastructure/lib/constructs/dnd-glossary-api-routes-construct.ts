@@ -34,7 +34,7 @@ export class DndGlossaryApiRoutesConstruct extends Construct {
             runtime: lambda.Runtime.PYTHON_3_12,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
-                bundling: bundlingForPythonHandlerInLambdasTree(DND_GLOSSARY_ASSET.layout),
+                bundling: bundlingForPythonHandlerInLambdasTree(assetPath, DND_GLOSSARY_ASSET.layout),
             }),
             layers: [props.pythonSharedLayer],
             architecture: lambda.Architecture.ARM_64,

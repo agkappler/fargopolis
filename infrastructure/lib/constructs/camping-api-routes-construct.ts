@@ -38,7 +38,7 @@ export class CampingApiRoutesConstruct extends Construct {
             runtime: lambda.Runtime.PYTHON_3_12,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
-                bundling: bundlingForPythonHandlerInLambdasTree(CAMPING_ASSET.layout),
+                bundling: bundlingForPythonHandlerInLambdasTree(assetPath, CAMPING_ASSET.layout),
             }),
             layers: [props.pythonSharedLayer],
             architecture: lambda.Architecture.ARM_64,

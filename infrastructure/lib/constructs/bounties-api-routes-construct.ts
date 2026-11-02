@@ -39,7 +39,7 @@ export class BountiesApiRoutesConstruct extends Construct {
             runtime: lambda.Runtime.PYTHON_3_12,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
-                bundling: bundlingForPythonHandlerInLambdasTree(BOUNTIES_ASSET.layout),
+                bundling: bundlingForPythonHandlerInLambdasTree(assetPath, BOUNTIES_ASSET.layout),
             }),
             layers: [props.pythonSharedLayer],
             architecture: lambda.Architecture.ARM_64,

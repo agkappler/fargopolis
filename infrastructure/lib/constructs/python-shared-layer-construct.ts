@@ -20,7 +20,7 @@ export class PythonSharedLayerConstruct extends Construct {
 
         this.layer = new lambda.LayerVersion(this, 'Layer', {
             code: lambda.Code.fromAsset(assetPath, {
-                bundling: bundlingForPythonSharedLayer(),
+                bundling: bundlingForPythonSharedLayer(assetPath),
             }),
             description: 'Fargopolis shared Python: lambda_utils, clerk_auth, PyJWT, python-ulid',
             compatibleRuntimes: [lambda.Runtime.PYTHON_3_12],

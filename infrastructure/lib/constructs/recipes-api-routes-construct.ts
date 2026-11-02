@@ -31,7 +31,7 @@ export class RecipesApiRoutesConstruct extends Construct {
             runtime: lambda.Runtime.PYTHON_3_12,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
-                bundling: bundlingForPythonHandlerInLambdasTree(RECIPES_ASSET.layout),
+                bundling: bundlingForPythonHandlerInLambdasTree(assetPath, RECIPES_ASSET.layout),
             }),
             layers: [props.pythonSharedLayer],
             architecture: lambda.Architecture.ARM_64,
