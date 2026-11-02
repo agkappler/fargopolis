@@ -1,6 +1,5 @@
 import { CharacterForm } from "@/components/dnd/CharacterForm";
 import { CharacterInfo } from "@/components/dnd/CharacterInfo";
-import { CharacterSubtitle } from "@/components/dnd/CharacterSubtitle";
 import { ActionMenu, MenuOption } from "@/components/ui/ActionMenu";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
@@ -52,12 +51,7 @@ export function CharacterDetailPage() {
                     back={{ label: "All Characters", url: "/dnd" }}
                     rightContainer={<ActionMenu options={menuOptions} size="medium" ariaLabel="Character options" />}
                 />
-                {character && (
-                    <>
-                        <CharacterSubtitle character={character} />
-                        <CharacterInfo character={character} />
-                    </>
-                )}
+                {character && <CharacterInfo character={character} />}
             </LoadingWrapper>
             <CharacterForm isOpen={isOpen} onClose={() => setIsOpen(false)} updateCharacters={mutate} character={character} />
         </>
