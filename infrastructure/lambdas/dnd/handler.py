@@ -52,6 +52,34 @@ def _as_int(value: Any, default: int = 0) -> int:
         return default
 
 
+_ABILITY_KEYS = ("str", "dex", "con", "int", "wis", "cha")
+_HIT_POINT_KEYS = ("current", "max", "temp")
+
+
+def _as_int_map(raw: Any, keys: tuple[str, ...], default: int) -> dict[str, int]:
+    src = raw if isinstance(raw, dict) else {}
+    return {k: _as_int(src.get(k), default) for k in keys}
+
+
+def _as_str_list(raw: Any) -> list[str]:
+    if not isinstance(raw, list):
+        return []
+    return [str(v) for v in raw if v is not None]
+
+
+def _stat_block_fields(src: dict[str, Any]) -> dict[str, Any]:
+    """Normalized stat-block fields from a DynamoDB item or a request body (same defaults both ways)."""
+    return {
+        "abilityScores": _as_int_map(src.get("abilityScores"), _ABILITY_KEYS, 10),
+        "hitPoints": _as_int_map(src.get("hitPoints"), _HIT_POINT_KEYS, 0),
+        "armorClass": _as_int(src.get("armorClass"), 0),
+        "initiativeBonus": _as_int(src.get("initiativeBonus"), 0),
+        "speed": _as_int(src.get("speed"), 0),
+        "savingThrowProficiencies": _as_str_list(src.get("savingThrowProficiencies")),
+        "skillProficiencies": _as_str_list(src.get("skillProficiencies")),
+    }
+
+
 def _to_api_weapon(item: dict[str, Any]) -> dict[str, Any]:
     return {
         "weaponId": str(item.get("weaponId", "")),
@@ -102,6 +130,8 @@ def _to_api_character(item: dict[str, Any], *, include_nested: bool = True) -> d
         out["weapons"] = [_to_api_weapon(w) for w in (item.get("weapons") or [])]
         out["abilities"] = [_to_api_ability(a) for a in (item.get("abilities") or [])]
         out["knownSpells"] = [_to_api_known_spell(s) for s in (item.get("knownSpells") or [])]
+        # Not in the list GSI projection, so only returned on the full-character read.
+        out.update(_stat_block_fields(item))
     return out
 
 
@@ -154,6 +184,7 @@ def _create_character(body: dict[str, Any]) -> dict[str, Any]:
         "nameSortKey": _name_sort_key(name, character_id),
         "version": 0,
     }
+    item.update(_stat_block_fields(body))
     table = table_from_env(DND_TABLE_ENV)
     table.put_item(Item=item, ConditionExpression="attribute_not_exists(characterId)")
     return json_response(200, _to_api_character(item))
@@ -167,12 +198,17 @@ def _update_character(body: dict[str, Any]) -> dict[str, Any]:
     if not name:
         raise ValueError("name is required")
 
+    stats = _stat_block_fields(body)
     table = table_from_env(DND_TABLE_ENV)
     table.update_item(
         Key={"characterId": character_id},
         UpdateExpression=(
             "SET #name = :name, race = :race, subrace = :subrace, className = :className, "
-            "subclassName = :subclassName, #level = :level, nameSortKey = :nameSortKey "
+            "subclassName = :subclassName, #level = :level, nameSortKey = :nameSortKey, "
+            "abilityScores = :abilityScores, hitPoints = :hitPoints, armorClass = :armorClass, "
+            "initiativeBonus = :initiativeBonus, speed = :speed, "
+            "savingThrowProficiencies = :savingThrowProficiencies, "
+            "skillProficiencies = :skillProficiencies "
             "ADD version :one"
         ),
         ExpressionAttributeNames={"#name": "name", "#level": "level"},
@@ -184,6 +220,7 @@ def _update_character(body: dict[str, Any]) -> dict[str, Any]:
             ":subclassName": body.get("subclassName") or "",
             ":level": _as_int(body.get("level"), 1),
             ":nameSortKey": _name_sort_key(name, character_id),
+            **{f":{key}": value for key, value in stats.items()},
             ":one": 1,
         },
         ConditionExpression="attribute_exists(characterId)",
