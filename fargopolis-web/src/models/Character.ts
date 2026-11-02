@@ -9,6 +9,7 @@ export default class Character {
     subclassName: string;
     level: number;
     avatarId?: string | number;
+    subrace?: string;
 
     constructor(characterId: string, name: string, race: DndRace, className: DndClass, subclassName: string, level: number) {
         this.characterId = characterId;
