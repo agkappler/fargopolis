@@ -1,23 +1,43 @@
-import { Box, List, Text } from "@chakra-ui/react";
-import { Circle } from "lucide-react";
-import { surfaceCardProps } from "../ui/surfaceStyle";
+import { Badge, List, Text } from "@chakra-ui/react";
+import { Circle, ListTodo } from "lucide-react";
+import { ProjectSection } from "./ProjectSection";
 
 interface ProjectTodosProps {
     todos: string[];
 }
 
 export const ProjectTodos: React.FC<ProjectTodosProps> = ({ todos }) => {
-    return <Box {...surfaceCardProps} boxShadow="md" p={2} h="full">
-        <Text fontWeight="medium">Todo:</Text>
-        <List.Root variant="plain" gap={2} mt={2}>
-            {todos.map((item, index) => (
-                <List.Item key={index} display="flex" alignItems="center" gap={2}>
-                    <List.Indicator asChild color="fg.muted">
-                        <Circle size={12} fill="currentColor" />
-                    </List.Indicator>
-                    {item}
-                </List.Item>
-            ))}
-        </List.Root>
-    </Box>
-}
+    const isEmpty = todos.length === 0;
+    return (
+        <ProjectSection
+            icon={ListTodo}
+            title="Todo"
+            isPlaceholder={isEmpty}
+            headerExtra={isEmpty ? undefined : <Badge variant="subtle">{todos.length}</Badge>}
+        >
+            {isEmpty ? (
+                <Text>Nothing on the list right now.</Text>
+            ) : (
+                <List.Root variant="plain" gap="0">
+                    {todos.map((item, index) => (
+                        <List.Item
+                            key={index}
+                            display="flex"
+                            alignItems="center"
+                            gap="3"
+                            py="2"
+                            borderBottom="1px solid"
+                            borderColor="border.soft"
+                            _last={{ borderBottom: "none" }}
+                        >
+                            <List.Indicator asChild color="fg.muted" flexShrink="0">
+                                <Circle size={14} />
+                            </List.Indicator>
+                            {item}
+                        </List.Item>
+                    ))}
+                </List.Root>
+            )}
+        </ProjectSection>
+    );
+};

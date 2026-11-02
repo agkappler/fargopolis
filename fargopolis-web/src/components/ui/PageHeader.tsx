@@ -1,6 +1,6 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { PropsWithChildren, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 interface PageHeaderProps extends PropsWithChildren {
     title?: string;
@@ -22,10 +22,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
     const navigate = useNavigate();
 
-    const handleBack = () => {
-        if (back?.url) navigate(back.url);
-        else navigate(-1);
-    };
+    const handleBack = () => navigate(-1);
 
     const hasNav = back || leftContainer;
 
@@ -60,19 +57,32 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                     >
                         {back ? (
                             <>
-                                <Box
-                                    as="button"
-                                    bg="transparent"
-                                    border="none"
-                                    cursor="pointer"
-                                    color="brand"
-                                    p="0"
-                                    _hover={{ color: "accent.hover" }}
-                                    transition="color 200ms"
-                                    onClick={handleBack}
-                                >
-                                    ‹ {back.label ?? "Back"}
-                                </Box>
+                                {back.url ? (
+                                    // A real link keeps middle-click / open-in-new-tab working.
+                                    <Box
+                                        asChild
+                                        color="brand"
+                                        textDecoration="none"
+                                        _hover={{ color: "accent.hover" }}
+                                        transition="color 200ms"
+                                    >
+                                        <RouterLink to={back.url}>‹ {back.label ?? "Back"}</RouterLink>
+                                    </Box>
+                                ) : (
+                                    <Box
+                                        as="button"
+                                        bg="transparent"
+                                        border="none"
+                                        cursor="pointer"
+                                        color="brand"
+                                        p="0"
+                                        _hover={{ color: "accent.hover" }}
+                                        transition="color 200ms"
+                                        onClick={handleBack}
+                                    >
+                                        ‹ {back.label ?? "Back"}
+                                    </Box>
+                                )}
                                 <Text color="stone.200">/</Text>
                             </>
                         ) : (
