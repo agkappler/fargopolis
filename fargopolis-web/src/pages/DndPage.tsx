@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Project } from "@/constants/Projects";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
-import { Box, Grid, GridItem, Heading } from "@chakra-ui/react";
+import { Box, Grid, Heading } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -25,28 +25,29 @@ export function DndPage() {
 
     return (
         <>
-            <PageHeader title="Dungeons & Dragons" rightContainer={<LinkButton url={`/projects/${Project.DnD}`} label="Project Details" />} />
-            <Box px={2}>
-                <Heading size="lg" textAlign="center">
+            <PageHeader
+                title="Dungeons & Dragons"
+                rightContainer={
+                    <>
+                        <LinkButton url="/dnd/glossary" label="Glossary" />
+                        <LinkButton url={`/projects/${Project.DnD}`} label="Project Details" />
+                    </>
+                }
+            />
+            <Box maxW="fp.container" mx="auto" px="4" py="6">
+                <Heading size="lg" textAlign="center" mb="4">
                     Character Catalog
                 </Heading>
                 <LoadingWrapper isLoading={isLoading}>
                     <ErrorWrapper error={error} errorMessage="Failed to load characters.">
-                        <Grid templateColumns="repeat(12, 1fr)" gap={2}>
-                            <GridItem colSpan={{ base: 12, sm: 3 }}>
-                                <AddModelCard onClick={() => setIsOpen(true)} title="Create Character" />
-                            </GridItem>
+                        <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }} gap="4">
+                            <AddModelCard onClick={() => setIsOpen(true)} title="Create Character" />
                             {characters?.map((c) => (
-                                <GridItem key={c.characterId} colSpan={{ base: 12, sm: 3 }}>
-                                    <CharacterCard character={c} />
-                                </GridItem>
+                                <CharacterCard key={c.characterId} character={c} />
                             ))}
                         </Grid>
                     </ErrorWrapper>
                 </LoadingWrapper>
-            </Box>
-            <Box mt={2} display="flex" justifyContent="center">
-                <LinkButton url="/dnd/glossary" label="Glossary" />
             </Box>
             <CharacterForm isOpen={isOpen} onClose={onClose} updateCharacters={mutate} character={selectedCharacter} />
         </>

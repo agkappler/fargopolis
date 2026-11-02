@@ -17,7 +17,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({ character }) => {
             <ImageBox fileId={character.avatarId} altText="Character avatar" />
         </>}
         <Text color="fg.secondary">
-            {getNameForRace(character.race)} | {getNameForClass(character.className)}
+            {getNameForRace(character.race)}{character.subrace ? ` (${character.subrace})` : ""} | {getNameForClass(character.className)}
         </Text>
     </ModelCard>
 }
