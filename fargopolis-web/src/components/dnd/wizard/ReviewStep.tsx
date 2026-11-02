@@ -5,10 +5,14 @@ import { Avatar, Box, Flex, Grid, Stack, Text } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 import { useWatch } from "react-hook-form";
 import { useCharacterOptions } from "../useCharacterOptions";
-import { ABILITY_LABELS, CharacterWizardValues } from "./wizardConfig";
+import { Spell } from "@/api/dnd5eapi";
+import { ABILITY_LABELS, CharacterWizardValues, StartingWeapon } from "./wizardConfig";
 
 interface ReviewStepProps {
     avatarId?: string;
+    /** What's been saved to the character, not the pending selection. */
+    savedWeapon?: StartingWeapon;
+    savedSpells: Spell[];
 }
 
 const Section: React.FC<PropsWithChildren<{ title: string }>> = ({ title, children }) => (
@@ -28,7 +32,7 @@ const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value
 const withParen = (main: string, sub?: string) => (sub ? `${main} (${sub})` : main);
 const toNum = (v: unknown) => (v === "" || v == null ? NaN : Number(v));
 
-export const ReviewStep: React.FC<ReviewStepProps> = ({ avatarId }) => {
+export const ReviewStep: React.FC<ReviewStepProps> = ({ avatarId, savedWeapon, savedSpells }) => {
     const v = useWatch<CharacterWizardValues>() as Partial<CharacterWizardValues>;
     const { raceOptions, classOptions, subraceOptions, subclassOptions } = useCharacterOptions(v.race, v.className);
     const { data: avatar } = useFileMetadata(avatarId);
@@ -94,6 +98,19 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({ avatarId }) => {
                     <Row
                         label="Skills"
                         value={skills.length ? skills.map(k => SKILLS.find(s => s.key === k)?.name ?? k).join(", ") : "None"}
+                    />
+                </Stack>
+            </Section>
+
+            <Section title="Starting Gear & Spells">
+                <Stack gap="1">
+                    <Row
+                        label="Weapon"
+                        value={savedWeapon ? `${savedWeapon.name} (${savedWeapon.damage} ${savedWeapon.damageType})` : "None selected"}
+                    />
+                    <Row
+                        label="Known Spells"
+                        value={savedSpells.length ? savedSpells.map(s => s.name).join(", ") : "None selected"}
                     />
                 </Stack>
             </Section>
