@@ -584,6 +584,39 @@ def test_update_character_stat_block_persists_and_is_reflected_on_get(dnd_handle
     assert int(stored["armorClass"]) == 16
 
 
+def test_update_character_partial_stats_preserve_unprovided_fields(dnd_handler, dnd_table, make_event):
+    """Editing one stat must not reset the others to defaults. The frontend only sends the
+    stat fields a user actually filled in (CharacterForm.tsx's buildUpdatePayload), so a
+    field the update body omits means "not provided" and must keep its stored value."""
+    created = _create_character(dnd_handler, make_event, **FULL_STATS)
+    character_id = created["characterId"]
+
+    resp = dnd_handler.handler(
+        make_event(
+            "POST",
+            "/api/updateCharacter",
+            body={"characterId": character_id, "name": "Aria Nightsong", "abilityScores": {"str": 20}},
+            authenticated=True,
+        ),
+        None,
+    )
+    assert resp["statusCode"] == 200
+    updated = json.loads(resp["body"])
+
+    expected_scores = {**FULL_STATS["abilityScores"], "str": 20}
+    assert updated["abilityScores"] == expected_scores
+    assert updated["hitPoints"] == FULL_STATS["hitPoints"]
+    assert updated["armorClass"] == FULL_STATS["armorClass"]
+    assert updated["initiativeBonus"] == FULL_STATS["initiativeBonus"]
+    assert updated["speed"] == FULL_STATS["speed"]
+    assert updated["savingThrowProficiencies"] == FULL_STATS["savingThrowProficiencies"]
+    assert updated["skillProficiencies"] == FULL_STATS["skillProficiencies"]
+
+    fetched = _get_character_body(dnd_handler, make_event, character_id)
+    assert fetched["abilityScores"] == expected_scores
+    assert fetched["hitPoints"] == FULL_STATS["hitPoints"]
+
+
 def test_get_preexisting_character_without_stat_block_returns_defaults(dnd_handler, dnd_table, make_event):
     character_id = _put_legacy_character(dnd_table)
 

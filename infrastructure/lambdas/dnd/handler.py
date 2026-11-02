@@ -80,6 +80,42 @@ def _stat_block_fields(src: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _merged_stat_block_fields(existing_item: dict[str, Any], body: dict[str, Any]) -> dict[str, Any]:
+    """Stat-block fields for an update: a key the body omits keeps the item's stored value
+    (falling back to the normal defaults only if the item never had it either), rather than
+    resetting to a default. The frontend only sends the stat fields a user actually filled
+    in, so "missing" must mean "not provided", not "clear this value"."""
+    existing_scores = existing_item.get("abilityScores")
+    body_scores = body.get("abilityScores")
+    merged_scores = {
+        **(existing_scores if isinstance(existing_scores, dict) else {}),
+        **(body_scores if isinstance(body_scores, dict) else {}),
+    }
+
+    existing_hp = existing_item.get("hitPoints")
+    body_hp = body.get("hitPoints")
+    merged_hp = {
+        **(existing_hp if isinstance(existing_hp, dict) else {}),
+        **(body_hp if isinstance(body_hp, dict) else {}),
+    }
+
+    def _merged_int(field: str, default: int) -> int:
+        return _as_int(body.get(field, existing_item.get(field)), default)
+
+    def _merged_str_list(field: str) -> list[str]:
+        return _as_str_list(body.get(field, existing_item.get(field)))
+
+    return {
+        "abilityScores": _as_int_map(merged_scores, _ABILITY_KEYS, 10),
+        "hitPoints": _as_int_map(merged_hp, _HIT_POINT_KEYS, 0),
+        "armorClass": _merged_int("armorClass", 0),
+        "initiativeBonus": _merged_int("initiativeBonus", 0),
+        "speed": _merged_int("speed", 0),
+        "savingThrowProficiencies": _merged_str_list("savingThrowProficiencies"),
+        "skillProficiencies": _merged_str_list("skillProficiencies"),
+    }
+
+
 def _to_api_weapon(item: dict[str, Any]) -> dict[str, Any]:
     return {
         "weaponId": str(item.get("weaponId", "")),
@@ -198,7 +234,10 @@ def _update_character(body: dict[str, Any]) -> dict[str, Any]:
     if not name:
         raise ValueError("name is required")
 
-    stats = _stat_block_fields(body)
+    existing_item, err = _get_character_item(character_id)
+    if err:
+        return err
+    stats = _merged_stat_block_fields(existing_item or {}, body)
     table = table_from_env(DND_TABLE_ENV)
     table.update_item(
         Key={"characterId": character_id},
