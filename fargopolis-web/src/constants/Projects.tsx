@@ -26,11 +26,11 @@ export interface IProject {
     technology: string | undefined;
 }
 
-export const PROJECTS = [
+export const PROJECTS: IProject[] = [
     {
         name: "Site Infrastructure",
         description: "All things infrastructure! Covers the nitty gritty of deployments, hosting, and QoL across all levels of the stack.",
-        imageUrl: "https://via.placeholder.com/150",
+        imageUrl: "",
         status: ProjectStatus.InProgress,
         icon: <Settings style={{ marginRight: "0.25rem" }} />,
         url: "/",
@@ -38,19 +38,18 @@ export const PROJECTS = [
             "Streamline Deployments",
             "Tech aspects for each project",
             "i18n",
-            "Swap to pnpm",
             "JUnit and Jest tests",
             "BaseEnum class?"
         ],
         motivation: undefined,
         goals: undefined,
         vision: undefined,
-        technology: undefined
+        technology: "AWS CDK, CloudFront, S3, API Gateway, Lambda, Clerk, GitHub Actions"
     },
     {
         name: "Recipes",
         description: "Recipe management for custom calorie and quantity tracking across all ingredients.",
-        imageUrl: "https://via.placeholder.com/150",
+        imageUrl: "",
         status: ProjectStatus.InProgress,
         icon: <List style={{ marginRight: "0.25rem" }} />,
         url: "/recipes",
@@ -61,12 +60,12 @@ export const PROJECTS = [
         motivation: undefined,
         goals: undefined,
         vision: undefined,
-        technology: undefined
+        technology: "React, Chakra UI, Python Lambda, DynamoDB"
     },
     {
         name: "Daily Bounties",
         description: "Gamifying my recurring tasks and making it easy to generate ToDo lists for any occasion.",
-        imageUrl: "https://via.placeholder.com/150",
+        imageUrl: "",
         status: ProjectStatus.InProgress,
         icon: <ListChecks style={{ marginRight: "0.25rem" }} />,
         url: "/bounties",
@@ -81,12 +80,12 @@ export const PROJECTS = [
             "Generate ToDo list based on a Bounty playlist."
         ],
         vision: `The inspiration for this new system actually came from video games and the pretty typical Bounty/Contract/Objective system that can be found across many games. I drew the most inspiration from games that I've probably sunk too much time into, namely Destiny 2 and The Finals.`,
-        technology: ""
+        technology: "React, Chakra UI, Python Lambda, DynamoDB"
     },
     {
         name: "Character Catalog",
         description: "Basically a digital player's handbook tailored to a single character's needs.",
-        imageUrl: "https://via.placeholder.com/150",
+        imageUrl: "",
         status: ProjectStatus.InProgress,
         icon: <FileText style={{ marginRight: "0.25rem" }} />,
         url: "/dnd",
@@ -94,23 +93,19 @@ export const PROJECTS = [
         motivation: undefined,
         goals: undefined,
         vision: undefined,
-        technology: undefined
+        technology: "React, Chakra UI, Python Lambda, DynamoDB, D&D 5e API, Open5e"
     },
     {
         name: "Camping Catalog",
         description: "A place-centric log of every campsite we've stayed at — location, trip history, people, and photos.",
-        imageUrl: "https://via.placeholder.com/150",
+        imageUrl: "",
         status: ProjectStatus.InProgress,
         icon: <Tent style={{ marginRight: "0.25rem" }} />,
         url: "/camping",
-        todo: [
-            "Nested visits (dates, people, notes)",
-            "Photo galleries per visit",
-            "Leaflet map of all campsites",
-        ],
+        todo: [],
         motivation: undefined,
         goals: undefined,
         vision: undefined,
-        technology: undefined
+        technology: "React, Chakra UI, Leaflet, Python Lambda, DynamoDB, S3"
     },
 ];

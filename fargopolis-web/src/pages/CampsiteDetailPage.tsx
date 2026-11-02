@@ -2,7 +2,6 @@ import { CampsiteForm } from "@/components/camping/CampsiteForm";
 import { formatTravelTime } from "@/components/camping/helpers/travelTime";
 import { MiniMap } from "@/components/camping/MiniMap";
 import { VisitTimeline } from "@/components/camping/VisitTimeline";
-import { LinkButton } from "@/components/ui/buttons/LinkButton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -72,7 +71,7 @@ export function CampsiteDetailPage() {
         <>
             <PageHeader
                 title={campsite.name}
-                leftContainer={<LinkButton label="All Campsites" url="/camping" isForward={false} />}
+                back={{ label: "All Campsites", url: "/camping" }}
                 rightContainer={
                     isSignedIn ? (
                         <Flex gap={1}>
