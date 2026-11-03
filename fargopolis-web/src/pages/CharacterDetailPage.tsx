@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
 import { Dice5, Pencil } from "lucide-react";
+import { Box } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
@@ -51,7 +52,11 @@ export function CharacterDetailPage() {
                     back={{ label: "All Characters", url: "/dnd" }}
                     rightContainer={<ActionMenu options={menuOptions} size="medium" ariaLabel="Character options" />}
                 />
-                {character && <CharacterInfo character={character} />}
+                {character && (
+                    <Box maxW="fp.container" mx="auto" px="4" py="6">
+                        <CharacterInfo character={character} />
+                    </Box>
+                )}
             </LoadingWrapper>
             <CharacterForm isOpen={isOpen} onClose={() => setIsOpen(false)} updateCharacters={mutate} character={character} />
         </>

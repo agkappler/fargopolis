@@ -1,7 +1,7 @@
 import { getLevelInfoForClass, LevelInfo } from "@/api/dnd5eapi";
 import { MOBILE_BREAK } from "@/constants/Media";
 import Character from "@/models/Character";
-import { Box, Flex, NativeSelect, Tabs, useMediaQuery } from "@chakra-ui/react";
+import { Box, NativeSelect, Tabs, useMediaQuery } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../ui/LoadingWrapper";
@@ -59,25 +59,20 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
                         <ProficiencyBlock character={character} />
                     </StyledAccordion>
 
-                    <Flex gap="2" wrap="wrap" align="flex-start">
-                        <Box flex="1" minW={{ base: "100%", md: "280px" }}>
-                            <StyledAccordion title="Class Features">
-                                <ClassFeatures
-                                    currentLevel={character.level}
-                                    className={character.className}
-                                    characterId={character.characterId}
-                                />
-                            </StyledAccordion>
-                        </Box>
-                        <Box flex="1" minW={{ base: "100%", md: "280px" }}>
-                            <StyledAccordion title="Racial Traits">
-                                <RacialTraits
-                                    race={character.race}
-                                    characterId={character.characterId}
-                                />
-                            </StyledAccordion>
-                        </Box>
-                    </Flex>
+                    <StyledAccordion title="Class Features">
+                        <ClassFeatures
+                            currentLevel={character.level}
+                            className={character.className}
+                            characterId={character.characterId}
+                        />
+                    </StyledAccordion>
+
+                    <StyledAccordion title="Racial Traits">
+                        <RacialTraits
+                            race={character.race}
+                            characterId={character.characterId}
+                        />
+                    </StyledAccordion>
 
                     <StyledAccordion title="Resources">
                         <CharacterResources characterId={character.characterId} />
