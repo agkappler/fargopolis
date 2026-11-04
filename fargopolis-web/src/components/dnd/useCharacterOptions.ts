@@ -46,6 +46,7 @@ export function useCharacterOptions(selectedRace?: string, selectedClass?: strin
     const classOptions: CharacterOption[] = allClasses.map(c => ({ value: c.index, label: c.name }));
     const subclassOptions: CharacterOption[] = allSubclasses.map(o => ({ value: o.index, label: o.name }));
     const subraceOptions: CharacterOption[] = allSubraces.map(o => ({ value: o.index, label: o.name }));
+    const isCustomRace = (customRaces ?? []).some(r => r.index === selectedRace);
 
-    return { raceOptions, classOptions, subraceOptions, subclassOptions };
+    return { raceOptions, classOptions, subraceOptions, subclassOptions, isCustomRace };
 }

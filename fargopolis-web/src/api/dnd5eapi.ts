@@ -138,7 +138,13 @@ export async function getClasses() {
     return fetch(BASE_URL + "/classes").then((response) => response.json());
 }
 
-export async function getClass(className: string) {
+export interface ClassDetail extends DndItem {
+    hit_die: number;
+    saving_throws: DndItem[];
+    proficiency_choices: DndChoice<DndReferenceOption>[];
+}
+
+export async function getClass(className: string): Promise<ClassDetail> {
     return fetch(BASE_URL + "/classes/" + className).then((response) => response.json());
 }
 

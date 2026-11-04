@@ -4,7 +4,6 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
 import FileMetadata from "@/models/FileMetadata";
-import Weapon from "@/models/Weapon";
 import { Box, Button, chakra, Flex, Heading, Text } from "@chakra-ui/react";
 import { useAuth } from "@clerk/react";
 import { Check } from "lucide-react";
@@ -18,8 +17,7 @@ import { IdentityStep } from "./IdentityStep";
 import { ReviewStep } from "./ReviewStep";
 import { SpellsStep } from "./SpellsStep";
 import { useClassSpellcasting } from "./useClassSpellcasting";
-import { WeaponStep } from "./WeaponStep";
-import { buildPayload, CharacterWizardValues, getEffectiveSteps, STARTING_WEAPONS, WIZARD_DEFAULTS } from "./wizardConfig";
+import { buildPayload, CharacterWizardValues, getEffectiveSteps, WIZARD_DEFAULTS } from "./wizardConfig";
 
 interface WizardContentProps {
     onDone: () => void;
@@ -40,8 +38,7 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
     const [avatarId, setAvatarId] = useState<string>();
     const [errorMessage, setErrorMessage] = useState<string>();
     const [isSaving, setIsSaving] = useState(false);
-    // What's been saved to the character by the optional steps, so revisits don't duplicate.
-    const [savedWeapon, setSavedWeapon] = useState<{ weaponId: string; key: string }>();
+    // What's been saved to the character by the Spells step, so revisits don't duplicate.
     const [savedSpells, setSavedSpells] = useState<Spell[]>([]);
     // Synchronous lock so a double-click / double-Enter can't fire two saves (or two creates).
     const savingRef = useRef(false);
@@ -81,30 +78,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
         return true;
     };
 
-    const saveWeapon = async (): Promise<boolean> => {
-        const key = getValues("startingWeapon");
-        const preset = STARTING_WEAPONS.find(w => w.key === key);
-        if (!preset || key === savedWeapon?.key || !characterId) return true;
-        setIsSaving(true);
-        setErrorMessage(undefined);
-        const body = {
-            name: preset.name,
-            damage: preset.damage,
-            damageType: preset.damageType,
-            range: preset.range,
-            description: preset.description,
-            characterId,
-        };
-        if (savedWeapon) {
-            await RequestManager.put(`/updateWeapon/${savedWeapon.weaponId}`, body, getToken);
-            setSavedWeapon({ weaponId: savedWeapon.weaponId, key: preset.key });
-        } else {
-            const created = await RequestManager.post<typeof body, Weapon>("/addWeapon", body, getToken);
-            setSavedWeapon({ weaponId: created.weaponId, key: preset.key });
-        }
-        return true;
-    };
-
     const saveSpells = async (): Promise<boolean> => {
         if (!characterId) return true;
         const selected = getValues("knownSpells") ?? [];
@@ -136,7 +109,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
         if (savingRef.current) return false;
         savingRef.current = true;
         try {
-            if (current.id === "weapon") return await saveWeapon();
             if (current.id === "spells") return await saveSpells();
             return await saveCharacter();
         } catch (e: unknown) {
@@ -158,7 +130,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
     // Skip makes no request; it just puts the step's selection back to what's saved.
     const onSkip = () => {
         if (savingRef.current) return;
-        if (current.id === "weapon") setValue("startingWeapon", savedWeapon?.key ?? "");
         if (current.id === "spells") setValue("knownSpells", savedSpells);
         goTo(step + 1);
     };
@@ -191,7 +162,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
 
     const canWrite = isLoaded && isSignedIn;
     const primaryLabel = step === 0 ? "Create & Continue" : step === lastStep ? "Finish" : "Next";
-    const savedWeaponPreset = STARTING_WEAPONS.find(w => w.key === savedWeapon?.key);
 
     return (
         <FormProvider {...methods}>
@@ -271,10 +241,9 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
                 {current.id === "identity" && <IdentityStep />}
                 {current.id === "abilities" && <AbilityScoresStep />}
                 {current.id === "combat" && <CombatStep />}
-                {current.id === "weapon" && <WeaponStep savedWeaponKey={savedWeapon?.key} />}
                 {current.id === "spells" && <SpellsStep className={className} spellcasting={spellcasting} />}
                 {current.id === "review" && (
-                    <ReviewStep avatarId={avatarId} savedWeapon={savedWeaponPreset} savedSpells={savedSpells} />
+                    <ReviewStep avatarId={avatarId} savedSpells={savedSpells} />
                 )}
 
                 <Flex justify="space-between" align="center" pt="4" gap="2">
