@@ -35,7 +35,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                             <Menu.Item
                                 key={index}
                                 value={option.label}
-                                onSelect={option.onClick}
+                                // Defer: an onClick that opens a Dialog races the menu's own
+                                // close/unmount, which can leave document.body's scroll-lock
+                                // (pointer-events: none) stuck or torn down behind the dialog.
+                                onSelect={() => setTimeout(option.onClick, 0)}
                                 cursor="pointer"
                             >
                                 {option.icon && <span style={{ marginRight: 8, display: "inline-flex" }}>{option.icon}</span>}
