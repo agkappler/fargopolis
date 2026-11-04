@@ -54,7 +54,6 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         http = req.get("http") or {}
         method = (http.get("method") or "GET").upper()
         raw_path = event.get("rawPath") or ""
-        route_key = f"{method} {raw_path}"
 
         if method == "OPTIONS":
             return _allow({"authenticated": "false"})
