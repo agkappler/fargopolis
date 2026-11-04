@@ -13,7 +13,14 @@ from typing import Any
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from shared.lambda_utils import generate_ulid, json_response, parse_body, require_clerk_writer, table_from_env
+from shared.lambda_utils import (
+    generate_ulid,
+    json_response,
+    parse_body,
+    require_clerk_writer,
+    scan_all_items,
+    table_from_env,
+)
 
 DND_TABLE_ENV = "DND_TABLE_NAME"
 FILES_TABLE_ENV = "FILES_TABLE_NAME"
@@ -367,18 +374,23 @@ def _add_ability(character_id: str, body: dict[str, Any]) -> dict[str, Any]:
     return json_response(200, _to_api_ability(ability))
 
 
-def _find_character_id_for_ability(ability_id: str) -> str | None:
+def _find_character_id_for_nested(list_attr: str, id_attr: str, nested_id: str) -> str | None:
+    """Find the character whose `list_attr` list holds an entry with `id_attr == nested_id`.
+
+    Scans the base table: `DndCharactersByNameIndex` doesn't project `weapons`/`abilities`,
+    so querying it for them always comes back empty (see #11).
+    """
     table = table_from_env(DND_TABLE_ENV)
-    response = table.query(
-        IndexName=DND_BY_NAME_INDEX,
-        KeyConditionExpression=Key("entityType").eq(ENTITY_CHARACTER),
-        ProjectionExpression="characterId, abilities",
-    )
-    for item in response.get("Items", []):
-        for ability in item.get("abilities") or []:
-            if str(ability.get("abilityId", "")) == ability_id:
+    items = scan_all_items(table, ProjectionExpression=f"characterId, {list_attr}")
+    for item in items:
+        for entry in item.get(list_attr) or []:
+            if str(entry.get(id_attr, "")) == nested_id:
                 return str(item.get("characterId", ""))
     return None
+
+
+def _find_character_id_for_ability(ability_id: str) -> str | None:
+    return _find_character_id_for_nested("abilities", "abilityId", ability_id)
 
 
 def _update_ability(ability_id: str, body: dict[str, Any]) -> dict[str, Any]:
@@ -473,17 +485,7 @@ def _add_weapon(body: dict[str, Any]) -> dict[str, Any]:
 
 
 def _find_character_id_for_weapon(weapon_id: str) -> str | None:
-    table = table_from_env(DND_TABLE_ENV)
-    response = table.query(
-        IndexName=DND_BY_NAME_INDEX,
-        KeyConditionExpression=Key("entityType").eq(ENTITY_CHARACTER),
-        ProjectionExpression="characterId, weapons",
-    )
-    for item in response.get("Items", []):
-        for weapon in item.get("weapons") or []:
-            if str(weapon.get("weaponId", "")) == weapon_id:
-                return str(item.get("characterId", ""))
-    return None
+    return _find_character_id_for_nested("weapons", "weaponId", weapon_id)
 
 
 def _get_weapon(weapon_id: str) -> dict[str, Any]:

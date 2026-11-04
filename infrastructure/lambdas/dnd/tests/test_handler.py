@@ -7,22 +7,8 @@ authorizer itself is not exercised (see openspec/changes/add-bounties-pytest-sca
 Non-Goals) -- `authenticated`/writer checks are tested through the authorizer-context contract
 `require_clerk_writer` reads.
 
-## A real bug this suite found and documents rather than works around
-
-`_find_character_id_for_ability` / `_find_character_id_for_weapon` locate the owning character by
-querying `DndCharactersByNameIndex` with `ProjectionExpression="characterId, abilities"` (or
-`weapons`) -- but that GSI's real `Projection` (see conftest.py's `DND_BY_NAME_INDEX_SPEC`, copied
-from `infrastructure/lib/constructs/dnd-construct.ts`) does NOT include `abilities` or `weapons`.
-A DynamoDB GSI can only return attributes it actually projects; requesting one it doesn't project
-silently comes back empty, not an error (confirmed directly against moto, which enforces this the
-same way real DynamoDB does). So these two lookup functions can never find a match, regardless of
-what's actually stored -- and `GET /api/weapon/{id}`, `DELETE /api/deleteWeapon/{id}`, and
-`DELETE /api/deleteAbility/{id}` have no other way to resolve the owning character (no `body`
-fallback, unlike `_update_ability`/`_update_weapon`). In production, all three routes always 404
-today. The tests below (`test_*_currently_fails_due_to_gsi_projection_bug`) capture this as
-observed behavior, not intended behavior -- they should be revisited/deleted the moment this is
-fixed (e.g. by scanning the base table like `recipes/handler.py`'s
-`_find_recipe_id_for_ingredient` does, or by adding `abilities`/`weapons` to the GSI projection).
+The weapon/ability -> owning-character lookups scan the base table, because
+`DndCharactersByNameIndex` doesn't project `weapons`/`abilities` (see #11).
 """
 
 from __future__ import annotations
@@ -256,9 +242,25 @@ def test_update_ability_requires_auth(dnd_handler, make_event):
     assert resp["statusCode"] == 401
 
 
+def _add_ability(dnd_handler, make_event, character_id, name="Rage"):
+    resp = dnd_handler.handler(
+        make_event("POST", f"/api/addAbility/{character_id}", body={"name": name}, authenticated=True),
+        None,
+    )
+    return json.loads(resp["body"])["abilityId"]
+
+
+def _add_weapon(dnd_handler, make_event, character_id, name="Longsword"):
+    resp = dnd_handler.handler(
+        make_event(
+            "POST", "/api/addWeapon", body={"characterId": character_id, "name": name}, authenticated=True
+        ),
+        None,
+    )
+    return json.loads(resp["body"])["weaponId"]
+
+
 def test_update_ability_success_with_character_id(dnd_handler, make_event):
-    """Only the `characterId`-in-body path works -- see the module docstring for why the
-    GSI-based `_find_character_id_for_ability` fallback can't."""
     created = _create_character(dnd_handler, make_event)
     added = dnd_handler.handler(
         make_event(
@@ -279,21 +281,42 @@ def test_update_ability_success_with_character_id(dnd_handler, make_event):
     assert json.loads(resp["body"])["name"] == "Reckless Attack"
 
 
-def test_delete_ability_currently_fails_due_to_gsi_projection_bug(dnd_handler, make_event):
-    """See the module docstring: `DELETE /api/deleteAbility/{id}` has no `characterId` fallback
-    and always 404s today, even for an ability that exists."""
+def test_update_ability_without_character_id_uses_lookup(dnd_handler, make_event):
     created = _create_character(dnd_handler, make_event)
-    added = dnd_handler.handler(
-        make_event(
-            "POST", f"/api/addAbility/{created['characterId']}", body={"name": "Rage"}, authenticated=True
-        ),
-        None,
+    ability_id = _add_ability(dnd_handler, make_event, created["characterId"])
+
+    event = make_event(
+        "PUT", f"/api/updateAbility/{ability_id}", body={"name": "Reckless Attack"}, authenticated=True
     )
-    ability_id = json.loads(added["body"])["abilityId"]
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 200
+    assert json.loads(resp["body"])["name"] == "Reckless Attack"
+
+
+def test_delete_ability_requires_auth(dnd_handler, make_event):
+    resp = dnd_handler.handler(make_event("DELETE", "/api/deleteAbility/a1"), None)
+    assert resp["statusCode"] == 401
+
+
+def test_delete_ability_not_found(dnd_handler, make_event):
+    _create_character(dnd_handler, make_event)
+    event = make_event("DELETE", "/api/deleteAbility/does-not-exist", authenticated=True)
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 404
+
+
+def test_delete_ability_success(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event)
+    character_id = created["characterId"]
+    ability_id = _add_ability(dnd_handler, make_event, character_id)
 
     event = make_event("DELETE", f"/api/deleteAbility/{ability_id}", authenticated=True)
     resp = dnd_handler.handler(event, None)
-    assert resp["statusCode"] == 404
+    assert resp["statusCode"] == 200
+    assert json.loads(resp["body"]) == {"message": "Deleted"}
+
+    list_resp = dnd_handler.handler(make_event("GET", f"/api/characterAbilities/{character_id}"), None)
+    assert json.loads(list_resp["body"]) == []
 
 
 # --- Weapons: GET /api/characterWeapons/{id}, GET /api/weapon/{id}, POST addWeapon, PUT/DELETE ------
@@ -329,23 +352,22 @@ def test_add_weapon_success(dnd_handler, make_event):
     assert json.loads(resp["body"])["name"] == "Longsword"
 
 
-def test_get_weapon_currently_fails_due_to_gsi_projection_bug(dnd_handler, make_event):
-    """See the module docstring: `GET /api/weapon/{id}` has no `characterId` fallback and always
-    404s today, even for a weapon that exists."""
+def test_get_weapon_not_found(dnd_handler, make_event):
+    _create_character(dnd_handler, make_event)
+    resp = dnd_handler.handler(make_event("GET", "/api/weapon/does-not-exist"), None)
+    assert resp["statusCode"] == 404
+
+
+def test_get_weapon_success(dnd_handler, make_event):
     created = _create_character(dnd_handler, make_event)
-    added = dnd_handler.handler(
-        make_event(
-            "POST",
-            "/api/addWeapon",
-            body={"characterId": created["characterId"], "name": "Longsword"},
-            authenticated=True,
-        ),
-        None,
-    )
-    weapon_id = json.loads(added["body"])["weaponId"]
+    weapon_id = _add_weapon(dnd_handler, make_event, created["characterId"])
 
     resp = dnd_handler.handler(make_event("GET", f"/api/weapon/{weapon_id}"), None)
-    assert resp["statusCode"] == 404
+    assert resp["statusCode"] == 200
+    body = json.loads(resp["body"])
+    assert body["weaponId"] == weapon_id
+    assert body["name"] == "Longsword"
+    assert body["characterId"] == created["characterId"]
 
 
 def test_update_weapon_success_with_character_id(dnd_handler, make_event):
@@ -372,23 +394,58 @@ def test_update_weapon_success_with_character_id(dnd_handler, make_event):
     assert json.loads(resp["body"])["name"] == "Longsword +1"
 
 
-def test_delete_weapon_currently_fails_due_to_gsi_projection_bug(dnd_handler, make_event):
-    """See the module docstring: `DELETE /api/deleteWeapon/{id}` has no `characterId` fallback
-    and always 404s today, even for a weapon that exists."""
+def test_update_weapon_without_character_id_uses_lookup(dnd_handler, make_event):
     created = _create_character(dnd_handler, make_event)
-    added = dnd_handler.handler(
-        make_event(
-            "POST",
-            "/api/addWeapon",
-            body={"characterId": created["characterId"], "name": "Longsword"},
-            authenticated=True,
-        ),
-        None,
+    weapon_id = _add_weapon(dnd_handler, make_event, created["characterId"])
+
+    event = make_event(
+        "PUT", f"/api/updateWeapon/{weapon_id}", body={"name": "Longsword +1"}, authenticated=True
     )
-    weapon_id = json.loads(added["body"])["weaponId"]
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 200
+    assert json.loads(resp["body"])["name"] == "Longsword +1"
+
+
+def test_delete_weapon_requires_auth(dnd_handler, make_event):
+    resp = dnd_handler.handler(make_event("DELETE", "/api/deleteWeapon/w1"), None)
+    assert resp["statusCode"] == 401
+
+
+def test_delete_weapon_not_found(dnd_handler, make_event):
+    _create_character(dnd_handler, make_event)
+    event = make_event("DELETE", "/api/deleteWeapon/does-not-exist", authenticated=True)
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 404
+
+
+def test_delete_weapon_success(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event)
+    character_id = created["characterId"]
+    weapon_id = _add_weapon(dnd_handler, make_event, character_id)
 
     resp = dnd_handler.handler(make_event("DELETE", f"/api/deleteWeapon/{weapon_id}", authenticated=True), None)
-    assert resp["statusCode"] == 404
+    assert resp["statusCode"] == 200
+    assert json.loads(resp["body"]) == {"message": "Deleted"}
+
+    list_resp = dnd_handler.handler(make_event("GET", f"/api/characterWeapons/{character_id}"), None)
+    assert json.loads(list_resp["body"]) == []
+
+
+def test_delete_weapon_only_affects_owning_character(dnd_handler, make_event):
+    char_a = _create_character(dnd_handler, make_event, name="Aria")["characterId"]
+    char_b = _create_character(dnd_handler, make_event, name="Brom")["characterId"]
+    weapon_a = _add_weapon(dnd_handler, make_event, char_a, name="Rapier")
+    weapon_b = _add_weapon(dnd_handler, make_event, char_b, name="Warhammer")
+
+    resp = dnd_handler.handler(make_event("DELETE", f"/api/deleteWeapon/{weapon_b}", authenticated=True), None)
+    assert resp["statusCode"] == 200
+
+    a_weapons = json.loads(dnd_handler.handler(make_event("GET", f"/api/characterWeapons/{char_a}"), None)["body"])
+    assert [w["weaponId"] for w in a_weapons] == [weapon_a]
+    assert a_weapons[0]["name"] == "Rapier"
+
+    b_weapons = json.loads(dnd_handler.handler(make_event("GET", f"/api/characterWeapons/{char_b}"), None)["body"])
+    assert b_weapons == []
 
 
 # --- Known spells: GET .../knownSpells, POST .../addKnownSpell, DELETE .../deleteKnownSpell ---------
