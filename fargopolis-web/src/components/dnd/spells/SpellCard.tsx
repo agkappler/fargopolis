@@ -34,16 +34,14 @@ export const SpellCard: React.FC<SpellCardProps> = ({
             <Text textAlign="center">{spell.name}</Text>
             <Info size={16} />
         </Box>
-        {isOpen &&
-            <SpellDetailsModal
-                isOpen={isOpen}
-                onClose={() => setIsOpen(false)}
-                spell={spell}
-                canEdit={canEdit}
-                characterId={characterId}
-                isKnown={isKnown}
-                onSpellUpdate={onSpellUpdate}
-            />
-        }
+        <SpellDetailsModal
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            spell={spell}
+            canEdit={canEdit}
+            characterId={characterId}
+            isKnown={isKnown}
+            onSpellUpdate={onSpellUpdate}
+        />
     </>
 }

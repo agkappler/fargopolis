@@ -8,7 +8,7 @@ interface CharacterCreateWizardProps {
 }
 
 /**
- * 4-step character creation flow. All form state lives in WizardContent,
+ * Multi-step (5–6 steps depending on class) character creation flow. All form state lives in WizardContent,
  * which unmounts when the dialog closes, so each opening starts fresh.
  */
 export const CharacterCreateWizard: React.FC<CharacterCreateWizardProps> = ({ isOpen, onClose, updateCharacters }) => {

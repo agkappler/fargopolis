@@ -11,6 +11,7 @@ import { DropdownInput } from "../inputs/DropdownInput";
 import { FileUpload } from "../inputs/FileUpload";
 import { NumberInput } from "../inputs/NumberInput";
 import { TextInput } from "../inputs/TextInput";
+import { CharacterStatFields } from "./CharacterStatFields";
 
 interface CharacterFormFieldsProps {
     character?: Character;
@@ -108,6 +109,9 @@ export const CharacterFormFields: React.FC<CharacterFormFieldsProps> = ({
                     options={dynamicSubclassOptions}
                 />
             </GridItem>
+            {isEdit && <GridItem colSpan={12}>
+                <CharacterStatFields />
+            </GridItem>}
         </Grid>
     );
 };

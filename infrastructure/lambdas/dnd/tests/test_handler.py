@@ -491,3 +491,193 @@ def test_options_returns_200_empty_body(dnd_handler, make_event):
     resp = dnd_handler.handler(make_event("OPTIONS", "/api/characters"), None)
     assert resp["statusCode"] == 200
     assert resp["body"] == ""
+
+
+# --- Stat block + proficiencies (abilityScores, hitPoints, AC, initiative, speed, proficiencies) ---
+
+
+FULL_STATS = {
+    "abilityScores": {"str": 15, "dex": 14, "con": 13, "int": 12, "wis": 8, "cha": 18},
+    "hitPoints": {"current": 9, "max": 12, "temp": 3},
+    "armorClass": 16,
+    "initiativeBonus": 2,
+    "speed": 30,
+    "savingThrowProficiencies": ["dex", "cha"],
+    "skillProficiencies": ["stealth", "persuasion"],
+}
+
+DEFAULT_STATS = {
+    "abilityScores": {"str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10},
+    "hitPoints": {"current": 0, "max": 0, "temp": 0},
+    "armorClass": 0,
+    "initiativeBonus": 0,
+    "speed": 0,
+    "savingThrowProficiencies": [],
+    "skillProficiencies": [],
+}
+
+
+def _get_character_body(dnd_handler, make_event, character_id):
+    resp = dnd_handler.handler(make_event("GET", f"/api/character/{character_id}"), None)
+    assert resp["statusCode"] == 200
+    return json.loads(resp["body"])
+
+
+def _put_legacy_character(dnd_table, character_id="legacy-1"):
+    """A raw item shaped like one written before the stat-block fields existed."""
+    dnd_table.put_item(
+        Item={
+            "characterId": character_id,
+            "name": "Old Timer",
+            "race": "Dwarf",
+            "subrace": "Hill",
+            "className": "Cleric",
+            "subclassName": "Life",
+            "level": 4,
+            "entityType": "CHARACTER",
+            "nameSortKey": f"old timer#{character_id}",
+            "version": 0,
+        }
+    )
+    return character_id
+
+
+def test_create_character_with_stat_block_round_trips_through_get(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event, **FULL_STATS)
+    for key, value in FULL_STATS.items():
+        assert created[key] == value
+
+    body = _get_character_body(dnd_handler, make_event, created["characterId"])
+    for key, value in FULL_STATS.items():
+        assert body[key] == value
+
+
+def test_create_character_without_stat_block_uses_defaults(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event)
+    body = _get_character_body(dnd_handler, make_event, created["characterId"])
+    for key, value in DEFAULT_STATS.items():
+        assert body[key] == value
+
+
+def test_create_character_partial_ability_scores_default_missing_keys(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event, abilityScores={"str": 17})
+    body = _get_character_body(dnd_handler, make_event, created["characterId"])
+    assert body["abilityScores"] == {"str": 17, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10}
+
+
+def test_update_character_stat_block_persists_and_is_reflected_on_get(dnd_handler, dnd_table, make_event):
+    created = _create_character(dnd_handler, make_event)
+    character_id = created["characterId"]
+
+    body = {"characterId": character_id, "name": "Aria Nightsong", **FULL_STATS}
+    resp = dnd_handler.handler(make_event("POST", "/api/updateCharacter", body=body, authenticated=True), None)
+    assert resp["statusCode"] == 200
+    updated = json.loads(resp["body"])
+    for key, value in FULL_STATS.items():
+        assert updated[key] == value
+
+    fetched = _get_character_body(dnd_handler, make_event, character_id)
+    for key, value in FULL_STATS.items():
+        assert fetched[key] == value
+
+    stored = dnd_table.get_item(Key={"characterId": character_id})["Item"]
+    assert int(stored["armorClass"]) == 16
+
+
+def test_update_character_partial_stats_preserve_unprovided_fields(dnd_handler, dnd_table, make_event):
+    """Editing one stat must not reset the others to defaults. The frontend only sends the
+    stat fields a user actually filled in (CharacterForm.tsx's buildUpdatePayload), so a
+    field the update body omits means "not provided" and must keep its stored value."""
+    created = _create_character(dnd_handler, make_event, **FULL_STATS)
+    character_id = created["characterId"]
+
+    resp = dnd_handler.handler(
+        make_event(
+            "POST",
+            "/api/updateCharacter",
+            body={"characterId": character_id, "name": "Aria Nightsong", "abilityScores": {"str": 20}},
+            authenticated=True,
+        ),
+        None,
+    )
+    assert resp["statusCode"] == 200
+    updated = json.loads(resp["body"])
+
+    expected_scores = {**FULL_STATS["abilityScores"], "str": 20}
+    assert updated["abilityScores"] == expected_scores
+    assert updated["hitPoints"] == FULL_STATS["hitPoints"]
+    assert updated["armorClass"] == FULL_STATS["armorClass"]
+    assert updated["initiativeBonus"] == FULL_STATS["initiativeBonus"]
+    assert updated["speed"] == FULL_STATS["speed"]
+    assert updated["savingThrowProficiencies"] == FULL_STATS["savingThrowProficiencies"]
+    assert updated["skillProficiencies"] == FULL_STATS["skillProficiencies"]
+
+    fetched = _get_character_body(dnd_handler, make_event, character_id)
+    assert fetched["abilityScores"] == expected_scores
+    assert fetched["hitPoints"] == FULL_STATS["hitPoints"]
+
+
+def test_get_preexisting_character_without_stat_block_returns_defaults(dnd_handler, dnd_table, make_event):
+    character_id = _put_legacy_character(dnd_table)
+
+    body = _get_character_body(dnd_handler, make_event, character_id)
+    for key, value in DEFAULT_STATS.items():
+        assert body[key] == value
+    assert body["level"] == 4
+    assert body["race"] == "Dwarf"
+    assert body["subrace"] == "Hill"
+    assert body["weapons"] == []
+    assert body["abilities"] == []
+
+
+def test_update_preexisting_character_without_stat_block_accepts_and_defaults(
+    dnd_handler, dnd_table, make_event
+):
+    character_id = _put_legacy_character(dnd_table)
+
+    resp = dnd_handler.handler(
+        make_event(
+            "POST",
+            "/api/updateCharacter",
+            body={"characterId": character_id, "name": "Old Timer"},
+            authenticated=True,
+        ),
+        None,
+    )
+    assert resp["statusCode"] == 200
+    updated = json.loads(resp["body"])
+    for key, value in DEFAULT_STATS.items():
+        assert updated[key] == value
+    stored = dnd_table.get_item(Key={"characterId": character_id})["Item"]
+    assert "abilityScores" in stored
+
+    resp = dnd_handler.handler(
+        make_event(
+            "POST",
+            "/api/updateCharacter",
+            body={
+                "characterId": character_id,
+                "name": "Old Timer",
+                "armorClass": 14,
+                "abilityScores": {"dex": 16},
+            },
+            authenticated=True,
+        ),
+        None,
+    )
+    assert resp["statusCode"] == 200
+
+    fetched = _get_character_body(dnd_handler, make_event, character_id)
+    assert fetched["armorClass"] == 14
+    assert fetched["abilityScores"] == {"str": 10, "dex": 16, "con": 10, "int": 10, "wis": 10, "cha": 10}
+
+
+def test_get_characters_list_omits_stat_block_fields(dnd_handler, make_event):
+    _create_character(dnd_handler, make_event, **FULL_STATS)
+
+    resp = dnd_handler.handler(make_event("GET", "/api/characters"), None)
+    assert resp["statusCode"] == 200
+    items = json.loads(resp["body"])
+    assert items[0]["name"] == "Aria Nightsong"
+    for key in FULL_STATS:
+        assert key not in items[0]

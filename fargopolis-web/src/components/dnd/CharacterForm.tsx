@@ -10,6 +10,49 @@ import Character from "@/models/Character";
 import { BasicForm } from "../inputs/BasicForm";
 import { SimpleDialog } from "../ui/SimpleDialog";
 import { CharacterFormFields } from "./CharacterFormFields";
+import { ABILITY_KEYS } from "@/constants/Skills";
+import type { AbilityKey } from "@/constants/Skills";
+
+/** "" / null / undefined → undefined; otherwise Number(v). Inputs use plain register(), so values arrive as strings. */
+const toNum = (v: unknown): number | undefined =>
+    v === "" || v == null ? undefined : Number(v);
+
+/** Copies only the keys whose value is defined. */
+const definedOnly = <T extends Record<string, number | undefined>>(o: T): Partial<Record<keyof T, number>> =>
+    Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<Record<keyof T, number>>;
+
+/**
+ * Builds the /updateCharacter body. Only stat fields the user filled in are included;
+ * a missing key means "not provided".
+ */
+function buildUpdatePayload(data: Character): Record<string, unknown> {
+    const { abilityScores, hitPoints, armorClass, initiativeBonus, speed,
+        savingThrowProficiencies, skillProficiencies, ...identity } = data;
+    const payload: Record<string, unknown> = { ...identity };
+
+    const scores = definedOnly(Object.fromEntries(
+        ABILITY_KEYS.map(k => [k, toNum(abilityScores?.[k])])
+    ) as Record<AbilityKey, number | undefined>);
+    if (Object.keys(scores).length > 0) payload.abilityScores = scores;
+
+    const hp = definedOnly({
+        current: toNum(hitPoints?.current),
+        max: toNum(hitPoints?.max),
+        temp: toNum(hitPoints?.temp),
+    });
+    if (Object.keys(hp).length > 0) payload.hitPoints = hp;
+
+    const ac = toNum(armorClass);
+    if (ac !== undefined) payload.armorClass = ac;
+    const init = toNum(initiativeBonus);
+    if (init !== undefined) payload.initiativeBonus = init;
+    const spd = toNum(speed);
+    if (spd !== undefined) payload.speed = spd;
+
+    payload.savingThrowProficiencies = savingThrowProficiencies ?? [];
+    payload.skillProficiencies = skillProficiencies ?? [];
+    return payload;
+}
 
 interface CharacterFormProps {
     isOpen: boolean;
@@ -49,7 +92,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
     const onSubmit = async (data: Character) => {
         try {
             if (isEdit) {
-                await RequestManager.post("/updateCharacter", data, getToken);
+                await RequestManager.post("/updateCharacter", buildUpdatePayload(data), getToken);
             } else {
                 await RequestManager.post("/createCharacter", data, getToken);
             }

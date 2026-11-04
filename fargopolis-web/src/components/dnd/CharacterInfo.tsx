@@ -1,7 +1,7 @@
 import { getLevelInfoForClass, LevelInfo } from "@/api/dnd5eapi";
 import { MOBILE_BREAK } from "@/constants/Media";
 import Character from "@/models/Character";
-import { Box, NativeSelect, Tabs, Text, useMediaQuery } from "@chakra-ui/react";
+import { Box, NativeSelect, Tabs, useMediaQuery } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../ui/LoadingWrapper";
@@ -12,6 +12,8 @@ import { RacialTraits } from "./race/RacialTraits";
 import { SpellInfo } from "./spells/SpellInfo";
 import { WeaponInfo } from "./weapons/WeaponInfo";
 import { AbilityInfo } from "./abilities/AbilityInfo";
+import { ProficiencyBlock } from "./ProficiencyBlock";
+import { StatBlock } from "./StatBlock";
 
 interface CharacterInfoProps {
     character: Character;
@@ -29,7 +31,11 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
         { label: "Items", value: "4" },
     ];
 
-    return <LoadingWrapper isLoading={isLoadingClassInfo}>
+    // StatBlock sits outside LoadingWrapper so reloading class data never
+    // unmounts it (which would reset its local HP state).
+    return <>
+        <StatBlock character={character} />
+        <LoadingWrapper isLoading={isLoadingClassInfo}>
         <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
             <Box borderBottomWidth="1px" borderColor="border" display="flex" justifyContent="center">
                 {isMobile
@@ -49,6 +55,10 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
             </Box>
             <Tabs.Content value="1">
                 <Box>
+                    <StyledAccordion title="Proficiencies">
+                        <ProficiencyBlock character={character} />
+                    </StyledAccordion>
+
                     <StyledAccordion title="Class Features">
                         <ClassFeatures
                             currentLevel={character.level}
@@ -62,10 +72,6 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
                             race={character.race}
                             characterId={character.characterId}
                         />
-                    </StyledAccordion>
-
-                    <StyledAccordion title="Proficiencies">
-                        <Text>No proficiencies yet!</Text>
                     </StyledAccordion>
 
                     <StyledAccordion title="Resources">
@@ -83,5 +89,6 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
                 <WeaponInfo characterId={character.characterId} />
             </Tabs.Content>
         </Tabs.Root>
-    </LoadingWrapper>
+        </LoadingWrapper>
+    </>
 }

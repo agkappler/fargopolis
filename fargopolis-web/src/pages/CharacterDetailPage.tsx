@@ -1,6 +1,5 @@
 import { CharacterForm } from "@/components/dnd/CharacterForm";
 import { CharacterInfo } from "@/components/dnd/CharacterInfo";
-import { CharacterSubtitle } from "@/components/dnd/CharacterSubtitle";
 import { ActionMenu, MenuOption } from "@/components/ui/ActionMenu";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
@@ -8,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
 import { Dice5, Pencil } from "lucide-react";
+import { Box } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
@@ -53,10 +53,9 @@ export function CharacterDetailPage() {
                     rightContainer={<ActionMenu options={menuOptions} size="medium" ariaLabel="Character options" />}
                 />
                 {character && (
-                    <>
-                        <CharacterSubtitle character={character} />
+                    <Box maxW="fp.container" mx="auto" px="4" py="6">
                         <CharacterInfo character={character} />
-                    </>
+                    </Box>
                 )}
             </LoadingWrapper>
             <CharacterForm isOpen={isOpen} onClose={() => setIsOpen(false)} updateCharacters={mutate} character={character} />

@@ -64,12 +64,12 @@ export const IngredientList: React.FC<IngredientListProps> = ({ recipeId, ingred
                 </Table.Root>
             </Table.ScrollArea>
         </Box>
-        {isOpen && <IngredientForm
+        <IngredientForm
             recipeId={recipeId}
             isOpen={isOpen}
             onClose={onClose}
             ingredient={selectedIngredient}
             updateIngredients={refreshRecipe}
-        />}
+        />
     </>
 }
