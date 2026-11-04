@@ -23,6 +23,11 @@ import { DndGlossaryApiRoutesConstruct } from '../constructs/dnd-glossary-api-ro
 import { DndApiRoutesConstruct } from '../constructs/dnd-api-routes-construct';
 import { GithubActionsApiDeployRoleConstruct } from '../constructs/github-actions-api-deploy-role-construct';
 import { resolveApiGithubDeployOidcProviderArn } from '../github-actions-oidc';
+import {
+    parseApiDomainContext,
+    resolveHasApiDomainConfig,
+    shouldCreateApiDomainDnsRecord,
+} from '../api-domain-context';
 
 /**
  * Serverless API resources (Lambda, API Gateway, DynamoDB, etc.).
@@ -132,20 +137,12 @@ export class FargopolisApiStack extends cdk.Stack {
             oidcProviderArn: githubOidcProviderArn,
         });
 
-        const apiDomain = (this.node.tryGetContext('apiDomain') ?? {}) as {
-            domainName?: string;
-            hostedZoneDomain?: string;
-            hostedZoneId?: string;
-            certificateArn?: string;
-            createDnsRecord?: boolean | string;
-        };
-        const shouldCreateDnsRecord = `${apiDomain.createDnsRecord ?? true}`.toLowerCase() !== 'false';
-        const hasDomainConfig =
-            (apiDomain.domainName ?? '').trim().length > 0 &&
-            (apiDomain.certificateArn ?? '').trim().length > 0 &&
-            (!shouldCreateDnsRecord ||
-                ((apiDomain.hostedZoneDomain ?? '').trim().length > 0 &&
-                    (apiDomain.hostedZoneId ?? '').trim().length > 0));
+        // Tolerates both the object form (local `cdk.context.json`) and the string form that
+        // `-c apiDomain=<json>` produces in CI; throws rather than silently synthesizing without
+        // the domain, which would delete the live domain and its Route 53 record.
+        const apiDomain = parseApiDomainContext(this.node.tryGetContext('apiDomain'));
+        const shouldCreateDnsRecord = shouldCreateApiDomainDnsRecord(apiDomain);
+        const hasDomainConfig = resolveHasApiDomainConfig(apiDomain);
 
         if (hasDomainConfig) {
             const certificate = acm.Certificate.fromCertificateArn(
