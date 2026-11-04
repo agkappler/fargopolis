@@ -17,6 +17,7 @@ export function DndPage() {
     const { data: characters, error, isLoading, mutate } = useSWR<Character[]>("/characters", () =>
         RequestManager.get<Character[]>("/characters"),
     );
+    const closeCreate = () => setIsCreateOpen(false);
 
     return (
         <>
@@ -44,14 +45,18 @@ export function DndPage() {
                     </ErrorWrapper>
                 </LoadingWrapper>
             </Box>
-            {/* Mount only while open so no wizard state carries over between openings. */}
-            {isCreateOpen && (
-                <CharacterCreateWizard
-                    isOpen
-                    onClose={() => setIsCreateOpen(false)}
-                    updateCharacters={() => void mutate()}
-                />
-            )}
+            {/*
+                Always mounted (SimpleDialog's own unmountOnExit already drops the wizard's
+                content when closed, so no state carries over between openings). Toggling the
+                wizard in/out of the tree here instead of via isOpen skipped Dialog.Root's close
+                transition, so its body scroll-lock cleanup could race the SWR mutate below and
+                leave document.body stuck with pointer-events: none.
+            */}
+            <CharacterCreateWizard
+                isOpen={isCreateOpen}
+                onClose={closeCreate}
+                updateCharacters={() => void mutate()}
+            />
         </>
     );
 }
