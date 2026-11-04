@@ -9,7 +9,7 @@ export const StyledAccordion: React.FC<StyledAccordionProps> = ({ title, childre
     return (
         <Accordion.Root collapsible mb="2" borderRadius="md">
             <Accordion.Item value={title}>
-                <Accordion.ItemTrigger>
+                <Accordion.ItemTrigger cursor="pointer">
                     <Text flex="1" fontFamily="display" fontSize="md">{title}</Text>
                     <Accordion.ItemIndicator />
                 </Accordion.ItemTrigger>

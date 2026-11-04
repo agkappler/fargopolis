@@ -36,6 +36,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                                 key={index}
                                 value={option.label}
                                 onSelect={option.onClick}
+                                cursor="pointer"
                             >
                                 {option.icon && <span style={{ marginRight: 8, display: "inline-flex" }}>{option.icon}</span>}
                                 {option.label}

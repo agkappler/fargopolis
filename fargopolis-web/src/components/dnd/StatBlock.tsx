@@ -23,7 +23,12 @@ const rowProps = {
 } as const;
 
 const StatBox: React.FC<PropsWithChildren<{ title: string }>> = ({ title, children }) => (
-    <Box flex="1" {...surfaceBorderProps} p="3">
+    <Box
+        w={{ base: "full", md: "280px" }}
+        flex={{ base: "1", md: "0 0 auto" }}
+        {...surfaceBorderProps}
+        p="3"
+    >
         <Text textStyle="label" color="fg.muted" mb="2">{title}</Text>
         {children}
     </Box>
@@ -107,7 +112,13 @@ export const StatBlock: React.FC<StatBlockProps> = ({ character }) => {
     const locked = !isSignedIn;
 
     return (
-        <Flex direction={{ base: "column", md: "row" }} align="stretch" gap="4" mb="4">
+        <Flex
+            direction={{ base: "column", md: "row" }}
+            align="stretch"
+            justify={{ base: "flex-start", md: "space-between" }}
+            gap="4"
+            mb="4"
+        >
             <StatBox title="Ability Scores">
                 {ABILITY_KEYS.map(key => {
                     const score = c.abilityScores[key];
