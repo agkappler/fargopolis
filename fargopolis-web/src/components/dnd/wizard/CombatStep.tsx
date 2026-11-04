@@ -1,50 +1,26 @@
-import { ABILITY_KEYS, SKILLS, SkillKey } from "@/constants/Skills";
+import { ABILITY_KEYS, SKILLS } from "@/constants/Skills";
 import { Box, Grid, GridItem, Text } from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { DropdownInput } from "../../inputs/DropdownInput";
 import { NumberInput } from "../../inputs/NumberInput";
 import { useCharacterOptions } from "../useCharacterOptions";
 import { useClassProficiencies } from "./useClassProficiencies";
-import { useRaceSpeed } from "./useRaceSpeed";
 import { ABILITY_LABELS, CharacterWizardValues } from "./wizardConfig";
 
 const SAVING_THROW_OPTIONS = ABILITY_KEYS.map(k => ({ value: k, label: ABILITY_LABELS[k] }));
 
 export const CombatStep: React.FC = () => {
-    const { watch, setValue } = useFormContext<CharacterWizardValues>();
-    const race = watch("race");
+    const { watch } = useFormContext<CharacterWizardValues>();
     const className = watch("className");
-    const { isCustomRace, classOptions } = useCharacterOptions(race, className);
-    const speed = useRaceSpeed(race, isCustomRace);
-    const { savingThrows, skillOptions, skillChooseCount } = useClassProficiencies(className);
+    // Prefilling speed/saving-throws/skills from the race/class happens in WizardContent (not
+    // here), since this step unmounts on every step change — see the comment there.
+    const { classOptions } = useCharacterOptions(undefined, className);
+    const { skillOptions, skillChooseCount } = useClassProficiencies(className);
 
     const skillOptionList = skillOptions.map(key => {
         const skill = SKILLS.find(s => s.key === key);
         return { value: key, label: skill ? `${skill.name} (${skill.ability.toUpperCase()})` : key };
     });
-
-    // Prefill once each value resolves for the race/class actually selected. Tracking what's
-    // already applied (rather than just "did the field change") means a slow-loading fetch
-    // still lands instead of being silently missed by a ref that updated too early.
-    const appliedRaceRef = useRef<string>();
-    useEffect(() => {
-        if (speed !== undefined && appliedRaceRef.current !== race) {
-            appliedRaceRef.current = race;
-            setValue("speed", speed, { shouldDirty: true });
-        }
-    }, [race, speed, setValue]);
-
-    const appliedClassRef = useRef<string>();
-    useEffect(() => {
-        if (savingThrows !== undefined && appliedClassRef.current !== className) {
-            appliedClassRef.current = className;
-            setValue("savingThrowProficiencies", savingThrows, { shouldDirty: true });
-            // A previously-chosen skill may no longer be on the new class's list.
-            const current = watch("skillProficiencies") ?? [];
-            setValue("skillProficiencies", current.filter((k: SkillKey) => skillOptions.includes(k)), { shouldDirty: true });
-        }
-    }, [className, savingThrows, skillOptions, setValue, watch]);
 
     const classLabel = classOptions.find(o => o.value === className)?.label ?? className;
     const skillsInfo = className

@@ -11,12 +11,15 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { FileUpload } from "../../inputs/FileUpload";
 import { ErrorMessage } from "../../ui/ErrorMessage";
+import { useCharacterOptions } from "../useCharacterOptions";
 import { AbilityScoresStep } from "./AbilityScoresStep";
 import { CombatStep } from "./CombatStep";
 import { IdentityStep } from "./IdentityStep";
 import { ReviewStep } from "./ReviewStep";
 import { SpellsStep } from "./SpellsStep";
+import { useClassProficiencies } from "./useClassProficiencies";
 import { useClassSpellcasting } from "./useClassSpellcasting";
+import { useRaceSpeed } from "./useRaceSpeed";
 import { buildPayload, CharacterWizardValues, getEffectiveSteps, WIZARD_DEFAULTS } from "./wizardConfig";
 
 interface WizardContentProps {
@@ -44,7 +47,7 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
     const savingRef = useRef(false);
 
     // The step list depends on the class: non-casters have no Spells step.
-    const [className, level] = useWatch({ control: methods.control, name: ["className", "level"] });
+    const [race, className, level] = useWatch({ control: methods.control, name: ["race", "className", "level"] });
     const { spellcasting, isCaster } = useClassSpellcasting(className, level);
     const steps = getEffectiveSteps(isCaster);
     const lastStep = steps.length - 1;
@@ -61,6 +64,32 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
             setValue("knownSpells", []);
         }
     }, [className, setValue]);
+
+    // Combat-step prefills live here, not in CombatStep, because CombatStep unmounts on every
+    // step change (steps render conditionally below) — a ref local to it would reset on each
+    // return visit and re-overwrite the user's edits from the (already-cached) SWR data.
+    const { isCustomRace } = useCharacterOptions(race, className);
+    const raceSpeed = useRaceSpeed(race, isCustomRace);
+    const { savingThrows, skillOptions: classSkillOptions } = useClassProficiencies(className);
+
+    const appliedRaceRef = useRef<string>();
+    useEffect(() => {
+        if (raceSpeed !== undefined && appliedRaceRef.current !== race) {
+            appliedRaceRef.current = race;
+            setValue("speed", raceSpeed, { shouldDirty: true });
+        }
+    }, [race, raceSpeed, setValue]);
+
+    const appliedClassRef = useRef<string>();
+    useEffect(() => {
+        if (savingThrows !== undefined && appliedClassRef.current !== className) {
+            appliedClassRef.current = className;
+            setValue("savingThrowProficiencies", savingThrows, { shouldDirty: true });
+            // A previously-chosen skill may no longer be on the new class's list.
+            const currentSkills = getValues("skillProficiencies") ?? [];
+            setValue("skillProficiencies", currentSkills.filter(k => classSkillOptions.includes(k)), { shouldDirty: true });
+        }
+    }, [className, savingThrows, classSkillOptions, setValue, getValues]);
 
     const saveCharacter = async (): Promise<boolean> => {
         const ok = await trigger(current.fields, { shouldFocus: true });
