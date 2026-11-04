@@ -1,3 +1,4 @@
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { BaseInputProps } from '@/helpers/BaseInputProps';
 import { createListCollection, Field, Select } from '@chakra-ui/react';
 import * as React from 'react';
@@ -15,7 +16,7 @@ interface DropdownInputProps extends Omit<BaseInputProps, "onChange"> {
     onChange?: (value: string | number | (string | number)[]) => void;
 }
 
-export const DropdownInput: React.FC<DropdownInputProps> = ({ label, fieldName, options, requiredMessage, isMultiSelect = false, onChange }) => {
+export const DropdownInput: React.FC<DropdownInputProps> = ({ label, fieldName, options, requiredMessage, info, isMultiSelect = false, onChange }) => {
     const { control } = useFormContext();
     const collection = React.useMemo(() => createListCollection({
         items: options,
@@ -48,7 +49,10 @@ export const DropdownInput: React.FC<DropdownInputProps> = ({ label, fieldName, 
                             }}
                             onInteractOutside={field.onBlur}
                         >
-                            <Select.Label>{requiredMessage ? `${label}*` : label}</Select.Label>
+                            <Select.Label>
+                                {requiredMessage ? `${label}*` : label}
+                                {info && <InfoTooltip label={info} />}
+                            </Select.Label>
                             <Select.Control>
                                 <Select.Trigger px="3.5" {...fieldBorderProps}>
                                     <Select.ValueText placeholder={label} />

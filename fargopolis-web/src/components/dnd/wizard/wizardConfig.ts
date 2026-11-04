@@ -17,8 +17,6 @@ export interface CharacterWizardValues {
     speed: number | string;
     savingThrowProficiencies: AbilityKey[];
     skillProficiencies: SkillKey[];
-    /** STARTING_WEAPONS key; "" means none. Saved via /addWeapon, never sent to /updateCharacter. */
-    startingWeapon: string;
     /** Pending spell selection. Saved via addKnownSpell, never sent to /updateCharacter. */
     knownSpells: Spell[];
 }
@@ -31,11 +29,10 @@ export const WIZARD_DEFAULTS: DefaultValues<CharacterWizardValues> = {
     subclassName: "",
     savingThrowProficiencies: [],
     skillProficiencies: [],
-    startingWeapon: "",
     knownSpells: [],
 };
 
-export type StepId = "identity" | "abilities" | "combat" | "weapon" | "spells" | "review";
+export type StepId = "identity" | "abilities" | "combat" | "spells" | "review";
 
 export interface WizardStep {
     id: StepId;
@@ -77,14 +74,6 @@ export const STEPS: WizardStep[] = [
         fields: ["hitPoints.max", "armorClass", "initiativeBonus", "speed", "savingThrowProficiencies", "skillProficiencies"],
     },
     {
-        id: "weapon",
-        label: "Weapon",
-        title: "Starting Weapon",
-        hint: "Pick a weapon to start with, or skip and add one later.",
-        fields: [],
-        optional: true,
-    },
-    {
         id: "spells",
         label: "Spells",
         title: "Known Spells",
@@ -105,15 +94,6 @@ export const STEPS: WizardStep[] = [
 export function getEffectiveSteps(isCaster: boolean | undefined): WizardStep[] {
     return isCaster === false ? STEPS.filter(s => s.id !== "spells") : STEPS;
 }
-
-export const STARTING_WEAPONS = [
-    { key: "longsword", name: "Longsword", damage: "1d8", damageType: "slashing", range: "Melee (5 ft)", description: "Versatile (1d10)" },
-    { key: "shortbow", name: "Shortbow", damage: "1d6", damageType: "piercing", range: "80/320 ft", description: "Ammunition, two-handed" },
-    { key: "dagger", name: "Dagger", damage: "1d4", damageType: "piercing", range: "Melee or thrown 20/60 ft", description: "Finesse, light, thrown" },
-    { key: "quarterstaff", name: "Quarterstaff", damage: "1d6", damageType: "bludgeoning", range: "Melee (5 ft)", description: "Versatile (1d8)" },
-] as const;
-
-export type StartingWeapon = (typeof STARTING_WEAPONS)[number];
 
 /** Spell levels the character can pick from (0 = cantrips). Same rule as SpellInfo.tsx. */
 export function castableSpellLevels(sc?: Spellcasting): number[] {

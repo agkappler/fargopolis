@@ -4,7 +4,6 @@ import { getErrorMessage } from "@/helpers/Errors";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
 import FileMetadata from "@/models/FileMetadata";
-import Weapon from "@/models/Weapon";
 import { Box, Button, chakra, Flex, Heading, Text } from "@chakra-ui/react";
 import { useAuth } from "@clerk/react";
 import { Check } from "lucide-react";
@@ -12,14 +11,16 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { FileUpload } from "../../inputs/FileUpload";
 import { ErrorMessage } from "../../ui/ErrorMessage";
+import { useCharacterOptions } from "../useCharacterOptions";
 import { AbilityScoresStep } from "./AbilityScoresStep";
 import { CombatStep } from "./CombatStep";
 import { IdentityStep } from "./IdentityStep";
 import { ReviewStep } from "./ReviewStep";
 import { SpellsStep } from "./SpellsStep";
+import { useClassProficiencies } from "./useClassProficiencies";
 import { useClassSpellcasting } from "./useClassSpellcasting";
-import { WeaponStep } from "./WeaponStep";
-import { buildPayload, CharacterWizardValues, getEffectiveSteps, STARTING_WEAPONS, WIZARD_DEFAULTS } from "./wizardConfig";
+import { useRaceSpeed } from "./useRaceSpeed";
+import { buildPayload, CharacterWizardValues, getEffectiveSteps, WIZARD_DEFAULTS } from "./wizardConfig";
 
 interface WizardContentProps {
     onDone: () => void;
@@ -40,14 +41,13 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
     const [avatarId, setAvatarId] = useState<string>();
     const [errorMessage, setErrorMessage] = useState<string>();
     const [isSaving, setIsSaving] = useState(false);
-    // What's been saved to the character by the optional steps, so revisits don't duplicate.
-    const [savedWeapon, setSavedWeapon] = useState<{ weaponId: string; key: string }>();
+    // What's been saved to the character by the Spells step, so revisits don't duplicate.
     const [savedSpells, setSavedSpells] = useState<Spell[]>([]);
     // Synchronous lock so a double-click / double-Enter can't fire two saves (or two creates).
     const savingRef = useRef(false);
 
     // The step list depends on the class: non-casters have no Spells step.
-    const [className, level] = useWatch({ control: methods.control, name: ["className", "level"] });
+    const [race, className, level] = useWatch({ control: methods.control, name: ["race", "className", "level"] });
     const { spellcasting, isCaster } = useClassSpellcasting(className, level);
     const steps = getEffectiveSteps(isCaster);
     const lastStep = steps.length - 1;
@@ -65,6 +65,32 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
         }
     }, [className, setValue]);
 
+    // Combat-step prefills live here, not in CombatStep, because CombatStep unmounts on every
+    // step change (steps render conditionally below) — a ref local to it would reset on each
+    // return visit and re-overwrite the user's edits from the (already-cached) SWR data.
+    const { isCustomRace } = useCharacterOptions(race, className);
+    const raceSpeed = useRaceSpeed(race, isCustomRace);
+    const { savingThrows, skillOptions: classSkillOptions } = useClassProficiencies(className);
+
+    const appliedRaceRef = useRef<string>();
+    useEffect(() => {
+        if (raceSpeed !== undefined && appliedRaceRef.current !== race) {
+            appliedRaceRef.current = race;
+            setValue("speed", raceSpeed, { shouldDirty: true });
+        }
+    }, [race, raceSpeed, setValue]);
+
+    const appliedClassRef = useRef<string>();
+    useEffect(() => {
+        if (savingThrows !== undefined && appliedClassRef.current !== className) {
+            appliedClassRef.current = className;
+            setValue("savingThrowProficiencies", savingThrows, { shouldDirty: true });
+            // A previously-chosen skill may no longer be on the new class's list.
+            const currentSkills = getValues("skillProficiencies") ?? [];
+            setValue("skillProficiencies", currentSkills.filter(k => classSkillOptions.includes(k)), { shouldDirty: true });
+        }
+    }, [className, savingThrows, classSkillOptions, setValue, getValues]);
+
     const saveCharacter = async (): Promise<boolean> => {
         const ok = await trigger(current.fields, { shouldFocus: true });
         if (!ok) return false;
@@ -77,30 +103,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
             setCharacterId(created.characterId);
         } else {
             await RequestManager.post("/updateCharacter", payload, getToken);
-        }
-        return true;
-    };
-
-    const saveWeapon = async (): Promise<boolean> => {
-        const key = getValues("startingWeapon");
-        const preset = STARTING_WEAPONS.find(w => w.key === key);
-        if (!preset || key === savedWeapon?.key || !characterId) return true;
-        setIsSaving(true);
-        setErrorMessage(undefined);
-        const body = {
-            name: preset.name,
-            damage: preset.damage,
-            damageType: preset.damageType,
-            range: preset.range,
-            description: preset.description,
-            characterId,
-        };
-        if (savedWeapon) {
-            await RequestManager.put(`/updateWeapon/${savedWeapon.weaponId}`, body, getToken);
-            setSavedWeapon({ weaponId: savedWeapon.weaponId, key: preset.key });
-        } else {
-            const created = await RequestManager.post<typeof body, Weapon>("/addWeapon", body, getToken);
-            setSavedWeapon({ weaponId: created.weaponId, key: preset.key });
         }
         return true;
     };
@@ -136,7 +138,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
         if (savingRef.current) return false;
         savingRef.current = true;
         try {
-            if (current.id === "weapon") return await saveWeapon();
             if (current.id === "spells") return await saveSpells();
             return await saveCharacter();
         } catch (e: unknown) {
@@ -158,7 +159,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
     // Skip makes no request; it just puts the step's selection back to what's saved.
     const onSkip = () => {
         if (savingRef.current) return;
-        if (current.id === "weapon") setValue("startingWeapon", savedWeapon?.key ?? "");
         if (current.id === "spells") setValue("knownSpells", savedSpells);
         goTo(step + 1);
     };
@@ -191,7 +191,6 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
 
     const canWrite = isLoaded && isSignedIn;
     const primaryLabel = step === 0 ? "Create & Continue" : step === lastStep ? "Finish" : "Next";
-    const savedWeaponPreset = STARTING_WEAPONS.find(w => w.key === savedWeapon?.key);
 
     return (
         <FormProvider {...methods}>
@@ -271,10 +270,9 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
                 {current.id === "identity" && <IdentityStep />}
                 {current.id === "abilities" && <AbilityScoresStep />}
                 {current.id === "combat" && <CombatStep />}
-                {current.id === "weapon" && <WeaponStep savedWeaponKey={savedWeapon?.key} />}
                 {current.id === "spells" && <SpellsStep className={className} spellcasting={spellcasting} />}
                 {current.id === "review" && (
-                    <ReviewStep avatarId={avatarId} savedWeapon={savedWeaponPreset} savedSpells={savedSpells} />
+                    <ReviewStep avatarId={avatarId} savedSpells={savedSpells} />
                 )}
 
                 <Flex justify="space-between" align="center" pt="4" gap="2">

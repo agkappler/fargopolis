@@ -1,3 +1,4 @@
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { BaseInputProps } from "@/helpers/BaseInputProps";
 import { Field, Input, InputGroup } from "@chakra-ui/react";
 import { get, useFormContext } from "react-hook-form";
@@ -17,6 +18,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
     label,
     fieldName,
     requiredMessage,
+    info,
     type = NumberInputType.WholeNumber,
     allowNegative = false,
     min,
@@ -49,7 +51,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
 
     return (
         <Field.Root invalid={!!error} w="full">
-            <Field.Label>{requiredMessage ? `${label}*` : label}</Field.Label>
+            <Field.Label>
+                {requiredMessage ? `${label}*` : label}
+                {info && <InfoTooltip label={info} />}
+            </Field.Label>
             <InputGroup
                 startElement={type === NumberInputType.Currency ? "$" : undefined}
                 endElement={type === NumberInputType.Percentage ? "%" : undefined}

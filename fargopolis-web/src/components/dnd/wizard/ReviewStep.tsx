@@ -6,12 +6,11 @@ import { PropsWithChildren } from "react";
 import { useWatch } from "react-hook-form";
 import { useCharacterOptions } from "../useCharacterOptions";
 import { Spell } from "@/api/dnd5eapi";
-import { ABILITY_LABELS, CharacterWizardValues, StartingWeapon } from "./wizardConfig";
+import { ABILITY_LABELS, CharacterWizardValues } from "./wizardConfig";
 
 interface ReviewStepProps {
     avatarId?: string;
     /** What's been saved to the character, not the pending selection. */
-    savedWeapon?: StartingWeapon;
     savedSpells: Spell[];
 }
 
@@ -32,7 +31,7 @@ const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value
 const withParen = (main: string, sub?: string) => (sub ? `${main} (${sub})` : main);
 const toNum = (v: unknown) => (v === "" || v == null ? NaN : Number(v));
 
-export const ReviewStep: React.FC<ReviewStepProps> = ({ avatarId, savedWeapon, savedSpells }) => {
+export const ReviewStep: React.FC<ReviewStepProps> = ({ avatarId, savedSpells }) => {
     const v = useWatch<CharacterWizardValues>() as Partial<CharacterWizardValues>;
     const { raceOptions, classOptions, subraceOptions, subclassOptions } = useCharacterOptions(v.race, v.className);
     const { data: avatar } = useFileMetadata(avatarId);
@@ -102,14 +101,10 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({ avatarId, savedWeapon, s
                 </Stack>
             </Section>
 
-            <Section title="Starting Gear & Spells">
+            <Section title="Known Spells">
                 <Stack gap="1">
                     <Row
-                        label="Weapon"
-                        value={savedWeapon ? `${savedWeapon.name} (${savedWeapon.damage} ${savedWeapon.damageType})` : "None selected"}
-                    />
-                    <Row
-                        label="Known Spells"
+                        label="Spells"
                         value={savedSpells.length ? savedSpells.map(s => s.name).join(", ") : "None selected"}
                     />
                 </Stack>

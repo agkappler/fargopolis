@@ -18,6 +18,10 @@ interface SpllDetailsModalProps {
     onSpellUpdate?: () => void;
 }
 
+// Badges default to `white-space: nowrap`; spell text like long material components can be a
+// full sentence, so wrap it inside the chip instead of letting it overflow the dialog.
+const chipProps = { whiteSpace: "normal", wordBreak: "break-word", textAlign: "center" } as const;
+
 export const SpellDetailsModal: React.FC<SpllDetailsModalProps> = ({
     isOpen,
     onClose,
@@ -61,12 +65,12 @@ export const SpellDetailsModal: React.FC<SpllDetailsModalProps> = ({
     return <SimpleDialog title={spell.name} isOpen={isOpen} onClose={onClose}>
         <LoadingWrapper isLoading={isLoading} size={10}>
             <Box display="flex" flexWrap="wrap" gap={1} mb={2} justifyContent="center">
-                {spellDetails?.concentration && <Badge>Concentration</Badge>}
-                {spellDetails?.casting_time && <Badge>{`Casting: ${spellDetails.casting_time}`}</Badge>}
-                {spellDetails?.range && <Badge>{`Range: ${spellDetails.range}`}</Badge>}
-                {spellDetails?.duration && <Badge>{`Duration: ${spellDetails.duration}`}</Badge>}
-                {spellDetails?.ritual && <Badge>Ritual</Badge>}
-                {spellDetails?.material && <Badge>{`Material: ${spellDetails.material}`}</Badge>}
+                {spellDetails?.concentration && <Badge {...chipProps}>Concentration</Badge>}
+                {spellDetails?.casting_time && <Badge {...chipProps}>{`Casting: ${spellDetails.casting_time}`}</Badge>}
+                {spellDetails?.range && <Badge {...chipProps}>{`Range: ${spellDetails.range}`}</Badge>}
+                {spellDetails?.duration && <Badge {...chipProps}>{`Duration: ${spellDetails.duration}`}</Badge>}
+                {spellDetails?.ritual && <Badge {...chipProps}>Ritual</Badge>}
+                {spellDetails?.material && <Badge {...chipProps}>{`Material: ${spellDetails.material}`}</Badge>}
             </Box>
             <DescriptionList descriptions={spellDetails?.desc} />
         </LoadingWrapper>
