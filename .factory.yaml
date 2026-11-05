@@ -1,7 +1,7 @@
 checks:
   - name: web
     paths: ["fargopolis-web/**"]
-    run: cd fargopolis-web && pnpm install --frozen-lockfile && pnpm run build && pnpm run lint
+    run: cd fargopolis-web && pnpm install --frozen-lockfile && pnpm run build && pnpm run lint && pnpm run test
 
   - name: lambdas
     paths: ["infrastructure/lambdas/**", "scripts/setup-python-lambdas.sh"]
