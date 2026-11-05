@@ -72,7 +72,7 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
     const raceSpeed = useRaceSpeed(race, isCustomRace);
     const { savingThrows, skillOptions: classSkillOptions } = useClassProficiencies(className);
 
-    const appliedRaceRef = useRef<string>();
+    const appliedRaceRef = useRef<string | undefined>(undefined);
     useEffect(() => {
         if (raceSpeed !== undefined && appliedRaceRef.current !== race) {
             appliedRaceRef.current = race;
@@ -80,7 +80,7 @@ export const WizardContent: React.FC<WizardContentProps> = ({ onDone }) => {
         }
     }, [race, raceSpeed, setValue]);
 
-    const appliedClassRef = useRef<string>();
+    const appliedClassRef = useRef<string | undefined>(undefined);
     useEffect(() => {
         if (savingThrows !== undefined && appliedClassRef.current !== className) {
             appliedClassRef.current = className;
