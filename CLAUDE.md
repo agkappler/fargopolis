@@ -28,9 +28,11 @@ pnpm build           # tsc --noEmit && vite build
 pnpm lint            # eslint . --quiet (errors only)
 pnpm lint-warn       # eslint . (include warnings)
 pnpm ts-lint         # tsc --noEmit && eslint . --fix
+pnpm test            # vitest run (component + unit tests)
+pnpm test:watch      # vitest in watch mode
 ```
 
-There is no test suite in this package — `build`/`lint` are the correctness gates.
+Component and unit tests use Vitest + Testing Library. They sit next to their source as `*.test.ts(x)` and run with `pnpm test`.
 
 ### Infrastructure (`infrastructure/`)
 

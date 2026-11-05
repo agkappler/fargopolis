@@ -15,8 +15,8 @@
         "lint": "eslint . --quiet",
         "lint-warn": "eslint .",
         "ts-lint": "tsc --noEmit && eslint . --fix",
-        "test": "vitest run --environment jsdom --setupFiles ./src/test/setup.ts --restoreMocks --unstubGlobals",
-        "test:watch": "vitest --environment jsdom --setupFiles ./src/test/setup.ts --restoreMocks --unstubGlobals"
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@chakra-ui/react": "^3.35.0",
