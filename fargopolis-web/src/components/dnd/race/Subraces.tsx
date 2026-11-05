@@ -12,9 +12,9 @@ interface SubracesProps {
 
 export const Subraces: React.FC<SubracesProps> = ({ race }) => {
     const { data: apiSubraceResults, isLoading: isLoadingApi } = useSWR<BaseDndResponse>(
-        `/races/${race}/subraces`, () => getSubraces(race),
+        race ? `/races/${race}/subraces` : null, () => getSubraces(race),
         {
-            onSuccess: (data) => setSelectedSubrace(data.results[0].index ?? ""),
+            onSuccess: (data) => setSelectedSubrace(data.results[0]?.index ?? ""),
             onError: () => setSelectedSubrace("")
         }
     );
