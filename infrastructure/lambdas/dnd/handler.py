@@ -375,10 +375,12 @@ def _add_ability(character_id: str, body: dict[str, Any]) -> dict[str, Any]:
 
 
 def _find_character_id_for_nested(list_attr: str, id_attr: str, nested_id: str) -> str | None:
-    """Find the character whose `list_attr` list holds an entry with `id_attr == nested_id`.
+    """Last-resort lookup of the character owning a `list_attr` entry, by `id_attr == nested_id`.
 
-    Scans the base table: `DndCharactersByNameIndex` doesn't project `weapons`/`abilities`,
-    so querying it for them always comes back empty (see #11).
+    Callers should prefer passing `characterId` through so the owning item can be fetched by key
+    instead -- this scans every character in the table. `DndCharactersByNameIndex` doesn't project
+    `weapons`/`abilities`, so a GSI query for them always comes back empty; a base-table scan is
+    the only way to find the owner without the caller's help (see #11).
     """
     table = table_from_env(DND_TABLE_ENV)
     items = scan_all_items(table, ProjectionExpression=f"characterId, {list_attr}")
@@ -431,14 +433,17 @@ def _update_ability(ability_id: str, body: dict[str, Any]) -> dict[str, Any]:
     return json_response(200, _to_api_ability(updated))
 
 
-def _delete_ability(ability_id: str) -> dict[str, Any]:
-    character_id = _find_character_id_for_ability(ability_id) or ""
+def _delete_ability(ability_id: str, character_id: str | None = None) -> dict[str, Any]:
+    character_id = str(character_id or "").strip() or _find_character_id_for_ability(ability_id) or ""
     if not character_id:
         return json_response(404, {"message": f"Ability not found: {ability_id}"})
     item, err = _get_character_item(character_id)
     if err:
         return err
-    abilities = [a for a in ((item or {}).get("abilities") or []) if str(a.get("abilityId", "")) != ability_id]
+    existing = (item or {}).get("abilities") or []
+    abilities = [a for a in existing if str(a.get("abilityId", "")) != ability_id]
+    if len(abilities) == len(existing):
+        return json_response(404, {"message": f"Ability not found: {ability_id}"})
     table = table_from_env(DND_TABLE_ENV)
     table.update_item(
         Key={"characterId": character_id},
@@ -488,8 +493,8 @@ def _find_character_id_for_weapon(weapon_id: str) -> str | None:
     return _find_character_id_for_nested("weapons", "weaponId", weapon_id)
 
 
-def _get_weapon(weapon_id: str) -> dict[str, Any]:
-    character_id = _find_character_id_for_weapon(weapon_id) or ""
+def _get_weapon(weapon_id: str, character_id: str | None = None) -> dict[str, Any]:
+    character_id = str(character_id or "").strip() or _find_character_id_for_weapon(weapon_id) or ""
     if not character_id:
         return json_response(404, {"message": f"Weapon not found: {weapon_id}"})
     item, err = _get_character_item(character_id)
@@ -534,14 +539,17 @@ def _update_weapon(weapon_id: str, body: dict[str, Any]) -> dict[str, Any]:
     return json_response(200, _to_api_weapon(updated))
 
 
-def _delete_weapon(weapon_id: str) -> dict[str, Any]:
-    character_id = _find_character_id_for_weapon(weapon_id) or ""
+def _delete_weapon(weapon_id: str, character_id: str | None = None) -> dict[str, Any]:
+    character_id = str(character_id or "").strip() or _find_character_id_for_weapon(weapon_id) or ""
     if not character_id:
         return json_response(404, {"message": f"Weapon not found: {weapon_id}"})
     item, err = _get_character_item(character_id)
     if err:
         return err
-    weapons = [w for w in ((item or {}).get("weapons") or []) if str(w.get("weaponId", "")) != weapon_id]
+    existing = (item or {}).get("weapons") or []
+    weapons = [w for w in existing if str(w.get("weaponId", "")) != weapon_id]
+    if len(weapons) == len(existing):
+        return json_response(404, {"message": f"Weapon not found: {weapon_id}"})
     table = table_from_env(DND_TABLE_ENV)
     table.update_item(
         Key={"characterId": character_id},
@@ -636,7 +644,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         if method == "GET" and raw_path.startswith("/api/characterWeapons/"):
             return _get_weapons(raw_path[len("/api/characterWeapons/") :].strip())
         if method == "GET" and raw_path.startswith("/api/weapon/"):
-            return _get_weapon(raw_path[len("/api/weapon/") :].strip())
+            query = event.get("queryStringParameters") or {}
+            return _get_weapon(raw_path[len("/api/weapon/") :].strip(), query.get("characterId"))
 
         if route_key == "POST /api/createCharacter":
             err = require_clerk_writer(event)
@@ -677,7 +686,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             err = require_clerk_writer(event)
             if err:
                 return err
-            return _delete_weapon(raw_path[len("/api/deleteWeapon/") :].strip())
+            query = event.get("queryStringParameters") or {}
+            return _delete_weapon(raw_path[len("/api/deleteWeapon/") :].strip(), query.get("characterId"))
         if method == "PUT" and raw_path.startswith("/api/updateAbility/"):
             err = require_clerk_writer(event)
             if err:
@@ -687,7 +697,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             err = require_clerk_writer(event)
             if err:
                 return err
-            return _delete_ability(raw_path[len("/api/deleteAbility/") :].strip())
+            query = event.get("queryStringParameters") or {}
+            return _delete_ability(raw_path[len("/api/deleteAbility/") :].strip(), query.get("characterId"))
         if method == "POST" and raw_path.startswith("/api/character/") and raw_path.endswith("/addKnownSpell"):
             err = require_clerk_writer(event)
             if err:

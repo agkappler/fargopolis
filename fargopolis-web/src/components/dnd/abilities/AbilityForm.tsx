@@ -84,7 +84,7 @@ export const AbilityForm: React.FC<AbilityFormProps> = ({
         if (!ability || !characterId) return;
 
         try {
-            await RequestManager.delete(`/deleteAbility/${ability.abilityId}`, getToken);
+            await RequestManager.delete(`/deleteAbility/${ability.abilityId}?characterId=${characterId}`, getToken);
             onAbilityUpdate?.();
             closeForm();
         } catch (error: unknown) {

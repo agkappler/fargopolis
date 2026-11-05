@@ -7,8 +7,12 @@ authorizer itself is not exercised (see openspec/changes/add-bounties-pytest-sca
 Non-Goals) -- `authenticated`/writer checks are tested through the authorizer-context contract
 `require_clerk_writer` reads.
 
-The weapon/ability -> owning-character lookups scan the base table, because
-`DndCharactersByNameIndex` doesn't project `weapons`/`abilities` (see #11).
+`GET /api/weapon/{id}`, `DELETE /api/deleteWeapon/{id}`, and `DELETE /api/deleteAbility/{id}` take
+an optional `characterId` query parameter. When it's given, the handler resolves the owning
+character with a single `GetItem` by key; the frontend always has `characterId` on hand for these
+calls, so that's the hot path. When it's omitted, `_find_character_id_for_nested` falls back to
+scanning the base table for a matching `weaponId`/`abilityId` -- `DndCharactersByNameIndex`
+doesn't project `weapons`/`abilities`, so a GSI query for them always comes back empty (see #11).
 """
 
 from __future__ import annotations
@@ -305,7 +309,36 @@ def test_delete_ability_not_found(dnd_handler, make_event):
     assert resp["statusCode"] == 404
 
 
-def test_delete_ability_success(dnd_handler, make_event):
+def test_delete_ability_not_found_with_character_id(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event)
+    event = make_event(
+        "DELETE",
+        "/api/deleteAbility/does-not-exist",
+        query={"characterId": created["characterId"]},
+        authenticated=True,
+    )
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 404
+
+
+def test_delete_ability_success_with_character_id(dnd_handler, make_event):
+    """The `characterId` query param resolves the owner by key, without scanning the table."""
+    created = _create_character(dnd_handler, make_event)
+    character_id = created["characterId"]
+    ability_id = _add_ability(dnd_handler, make_event, character_id)
+
+    event = make_event(
+        "DELETE", f"/api/deleteAbility/{ability_id}", query={"characterId": character_id}, authenticated=True
+    )
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 200
+    assert json.loads(resp["body"]) == {"message": "Deleted"}
+
+    list_resp = dnd_handler.handler(make_event("GET", f"/api/characterAbilities/{character_id}"), None)
+    assert json.loads(list_resp["body"]) == []
+
+
+def test_delete_ability_without_character_id_uses_lookup(dnd_handler, make_event):
     created = _create_character(dnd_handler, make_event)
     character_id = created["characterId"]
     ability_id = _add_ability(dnd_handler, make_event, character_id)
@@ -314,9 +347,6 @@ def test_delete_ability_success(dnd_handler, make_event):
     resp = dnd_handler.handler(event, None)
     assert resp["statusCode"] == 200
     assert json.loads(resp["body"]) == {"message": "Deleted"}
-
-    list_resp = dnd_handler.handler(make_event("GET", f"/api/characterAbilities/{character_id}"), None)
-    assert json.loads(list_resp["body"]) == []
 
 
 # --- Weapons: GET /api/characterWeapons/{id}, GET /api/weapon/{id}, POST addWeapon, PUT/DELETE ------
@@ -358,7 +388,29 @@ def test_get_weapon_not_found(dnd_handler, make_event):
     assert resp["statusCode"] == 404
 
 
-def test_get_weapon_success(dnd_handler, make_event):
+def test_get_weapon_not_found_with_character_id(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event)
+    event = make_event("GET", "/api/weapon/does-not-exist", query={"characterId": created["characterId"]})
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 404
+
+
+def test_get_weapon_success_with_character_id(dnd_handler, make_event):
+    """The `characterId` query param resolves the owner by key, without scanning the table."""
+    created = _create_character(dnd_handler, make_event)
+    character_id = created["characterId"]
+    weapon_id = _add_weapon(dnd_handler, make_event, character_id)
+
+    event = make_event("GET", f"/api/weapon/{weapon_id}", query={"characterId": character_id})
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 200
+    body = json.loads(resp["body"])
+    assert body["weaponId"] == weapon_id
+    assert body["name"] == "Longsword"
+    assert body["characterId"] == character_id
+
+
+def test_get_weapon_without_character_id_uses_lookup(dnd_handler, make_event):
     created = _create_character(dnd_handler, make_event)
     weapon_id = _add_weapon(dnd_handler, make_event, created["characterId"])
 
@@ -418,7 +470,36 @@ def test_delete_weapon_not_found(dnd_handler, make_event):
     assert resp["statusCode"] == 404
 
 
-def test_delete_weapon_success(dnd_handler, make_event):
+def test_delete_weapon_not_found_with_character_id(dnd_handler, make_event):
+    created = _create_character(dnd_handler, make_event)
+    event = make_event(
+        "DELETE",
+        "/api/deleteWeapon/does-not-exist",
+        query={"characterId": created["characterId"]},
+        authenticated=True,
+    )
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 404
+
+
+def test_delete_weapon_success_with_character_id(dnd_handler, make_event):
+    """The `characterId` query param resolves the owner by key, without scanning the table."""
+    created = _create_character(dnd_handler, make_event)
+    character_id = created["characterId"]
+    weapon_id = _add_weapon(dnd_handler, make_event, character_id)
+
+    event = make_event(
+        "DELETE", f"/api/deleteWeapon/{weapon_id}", query={"characterId": character_id}, authenticated=True
+    )
+    resp = dnd_handler.handler(event, None)
+    assert resp["statusCode"] == 200
+    assert json.loads(resp["body"]) == {"message": "Deleted"}
+
+    list_resp = dnd_handler.handler(make_event("GET", f"/api/characterWeapons/{character_id}"), None)
+    assert json.loads(list_resp["body"]) == []
+
+
+def test_delete_weapon_without_character_id_uses_lookup(dnd_handler, make_event):
     created = _create_character(dnd_handler, make_event)
     character_id = created["characterId"]
     weapon_id = _add_weapon(dnd_handler, make_event, character_id)
@@ -437,7 +518,10 @@ def test_delete_weapon_only_affects_owning_character(dnd_handler, make_event):
     weapon_a = _add_weapon(dnd_handler, make_event, char_a, name="Rapier")
     weapon_b = _add_weapon(dnd_handler, make_event, char_b, name="Warhammer")
 
-    resp = dnd_handler.handler(make_event("DELETE", f"/api/deleteWeapon/{weapon_b}", authenticated=True), None)
+    event = make_event(
+        "DELETE", f"/api/deleteWeapon/{weapon_b}", query={"characterId": char_b}, authenticated=True
+    )
+    resp = dnd_handler.handler(event, None)
     assert resp["statusCode"] == 200
 
     a_weapons = json.loads(dnd_handler.handler(make_event("GET", f"/api/characterWeapons/{char_a}"), None)["body"])
