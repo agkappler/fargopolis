@@ -50,6 +50,7 @@ Add `--profile YOUR_PROFILE` (or `export AWS_PROFILE=...`) for named AWS credent
 ```bash
 ./scripts/setup-python-lambdas.sh   # creates repo .venv with a Python 3.10+ interpreter
 source .venv/bin/activate
+.venv/bin/ruff check infrastructure/lambdas   # lint (from repo root); CI runs this before pytest
 ```
 
 CDK needs a local Python 3.10+ (3.12 matches the Lambda runtime) on `PATH` to bundle Lambdas without Docker; macOS's stock `python3` (Xcode CLT) is often 3.9 and too old. `pyrightconfig.json` points the editor at `infrastructure/lambdas` with `shared/` as an extra path — select `.venv/bin/python` as the interpreter.

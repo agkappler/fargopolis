@@ -1,6 +1,7 @@
+# Lints (ruff, config in infrastructure/lambdas/ruff.toml) and tests the Python Lambdas.
 # No AWS credentials needed — infrastructure/lambdas' tests mock DynamoDB with moto, no network
-# or real AWS access. See infrastructure/lambdas/README.md for what's tested and how to run
-# locally (same script + npm command this workflow uses).
+# or real AWS access. See infrastructure/lambdas/README.md for what's checked and how to run
+# locally (same script + commands this workflow uses).
 
 name: Test Lambdas
 
@@ -40,6 +41,9 @@ jobs:
 
       - name: Install Lambda test dependencies
         run: ./scripts/setup-python-lambdas.sh
+
+      - name: Lint (ruff)
+        run: .venv/bin/ruff check infrastructure/lambdas --output-format=github
 
       - name: Run pytest
         working-directory: infrastructure

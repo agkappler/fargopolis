@@ -23,6 +23,16 @@ cd infrastructure/lambdas
 pytest
 ```
 
+## Linting
+
+```bash
+.venv/bin/ruff check infrastructure/lambdas   # from the repo root
+```
+
+CI (`.github/workflows/test-lambdas.yml`) runs this before pytest. Rules live in
+`infrastructure/lambdas/ruff.toml` (pyflakes + pycodestyle errors, e.g. F841 unused variables).
+`pyrightconfig.json` at the repo root is still editor-only; it isn't run in CI yet.
+
 `pytest.ini` sets `pythonpath = .` so `import shared.lambda_utils` resolves the same way CDK's
 Python bundling and `pyrightconfig.json` already do, and `import lambda_test_utils` (see below)
 resolves the same way. It also sets `addopts = --import-mode=importlib` — every vertical's test
