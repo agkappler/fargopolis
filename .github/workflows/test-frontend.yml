@@ -52,3 +52,7 @@ jobs:
       - name: Build
         working-directory: fargopolis-web
         run: pnpm run build
+
+      - name: Test
+        working-directory: fargopolis-web
+        run: pnpm run test

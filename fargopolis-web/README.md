@@ -26,6 +26,32 @@ Copy `[.env.example](.env.example)` to `.env` or `.env.local`.
 
 Path shape remains `**/api/...`**.
 
+## Testing
+
+Component and unit tests use [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) . Vitest reuses `vite.config.ts` (so the `@/` alias works); there is no separate Vitest config file. Pure-logic tests run in Node; component tests opt into jsdom and the shared setup at the top of the file:
+
+```ts
+// @vitest-environment jsdom
+import "@/test/setup";
+```
+
+```bash
+pnpm test          # run once
+pnpm test:watch    # watch mode
+```
+
+- **Where tests go:** next to their source as `*.test.ts` / `*.test.tsx` under `src/`. Shared setup lives in `src/test/` (`setup.ts` adds `jest-dom` matchers, RTL cleanup, mock/global-stub restoring after each test, and jsdom stubs Chakra needs such as `ResizeObserver` and `matchMedia`).
+- **Rendering components:** use `renderWithProviders` from `@/test/renderWithProviders` so the component renders inside the Chakra theme (`ThemeRegistry`).
+- **Mocking Clerk:** mock `@clerk/react` with `vi.mock` and keep the auth state in `vi.hoisted` so each test can change it:
+
+  ```ts
+  const authState = vi.hoisted(() => ({ isLoaded: true, isSignedIn: true }));
+  vi.mock("@clerk/react", () => ({ useAuth: () => authState }));
+  ```
+
+- **Stubbing `fetch`:** `vi.stubGlobal("fetch", vi.fn())` in a `beforeEach`. `setup.ts` undoes stubs and mocks after each test; a Node-environment test that doesn't import it should call `vi.unstubAllGlobals()` in its own `afterEach` (see `RequestManager.test.ts`).
+- Tests are type-checked by `pnpm build` and linted by `pnpm lint`; `vite build` never bundles them.
+
 ## More documentation
 
 - Repo root [README.md](../README.md) — runbooks and CDK static hosting.
