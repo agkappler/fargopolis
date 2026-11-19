@@ -15,6 +15,7 @@ import { DndPage } from "@/pages/DndPage";
 import { HomePage } from "@/pages/HomePage";
 import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
 import { ProjectsPage } from "@/pages/ProjectsPage";
+import { QuestsPage } from "@/pages/QuestsPage";
 import { RecipeDetailPage } from "@/pages/RecipeDetailPage";
 import { RecipesPage } from "@/pages/RecipesPage";
 import { SplitCheckPage } from "@/pages/SplitCheckPage";
@@ -32,6 +33,7 @@ function AppShell() {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/bounties" element={<BountiesPage />} />
+            <Route path="/quests" element={<QuestsPage />} />
             <Route path="/camping" element={<CampingPage />} />
             <Route path="/camping/:id" element={<CampsiteDetailPage />} />
             <Route path="/split-check" element={<SplitCheckPage />} />

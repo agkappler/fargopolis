@@ -14,6 +14,8 @@ import { FilesApiRoutesConstruct } from '../constructs/files-api-routes-construc
 import { FargopolisHttpApiConstruct } from '../constructs/fargopolis-http-api-construct';
 import { FilesConstruct } from '../constructs/files-construct';
 import { PythonSharedLayerConstruct } from '../constructs/python-shared-layer-construct';
+import { QuestsConstruct } from '../constructs/quests-construct';
+import { QuestsApiRoutesConstruct } from '../constructs/quests-api-routes-construct';
 import { RecipesConstruct } from '../constructs/recipes-construct';
 import { RecipesApiRoutesConstruct } from '../constructs/recipes-api-routes-construct';
 import { FargopolisBucketConstruct } from '../constructs/fargopolis-bucket-construct';
@@ -35,6 +37,7 @@ import {
  */
 export class FargopolisApiStack extends cdk.Stack {
     public readonly bounties: BountiesConstruct;
+    public readonly quests: QuestsConstruct;
     public readonly recipes: RecipesConstruct;
     public readonly campsites: CampsitesConstruct;
     /** Shared file-metadata table reused across verticals (recipes today, DnD next). */
@@ -46,6 +49,7 @@ export class FargopolisApiStack extends cdk.Stack {
     public readonly clerkAuthorizer: ClerkHttpAuthorizerConstruct;
     public readonly httpApiGateway: FargopolisHttpApiConstruct;
     public readonly bountiesApi: BountiesApiRoutesConstruct;
+    public readonly questsApi: QuestsApiRoutesConstruct;
     public readonly filesApi: FilesApiRoutesConstruct;
     public readonly recipesApi: RecipesApiRoutesConstruct;
     public readonly campingApi: CampingApiRoutesConstruct;
@@ -62,6 +66,7 @@ export class FargopolisApiStack extends cdk.Stack {
         cdk.Tags.of(this).add('Project', 'recipes');
 
         this.bounties = new BountiesConstruct(this, 'Bounties');
+        this.quests = new QuestsConstruct(this, 'Quests');
         this.recipes = new RecipesConstruct(this, 'Recipes');
         this.campsites = new CampsitesConstruct(this, 'Campsites');
         this.files = new FilesConstruct(this, 'Files');
@@ -89,6 +94,14 @@ export class FargopolisApiStack extends cdk.Stack {
             httpApi: this.httpApiGateway.httpApi,
             categoryTable: this.bounties.categoryTable,
             bountyTable: this.bounties.bountyTable,
+        });
+        this.questsApi = new QuestsApiRoutesConstruct(this, 'QuestsApi', {
+            pythonSharedLayer: this.pythonSharedLayer,
+            httpApi: this.httpApiGateway.httpApi,
+            catalogTable: this.quests.catalogTable,
+            ledgerTable: this.quests.ledgerTable,
+            balanceTable: this.quests.balanceTable,
+            rewardsTable: this.quests.rewardsTable,
         });
         this.filesApi = new FilesApiRoutesConstruct(this, 'FilesApi', {
             pythonSharedLayer: this.pythonSharedLayer,
@@ -186,6 +199,22 @@ export class FargopolisApiStack extends cdk.Stack {
         new cdk.CfnOutput(this, 'BountiesTableName', {
             description: 'DynamoDB table for bounties',
             value: this.bounties.bountyTable.tableName,
+        });
+        new cdk.CfnOutput(this, 'QuestCatalogTableName', {
+            description: 'DynamoDB table for quest catalog items',
+            value: this.quests.catalogTable.tableName,
+        });
+        new cdk.CfnOutput(this, 'QuestLedgerTableName', {
+            description: 'DynamoDB table for quest completion/redemption ledger entries',
+            value: this.quests.ledgerTable.tableName,
+        });
+        new cdk.CfnOutput(this, 'QuestBalanceTableName', {
+            description: 'DynamoDB table for the single running quest point balance',
+            value: this.quests.balanceTable.tableName,
+        });
+        new cdk.CfnOutput(this, 'QuestRewardsTableName', {
+            description: 'DynamoDB table for quest rewards',
+            value: this.quests.rewardsTable.tableName,
         });
         new cdk.CfnOutput(this, 'RecipesTableName', {
             description: 'DynamoDB table for recipes (single item per recipe; ingredients/steps nested)',
