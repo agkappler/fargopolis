@@ -6,6 +6,11 @@ import { Construct } from 'constructs';
 import { GithubActionsFrontendDeployRoleConstruct } from '../constructs/github-actions-frontend-deploy-role-construct';
 import { resolveImportedGithubActionsOidcProviderArn } from '../github-actions-oidc';
 
+export interface FrontendStackProps extends cdk.StackProps {
+    /** Hardcoded dev-environment flag; adds a `Stage` tag and exports the CloudFront domain for cross-stack CORS. */
+    dev?: boolean;
+}
+
 /**
  * Static site hosting: private S3 bucket + CloudFront with Origin Access Control.
  * Upload SPA build output (e.g. Vite `dist/`) to the bucket; invalidate CloudFront after deploy.
@@ -15,10 +20,11 @@ export class FrontendStack extends cdk.Stack {
     public readonly bucket: s3.Bucket;
     public readonly distribution: cloudfront.Distribution;
 
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props?: FrontendStackProps) {
         super(scope, id, props);
 
         cdk.Tags.of(this).add('Project', 'recipes');
+        cdk.Tags.of(this).add('Stage', props?.dev ? 'dev' : 'default');
 
         this.bucket = new s3.Bucket(this, 'SiteBucket', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -59,6 +65,15 @@ export class FrontendStack extends cdk.Stack {
                 },
             ],
         });
+
+        if (props?.dev) {
+            // Lets the dev API stack (`FargopolisApi-dev`) import this domain via `Fn::ImportValue`
+            // to append it to CORS `allowOrigins` — see fargopolis-api-stack.ts. Only emitted for the
+            // dev build so the default/prod template gains no new Outputs/Exports.
+            this.exportValue(this.distribution.distributionDomainName, {
+                name: `${this.stackName}-DistributionDomain`,
+            });
+        }
 
         const githubActions = (this.node.tryGetContext('githubActions') ?? {}) as {
             owner?: string;

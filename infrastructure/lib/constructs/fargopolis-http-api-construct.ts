@@ -7,6 +7,12 @@ export interface FargopolisHttpApiConstructProps {
      * Applied to all routes unless overridden per route (e.g. `authorizer: new apigwv2.HttpNoneAuthorizer()` to skip auth).
      */
     readonly defaultAuthorizer?: apigwv2.IHttpRouteAuthorizer;
+
+    /**
+     * Extra CORS origins to append to the hardcoded default list (e.g. a dev frontend's CloudFront
+     * domain). Appended, never replacing the existing origins.
+     */
+    readonly extraAllowOrigins?: string[];
 }
 
 /**
@@ -40,6 +46,7 @@ export class FargopolisHttpApiConstruct extends Construct {
                     'https://fargopolis.com',
                     'https://www.fargopolis.com',
                     'https://d19091yi7btsr0.cloudfront.net',
+                    ...(props?.extraAllowOrigins ?? []),
                 ],
                 // Required if the browser sends credentialed requests (`credentials: 'include'`).
                 allowCredentials: true,
