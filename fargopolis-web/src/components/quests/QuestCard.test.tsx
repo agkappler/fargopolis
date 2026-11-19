@@ -40,4 +40,18 @@ describe("QuestCard", () => {
         await waitFor(() => expect(postMock).toHaveBeenCalledWith("/completeQuest", { questId: "q1" }, expect.any(Function)));
         expect(onComplete).toHaveBeenCalledTimes(1);
     });
+
+    it("shows an Archived label and does not complete when tapped if inactive", async () => {
+        const user = userEvent.setup();
+        const onComplete = vi.fn();
+        const archivedQuest = new Quest("q2", "Old chore", "", 5, false);
+        renderWithProviders(<QuestCard quest={archivedQuest} onComplete={onComplete} />);
+
+        expect(screen.getByText("Archived")).toBeInTheDocument();
+
+        await user.click(screen.getByText("Old chore"));
+
+        expect(postMock).not.toHaveBeenCalled();
+        expect(onComplete).not.toHaveBeenCalled();
+    });
 });

@@ -12,7 +12,7 @@ import Quest from "@/models/Quest";
 import QuestLedgerEntry from "@/models/QuestLedgerEntry";
 import QuestReward from "@/models/QuestReward";
 import { useAuth } from "@clerk/react";
-import { Box, Grid, Text } from "@chakra-ui/react";
+import { Box, Grid, Switch, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -23,15 +23,20 @@ export function QuestsPage() {
     const [selectedQuest, setSelectedQuest] = useState<Quest>();
     const [isRewardFormOpen, setIsRewardFormOpen] = useState(false);
     const [selectedReward, setSelectedReward] = useState<QuestReward>();
+    const [showArchived, setShowArchived] = useState(false);
 
     const canFetch = isLoaded && isSignedIn;
+    // Archived catalog items/rewards are otherwise invisible once hidden from the active list
+    // (quest-catalog/quest-rewards specs) -- this toggle is the only way to find and un-archive one.
+    const questsUrl = showArchived ? "/quests?includeInactive=true" : "/quests";
+    const rewardsUrl = showArchived ? "/questRewards?includeInactive=true" : "/questRewards";
 
     const {
         data: quests,
         error: questsError,
         isLoading: isLoadingQuests,
         mutate: mutateQuests,
-    } = useSWR(canFetch ? "/quests" : null, () => RequestManager.get<Quest[]>("/quests", getToken));
+    } = useSWR(canFetch ? questsUrl : null, () => RequestManager.get<Quest[]>(questsUrl, getToken));
 
     const {
         data: balance,
@@ -49,8 +54,8 @@ export function QuestsPage() {
         isLoading: isLoadingRewards,
         mutate: mutateRewards,
     } = useSWR(
-        canFetch ? "/questRewards" : null,
-        () => RequestManager.get<QuestReward[]>("/questRewards", getToken),
+        canFetch ? rewardsUrl : null,
+        () => RequestManager.get<QuestReward[]>(rewardsUrl, getToken),
     );
 
     const {
@@ -81,6 +86,19 @@ export function QuestsPage() {
     return (
         <>
             <PageHeader title="Quests" />
+
+            <Box maxW="fp.container" mx="auto" px="4" display="flex" justifyContent="flex-end">
+                <Switch.Root
+                    checked={showArchived}
+                    onCheckedChange={(details) => setShowArchived(details.checked)}
+                >
+                    <Switch.HiddenInput />
+                    <Switch.Control>
+                        <Switch.Thumb />
+                    </Switch.Control>
+                    <Switch.Label>Show archived</Switch.Label>
+                </Switch.Root>
+            </Box>
 
             <LoadingWrapper isLoading={isLoadingBalance}>
                 <ErrorWrapper error={balanceError} errorMessage="Failed to load point balance.">

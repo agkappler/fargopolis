@@ -27,4 +27,12 @@ describe("RewardCard", () => {
 
         expect(screen.getByRole("button", { name: /redeem/i })).toBeDisabled();
     });
+
+    it("shows an Archived label and disables Redeem even with enough balance if inactive", () => {
+        const archivedReward = new QuestReward("r2", "Old snack", "", 10, false);
+        renderWithProviders(<RewardCard reward={archivedReward} balance={100} onRedeem={vi.fn()} />);
+
+        expect(screen.getByText("Archived")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /redeem/i })).toBeDisabled();
+    });
 });

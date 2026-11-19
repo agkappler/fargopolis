@@ -67,12 +67,13 @@ def _quest_to_api(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _get_quests() -> list[dict[str, Any]]:
+def _get_quests(include_inactive: bool = False) -> list[dict[str, Any]]:
     table = table_from_env("QUEST_CATALOG_TABLE_NAME")
     items = scan_all_items(table)
-    active_items = [i for i in items if i.get("active", True)]
-    active_items.sort(key=lambda x: str(x.get("questId", "")))
-    return [_quest_to_api(i) for i in active_items]
+    if not include_inactive:
+        items = [i for i in items if i.get("active", True)]
+    items.sort(key=lambda x: str(x.get("questId", "")))
+    return [_quest_to_api(i) for i in items]
 
 
 def _create_quest(body: dict[str, Any]) -> dict[str, Any]:
@@ -244,12 +245,13 @@ def _reward_to_api(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _get_rewards() -> list[dict[str, Any]]:
+def _get_rewards(include_inactive: bool = False) -> list[dict[str, Any]]:
     table = table_from_env("QUEST_REWARDS_TABLE_NAME")
     items = scan_all_items(table)
-    active_items = [i for i in items if i.get("active", True)]
-    active_items.sort(key=lambda x: str(x.get("rewardId", "")))
-    return [_reward_to_api(i) for i in active_items]
+    if not include_inactive:
+        items = [i for i in items if i.get("active", True)]
+    items.sort(key=lambda x: str(x.get("rewardId", "")))
+    return [_reward_to_api(i) for i in items]
 
 
 def _create_reward(body: dict[str, Any]) -> dict[str, Any]:
@@ -405,7 +407,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             return err
 
         if route_key == "GET /api/quests":
-            return json_response(200, _get_quests())
+            query = event.get("queryStringParameters") or {}
+            return json_response(200, _get_quests(include_inactive=query.get("includeInactive") == "true"))
         if route_key == "POST /api/createQuest":
             body = parse_body(event)
             return json_response(200, _create_quest(body))
@@ -421,7 +424,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             return json_response(200, _get_history())
 
         if route_key == "GET /api/questRewards":
-            return json_response(200, _get_rewards())
+            query = event.get("queryStringParameters") or {}
+            return json_response(200, _get_rewards(include_inactive=query.get("includeInactive") == "true"))
         if route_key == "POST /api/createQuestReward":
             body = parse_body(event)
             return json_response(200, _create_reward(body))

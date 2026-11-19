@@ -5,11 +5,10 @@ authorizer itself is not exercised -- `authenticated`/writer checks go through t
 authorizer-context contract `require_clerk_writer` reads (see `bounties/tests/test_handler.py`'s
 docstring for the same convention).
 
-Fixtures live in this module (not a separate `conftest.py`) -- test-runner config files like
-`conftest.py` are off-limits for this change; defining the fixtures directly here, as plain
-`@pytest.fixture`-decorated functions in the test module itself, has identical pytest semantics
-(fixtures are discovered the same way whether they live in `conftest.py` or in the test module
-that uses them) without touching any file pytest treats as global test-collection configuration.
+Fixtures live in this module rather than a separate `quests/tests/conftest.py`: defining them
+directly here, as plain `@pytest.fixture`-decorated functions in the test module itself, has
+identical pytest semantics (fixtures are discovered the same way whether they live in
+`conftest.py` or in the test module that uses them).
 """
 
 from __future__ import annotations
@@ -245,6 +244,20 @@ def test_archived_quest_hidden_from_active_list(quests_handler, quest_catalog_ta
     assert [q["questId"] for q in body] == ["q1"]
 
 
+def test_archived_quest_visible_with_include_inactive(quests_handler, quest_catalog_table, make_event):
+    quest_catalog_table.put_item(
+        Item={"questId": "q1", "name": "Active", "description": "", "pointValue": 5, "active": True}
+    )
+    quest_catalog_table.put_item(
+        Item={"questId": "q2", "name": "Archived", "description": "", "pointValue": 5, "active": False}
+    )
+    resp = quests_handler.handler(
+        make_event("GET", "/api/quests", query={"includeInactive": "true"}, authenticated=True), None
+    )
+    body = json.loads(resp["body"])
+    assert sorted(q["questId"] for q in body) == ["q1", "q2"]
+
+
 def test_successful_edit_past_completions_unaffected(quests_handler, make_event):
     """`quest-catalog` "Successful edit" scenario: editing the point value only affects
     subsequent completions; past completions keep their original point value."""
@@ -452,6 +465,20 @@ def test_archived_reward_hidden_from_active_list(quests_handler, quest_rewards_t
     resp = quests_handler.handler(make_event("GET", "/api/questRewards", authenticated=True), None)
     body = json.loads(resp["body"])
     assert [r["rewardId"] for r in body] == ["r1"]
+
+
+def test_archived_reward_visible_with_include_inactive(quests_handler, quest_rewards_table, make_event):
+    quest_rewards_table.put_item(
+        Item={"rewardId": "r1", "name": "Active", "description": "", "pointCost": 4, "active": True}
+    )
+    quest_rewards_table.put_item(
+        Item={"rewardId": "r2", "name": "Archived", "description": "", "pointCost": 4, "active": False}
+    )
+    resp = quests_handler.handler(
+        make_event("GET", "/api/questRewards", query={"includeInactive": "true"}, authenticated=True), None
+    )
+    body = json.loads(resp["body"])
+    assert sorted(r["rewardId"] for r in body) == ["r1", "r2"]
 
 
 def test_redeem_reward_requires_auth(quests_handler, make_event):

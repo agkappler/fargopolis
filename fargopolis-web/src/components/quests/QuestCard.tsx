@@ -20,6 +20,9 @@ export const QuestCard: FC<QuestCardProps> = ({ quest, onComplete, onEdit }) => 
     const [errorMessage, setErrorMessage] = useState<string>();
 
     const handleComplete = async () => {
+        if (!quest.active) {
+            return;
+        }
         setErrorMessage(undefined);
         setIsCompleting(true);
         try {
@@ -33,7 +36,11 @@ export const QuestCard: FC<QuestCardProps> = ({ quest, onComplete, onEdit }) => 
     };
 
     return (
-        <ModelCard gap="2.5" onClick={handleComplete} opacity={isCompleting ? 0.6 : 1}>
+        <ModelCard
+            gap="2.5"
+            onClick={quest.active ? handleComplete : undefined}
+            opacity={isCompleting ? 0.6 : quest.active ? 1 : 0.6}
+        >
             <Text
                 as="h3"
                 m="0"
@@ -52,6 +59,11 @@ export const QuestCard: FC<QuestCardProps> = ({ quest, onComplete, onEdit }) => 
             <Text textStyle="label" color="brand">
                 +{quest.pointValue} pts
             </Text>
+            {!quest.active && (
+                <Text textStyle="label" color="fg.muted">
+                    Archived
+                </Text>
+            )}
             <ErrorMessage errorMessage={errorMessage} />
             {onEdit && (
                 <Text

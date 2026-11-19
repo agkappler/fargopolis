@@ -20,6 +20,7 @@ export const RewardCard: FC<RewardCardProps> = ({ reward, balance, onRedeem, onE
     const [isRedeeming, setIsRedeeming] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>();
     const canAfford = balance >= reward.pointCost;
+    const canRedeem = canAfford && reward.active;
 
     const handleRedeem = async () => {
         setErrorMessage(undefined);
@@ -35,7 +36,7 @@ export const RewardCard: FC<RewardCardProps> = ({ reward, balance, onRedeem, onE
     };
 
     return (
-        <ModelCard gap="2.5">
+        <ModelCard gap="2.5" opacity={reward.active ? 1 : 0.6}>
             <Text
                 as="h3"
                 m="0"
@@ -54,10 +55,15 @@ export const RewardCard: FC<RewardCardProps> = ({ reward, balance, onRedeem, onE
             <Text textStyle="label" color="fg.muted">
                 {reward.pointCost} pts
             </Text>
+            {!reward.active && (
+                <Text textStyle="label" color="fg.muted">
+                    Archived
+                </Text>
+            )}
             <Button
                 variant="primary"
                 size="sm"
-                disabled={!canAfford}
+                disabled={!canRedeem}
                 loading={isRedeeming}
                 onClick={handleRedeem}
             >
