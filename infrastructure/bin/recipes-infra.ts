@@ -5,12 +5,17 @@ import { FrontendStack } from '../lib/stacks/frontend-stack';
 
 const app = new cdk.App();
 
-new FrontendStack(app, 'FargopolisFrontend', {
+const isDevContext = app.node.tryGetContext('dev');
+const dev = isDevContext === true || isDevContext === 'true';
+
+new FrontendStack(app, dev ? 'FargopolisFrontend-dev' : 'FargopolisFrontend', {
     description: 'Fargopolis frontend: S3 origin + CloudFront',
+    dev,
 });
 
-new FargopolisApiStack(app, 'FargopolisApi', {
+new FargopolisApiStack(app, dev ? 'FargopolisApi-dev' : 'FargopolisApi', {
     description: 'Fargopolis API: DynamoDB, Lambda, API Gateway (bounties first)',
+    dev,
 });
 
 app.synth();

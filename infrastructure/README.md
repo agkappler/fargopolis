@@ -11,6 +11,42 @@ TypeScript [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/home.html) app tha
 
 List stacks: `npx cdk list`. Deploy one stack: `npx cdk deploy FargopolisApi` (or `FargopolisFrontend`). Add [`--profile`](#using-a-named-aws-profile) (or set `AWS_PROFILE`) whenever you are not using the default credentials.
 
+### Dev stage deploy
+
+Pass `-c dev=true` (e.g. `npx cdk list -c dev=true`) to target a second, hardcoded pair of
+stacks — `FargopolisApi-dev` / `FargopolisFrontend-dev` — that can coexist with the default
+`FargopolisApi` / `FargopolisFrontend` stacks in the same AWS account. Without the flag, stack
+IDs and behavior are unchanged from today.
+
+From the repo root, use `make deploy-dev` (runs `deploy-dev-web` then `deploy-dev-api`) and
+`make deploy-prod` (runs `deploy-web` then `deploy-api`) as one-command shortcuts. **`deploy-dev`
+deploys the frontend before the API** — `FargopolisApiStack` imports `FargopolisFrontend-dev`'s
+CloudFront domain name via a CloudFormation export/`Fn::ImportValue` and appends it to the HTTP
+API's CORS `allowOrigins`, so the export must exist before the API stack deploys. This ordering
+is required once — the first time `FargopolisApi-dev` is deployed, or again after
+`FargopolisFrontend-dev` has been destroyed — later redeploys of either stack alone are fine.
+Prefer `make deploy-dev` (or deploy `FargopolisFrontend-dev` then `FargopolisApi-dev` by hand) over a raw
+`npx cdk deploy --all -c dev=true`: CDK does not track that CloudFormation export/import as an
+inter-stack dependency, so `--all` gives no ordering guarantee.
+
+Operational notes specific to the dev stacks:
+
+- **`apiDomain`** is still one custom domain per deploy — never reuse the same `apiDomain` value
+  across the default stack and the dev stack; both would try to claim the same custom domain
+  name / Route 53 record. The simplest safe default is to **omit `apiDomain` for the dev API
+  stack** (it deploys fine on the plain `execute-api` URL) unless a second domain/certificate has
+  actually been provisioned for dev.
+- **Never** pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
+  on the dev API stack — the GitHub Actions IAM OIDC identity provider is an account-wide
+  singleton already created by the original bootstrap; attempting to create it again fails.
+- **Destroying the dev stacks** (`cdk destroy FargopolisApi-dev` / `FargopolisFrontend-dev`)
+  leaves their DynamoDB tables (one per domain construct) and the user-uploads S3 bucket behind:
+  every data construct uses `RemovalPolicy.RETAIN` (and the uploads bucket also sets
+  `autoDeleteObjects: false`), unchanged for both the default and dev stacks by this feature.
+  Capture the auto-generated resource names first (e.g. `aws cloudformation
+  list-stack-resources --stack-name FargopolisApi-dev`) and delete them manually if the dev
+  environment is being fully decommissioned.
+
 ## API stack (`FargopolisApi`)
 
 - **[`FargopolisApiStack`](lib/stacks/fargopolis-api-stack.ts)** composes:
@@ -159,6 +195,10 @@ npm ci
 npx cdk bootstrap --profile YOUR_PROFILE   # once per account/region
 npx cdk deploy --all --profile YOUR_PROFILE
 ```
+
+For a parallel dev environment, see [Dev stage deploy](#dev-stage-deploy) above — use
+`make deploy-dev` (from the repo root) rather than `npx cdk deploy --all -c dev=true`, since the
+dev frontend's CloudFront domain must exist before the dev API stack imports it for CORS.
 
 ## Adding a new vertical (pattern)
 
