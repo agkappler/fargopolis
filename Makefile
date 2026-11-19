@@ -7,11 +7,14 @@ help:
 	@echo "  test           Run lambda tests (pytest via infra's npm script)"
 	@echo "  dev            Run the web dev server"
 	@echo "  ci             install + lint + build + synth + test (mirrors GitHub Actions)"
+	@echo "  deploy-dev     Deploy a parallel dev stack pair (web then api, -c dev=true)"
+	@echo "  deploy-prod    Deploy the default/prod stack pair (web then api)"
 
 .PHONY: help install install-web install-infra install-python \
         lint lint-web \
         build build-web build-infra \
         synth deploy-api deploy-web diff \
+        deploy-dev-web deploy-dev-api deploy-dev deploy-prod \
         test test-api \
         dev ci
 
@@ -47,6 +50,16 @@ deploy-api:
 
 deploy-web:
 	cd infrastructure && npx cdk deploy FargopolisFrontend
+
+deploy-dev-web:
+	cd infrastructure && npx cdk deploy FargopolisFrontend-dev -c dev=true
+
+deploy-dev-api:
+	cd infrastructure && npx cdk deploy FargopolisApi-dev -c dev=true
+
+deploy-dev: deploy-dev-web deploy-dev-api
+
+deploy-prod: deploy-web deploy-api
 
 diff:
 	cd infrastructure && npx cdk diff FargopolisApi
