@@ -33,9 +33,9 @@
 
 ## 6. PWA
 
-- [ ] 6.1 Add `vite-plugin-pwa` and configure the `generateSW` strategy in `fargopolis-web/vite.config.ts`
-- [ ] 6.2 Add placeholder app icons (192px/512px) and manifest metadata (name, theme colors, `start_url`, standalone display)
-- [ ] 6.3 Manually verify: install prompt appears, installed app launches standalone, and the cached app shell loads with no network connectivity
+- [x] 6.1 Add `vite-plugin-pwa` and configure the `generateSW` strategy in `fargopolis-web/vite.config.ts`
+- [x] 6.2 Add placeholder app icons (192px/512px) and manifest metadata (name, theme colors, `start_url`, standalone display)
+- [x] 6.3 Manually verify: install prompt appears, installed app launches standalone, and the cached app shell loads with no network connectivity
 
 ## 7. Verification
 
