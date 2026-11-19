@@ -47,6 +47,37 @@ npx cdk diff FargopolisApi
 
 Add `--profile YOUR_PROFILE` (or `export AWS_PROFILE=...`) for named AWS credentials.
 
+#### Dev stage deploy
+
+Pass `-c dev=true` to deploy a second, parallel copy of both stacks — hardcoded stack IDs
+`FargopolisApi-dev` / `FargopolisFrontend-dev` — alongside the default/prod `FargopolisApi` /
+`FargopolisFrontend` stacks, in the same AWS account. `npx cdk list -c dev=true` prints the
+`-dev` stack IDs; without the flag, behavior is unchanged from today.
+
+From the repo root, `make deploy-dev` (alias: `deploy-dev-web` then `deploy-dev-api`) and
+`make deploy-prod` (alias: `deploy-web` then `deploy-api`) wrap the equivalent `cdk deploy`
+commands. `deploy-dev` deploys the web/frontend stack **before** the api stack — the API stack
+imports the dev frontend's CloudFront domain (via a CloudFormation export/`Fn::ImportValue`) to
+add it to its CORS allow-list, so the export must exist first. This ordering is only strictly
+required the first time `FargopolisApi-dev` is deployed, or again after `FargopolisFrontend-dev`
+has been destroyed; later redeploys of either stack alone are fine. Prefer `make deploy-dev` over
+a raw `cdk deploy --all -c dev=true`, since CDK doesn't track that CloudFormation-level
+import/export as an inter-stack dependency and so can't guarantee the ordering itself.
+
+Other dev-deploy notes:
+- `apiDomain` (custom API domain) is still one domain per deploy — never reuse the same
+  `apiDomain` value across the default and dev stacks (both would try to claim the same custom
+  domain name / Route 53 record). The simplest safe default is to omit `apiDomain` entirely for
+  the dev API stack unless a second domain/certificate has actually been provisioned for dev.
+- Never pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
+  on the dev API stack — the GitHub Actions OIDC IAM identity provider is an account-wide
+  singleton already created by the original bootstrap; creating it again fails.
+- Destroying the dev stacks (`cdk destroy FargopolisApi-dev` / `FargopolisFrontend-dev`) leaves
+  their DynamoDB tables and the user-uploads S3 bucket behind, since every data construct uses
+  `RemovalPolicy.RETAIN` (same as the default/prod stacks, unchanged by the dev feature). Capture
+  the auto-generated resource names first (e.g. `aws cloudformation list-stack-resources
+  --stack-name FargopolisApi-dev`) and delete them manually if fully decommissioning dev.
+
 ### Python Lambdas (local editor/type-checking only)
 
 ```bash
