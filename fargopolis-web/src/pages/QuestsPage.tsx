@@ -4,26 +4,32 @@ import { QuestHistoryList } from "@/components/quests/QuestHistoryList";
 import { RewardCard } from "@/components/quests/RewardCard";
 import { RewardForm } from "@/components/quests/RewardForm";
 import { AddModelCard } from "@/components/ui/AddModelCard";
+import { CardGrid } from "@/components/ui/CardGrid";
 import { ErrorWrapper } from "@/components/ui/ErrorWrapper";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { MOBILE_BREAK } from "@/constants/Media";
 import RequestManager from "@/helpers/RequestManager";
 import Quest from "@/models/Quest";
 import QuestLedgerEntry from "@/models/QuestLedgerEntry";
 import QuestReward from "@/models/QuestReward";
 import { useAuth } from "@clerk/react";
-import { Box, Grid, Switch, Text } from "@chakra-ui/react";
+import { Box, Switch, Tabs, Text, useMediaQuery } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
+type QuestsSection = "quests" | "rewards";
+
 export function QuestsPage() {
     const { getToken, isLoaded, isSignedIn } = useAuth();
+    const [isMobile] = useMediaQuery([`(max-width: ${MOBILE_BREAK})`], { fallback: [false] });
 
     const [isQuestFormOpen, setIsQuestFormOpen] = useState(false);
     const [selectedQuest, setSelectedQuest] = useState<Quest>();
     const [isRewardFormOpen, setIsRewardFormOpen] = useState(false);
     const [selectedReward, setSelectedReward] = useState<QuestReward>();
     const [showArchived, setShowArchived] = useState(false);
+    const [activeSection, setActiveSection] = useState<QuestsSection>("quests");
 
     const canFetch = isLoaded && isSignedIn;
     // Archived catalog items/rewards are otherwise invisible once hidden from the active list
@@ -117,58 +123,64 @@ export function QuestsPage() {
                 </ErrorWrapper>
             </LoadingWrapper>
 
-            <LoadingWrapper isLoading={isLoadingQuests}>
-                <ErrorWrapper error={questsError} errorMessage="Failed to load quests.">
-                    <Grid
-                        templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }}
-                        gap="4"
-                        px="4"
-                        py="6"
-                        maxW="fp.container"
-                        mx="auto"
-                    >
-                        <AddModelCard onClick={() => setIsQuestFormOpen(true)} title="Add Quest" />
-                        {quests?.map((quest) => (
-                            <QuestCard
-                                key={quest.questId}
-                                quest={quest}
-                                onComplete={refreshAfterPointsActivity}
-                                onEdit={() => {
-                                    setSelectedQuest(quest);
-                                    setIsQuestFormOpen(true);
-                                }}
-                            />
-                        ))}
-                    </Grid>
-                </ErrorWrapper>
-            </LoadingWrapper>
+            {isMobile && (
+                <Tabs.Root
+                    value={activeSection}
+                    onValueChange={(details) => setActiveSection(details.value as QuestsSection)}
+                    fitted
+                    maxW="fp.container"
+                    mx="auto"
+                    px="4"
+                >
+                    <Tabs.List>
+                        <Tabs.Trigger value="quests">Quests</Tabs.Trigger>
+                        <Tabs.Trigger value="rewards">Rewards</Tabs.Trigger>
+                    </Tabs.List>
+                </Tabs.Root>
+            )}
 
-            <LoadingWrapper isLoading={isLoadingRewards}>
-                <ErrorWrapper error={rewardsError} errorMessage="Failed to load rewards.">
-                    <Grid
-                        templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }}
-                        gap="4"
-                        px="4"
-                        py="6"
-                        maxW="fp.container"
-                        mx="auto"
-                    >
-                        <AddModelCard onClick={() => setIsRewardFormOpen(true)} title="Add Reward" />
-                        {rewards?.map((reward) => (
-                            <RewardCard
-                                key={reward.rewardId}
-                                reward={reward}
-                                balance={balance?.total ?? 0}
-                                onRedeem={refreshAfterPointsActivity}
-                                onEdit={() => {
-                                    setSelectedReward(reward);
-                                    setIsRewardFormOpen(true);
-                                }}
-                            />
-                        ))}
-                    </Grid>
-                </ErrorWrapper>
-            </LoadingWrapper>
+            {(!isMobile || activeSection === "quests") && (
+                <LoadingWrapper isLoading={isLoadingQuests}>
+                    <ErrorWrapper error={questsError} errorMessage="Failed to load quests.">
+                        <CardGrid>
+                            <AddModelCard onClick={() => setIsQuestFormOpen(true)} title="Add Quest" />
+                            {quests?.map((quest) => (
+                                <QuestCard
+                                    key={quest.questId}
+                                    quest={quest}
+                                    onComplete={refreshAfterPointsActivity}
+                                    onEdit={() => {
+                                        setSelectedQuest(quest);
+                                        setIsQuestFormOpen(true);
+                                    }}
+                                />
+                            ))}
+                        </CardGrid>
+                    </ErrorWrapper>
+                </LoadingWrapper>
+            )}
+
+            {(!isMobile || activeSection === "rewards") && (
+                <LoadingWrapper isLoading={isLoadingRewards}>
+                    <ErrorWrapper error={rewardsError} errorMessage="Failed to load rewards.">
+                        <CardGrid>
+                            <AddModelCard onClick={() => setIsRewardFormOpen(true)} title="Add Reward" />
+                            {rewards?.map((reward) => (
+                                <RewardCard
+                                    key={reward.rewardId}
+                                    reward={reward}
+                                    balance={balance?.total ?? 0}
+                                    onRedeem={refreshAfterPointsActivity}
+                                    onEdit={() => {
+                                        setSelectedReward(reward);
+                                        setIsRewardFormOpen(true);
+                                    }}
+                                />
+                            ))}
+                        </CardGrid>
+                    </ErrorWrapper>
+                </LoadingWrapper>
+            )}
 
             <Box maxW="fp.container" mx="auto" px="4" pb="8">
                 <Text textStyle="label" color="fg.muted" mb="2">

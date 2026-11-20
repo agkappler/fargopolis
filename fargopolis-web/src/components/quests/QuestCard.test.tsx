@@ -22,12 +22,12 @@ beforeEach(() => {
 const quest = new Quest("q1", "Wash dishes", "All of them", 5, true);
 
 describe("QuestCard", () => {
-    it("renders the quest's name, description, and point value", () => {
+    it("renders the quest's name and point value, but not its description", () => {
         renderWithProviders(<QuestCard quest={quest} onComplete={vi.fn()} />);
 
         expect(screen.getByText("Wash dishes")).toBeInTheDocument();
-        expect(screen.getByText("All of them")).toBeInTheDocument();
         expect(screen.getByText("+5 pts")).toBeInTheDocument();
+        expect(screen.queryByText("All of them")).not.toBeInTheDocument();
     });
 
     it("calls completeQuest and the onComplete prop when tapped", async () => {
