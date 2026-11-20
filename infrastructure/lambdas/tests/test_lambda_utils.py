@@ -22,6 +22,7 @@ import sys
 from unittest import mock
 
 import pytest
+from moto import mock_aws
 
 
 def _evict_lambda_utils() -> None:
@@ -59,3 +60,72 @@ def test_table_from_env_missing_env_var_raises_before_any_aws_call(monkeypatch: 
             lambda_utils.table_from_env("MISSING_TABLE_NAME")
 
     mock_resource.assert_not_called()
+
+
+# --- to_dynamodb_item / transact_write_items (added for the `quests` vertical's atomic
+# completion/redemption writes -- see openspec/changes/add-quests-points-system/design.md) -------
+
+
+def test_to_dynamodb_item_round_trips_mixed_types() -> None:
+    _evict_lambda_utils()
+    import shared.lambda_utils as lambda_utils
+
+    low_level = lambda_utils.to_dynamodb_item({"id": "abc", "count": 3, "active": True})
+
+    assert low_level == {"id": {"S": "abc"}, "count": {"N": "3"}, "active": {"BOOL": True}}
+
+
+def test_transact_write_items_performs_a_real_put_and_update(monkeypatch: pytest.MonkeyPatch) -> None:
+    _evict_lambda_utils()
+    import boto3
+
+    import shared.lambda_utils as lambda_utils
+
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "testing")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "testing")
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+
+    with mock_aws():
+        dynamodb = boto3.resource("dynamodb")
+        dynamodb.create_table(
+            TableName="ledger",
+            KeySchema=[{"AttributeName": "ledgerId", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "ledgerId", "AttributeType": "S"}],
+            BillingMode="PAY_PER_REQUEST",
+        )
+        dynamodb.create_table(
+            TableName="balance",
+            KeySchema=[{"AttributeName": "balanceId", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "balanceId", "AttributeType": "S"}],
+            BillingMode="PAY_PER_REQUEST",
+        )
+
+        response = lambda_utils.transact_write_items(
+            [
+                {
+                    "Put": {
+                        "TableName": "ledger",
+                        "Item": lambda_utils.to_dynamodb_item({"ledgerId": "l1", "pointsDelta": 5}),
+                    }
+                },
+                {
+                    "Update": {
+                        "TableName": "balance",
+                        "Key": lambda_utils.to_dynamodb_item({"balanceId": "BALANCE"}),
+                        "UpdateExpression": "ADD #t :delta",
+                        "ExpressionAttributeNames": {"#t": "total"},
+                        "ExpressionAttributeValues": lambda_utils.to_dynamodb_item({":delta": 5}),
+                    }
+                },
+            ]
+        )
+
+        assert "ResponseMetadata" in response
+
+        ledger_item = dynamodb.Table("ledger").get_item(Key={"ledgerId": "l1"}).get("Item")
+        assert ledger_item is not None
+        assert int(ledger_item["pointsDelta"]) == 5
+
+        balance_item = dynamodb.Table("balance").get_item(Key={"balanceId": "BALANCE"}).get("Item")
+        assert balance_item is not None
+        assert int(balance_item["total"]) == 5
