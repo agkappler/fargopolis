@@ -13,21 +13,20 @@ List stacks: `npx cdk list`. Deploy one stack: `npx cdk deploy FargopolisApi` (o
 
 ### Dev stage deploy
 
-Pass `-c dev=true` (e.g. `npx cdk list -c dev=true`) to target a second, hardcoded pair of
+Pass `-c tag=dev` (e.g. `npx cdk list -c tag=dev`) to target a second, parallel pair of
 stacks — `FargopolisApi-dev` / `FargopolisFrontend-dev` — that can coexist with the default
-`FargopolisApi` / `FargopolisFrontend` stacks in the same AWS account. Without the flag, stack
-IDs and behavior are unchanged from today.
+`FargopolisApi` / `FargopolisFrontend` stacks in the same AWS account. `-c tag=<anything>` is a
+generic string context value (not a special-cased boolean); `dev` is only ever hardcoded at the
+Makefile level, via the `deploy-dev*` targets below. Without the flag, stack IDs and behavior are
+unchanged from today.
 
-From the repo root, use `make deploy-dev` (runs `deploy-dev-web` then `deploy-dev-api`) and
-`make deploy-prod` (runs `deploy-web` then `deploy-api`) as one-command shortcuts. **`deploy-dev`
-deploys the frontend before the API** — `FargopolisApiStack` imports `FargopolisFrontend-dev`'s
-CloudFront domain name via a CloudFormation export/`Fn::ImportValue` and appends it to the HTTP
-API's CORS `allowOrigins`, so the export must exist before the API stack deploys. This ordering
-is required once — the first time `FargopolisApi-dev` is deployed, or again after
-`FargopolisFrontend-dev` has been destroyed — later redeploys of either stack alone are fine.
-Prefer `make deploy-dev` (or deploy `FargopolisFrontend-dev` then `FargopolisApi-dev` by hand) over a raw
-`npx cdk deploy --all -c dev=true`: CDK does not track that CloudFormation export/import as an
-inter-stack dependency, so `--all` gives no ordering guarantee.
+From the repo root, use `make deploy-dev` (runs `deploy-dev-api`, `deploy-dev-web`, then
+`deploy-dev-content`) and `make deploy-prod` (runs `deploy-api`, `deploy-web`, then
+`deploy-prod-content`) as one-command shortcuts — each now deploys **both** the infra stacks
+**and** builds/syncs/invalidates the frontend content in one command (see "Makefile frontend
+content deploy" below). With `tag`, `FargopolisFrontend-dev`/`FargopolisApi-dev` have no
+deploy-order dependency on each other (there is no cross-stack CloudFormation reference between
+them); `npx cdk deploy --all -c tag=dev` is safe.
 
 Operational notes specific to the dev stacks:
 
@@ -36,6 +35,10 @@ Operational notes specific to the dev stacks:
   name / Route 53 record. The simplest safe default is to **omit `apiDomain` for the dev API
   stack** (it deploys fine on the plain `execute-api` URL) unless a second domain/certificate has
   actually been provisioned for dev.
+- **`frontendDomain`** is optional for a dev deploy — see [`frontendDomain` custom domain](#frontenddomain-custom-domain)
+  below. If omitted, `FargopolisFrontend-dev` still deploys fine on its raw CloudFront domain, but
+  cross-origin calls from the dev web app to the dev API will fail CORS until `frontendDomain` is
+  configured (its resolved `domainName` is what gets added to the API's CORS `allowOrigins`).
 - **Never** pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
   on the dev API stack — the GitHub Actions IAM OIDC identity provider is an account-wide
   singleton already created by the original bootstrap; attempting to create it again fails.
@@ -116,13 +119,53 @@ Field notes:
 - `hostedZoneId` is that zone’s ID (from Route 53 or `list-hosted-zones-by-name`). Required when `createDnsRecord` is true.
 - Set `createDnsRecord: false` if DNS is managed outside Route 53 (CDK still creates API Gateway domain + mapping).
 
+### `frontendDomain` custom domain
+
+`FrontendStack` provisions a custom domain from CDK **`context.frontendDomain`**. The field is optional — omit it and the stack deploys without a custom domain, using the raw CloudFront domain (e.g. `d1234abcd.cloudfront.net`).
+
+**Contrast with `apiDomain`:** the ACM certificate for `frontendDomain` must be issued in **`us-east-1`**, regardless of which region `FargopolisFrontend` itself deploys to — CloudFront is a global service and only accepts certificates from `us-east-1`. This is the **opposite** of `apiDomain`'s certificate, which must be in the **same region** as the API Gateway. CDK does **not** enforce this at synth time (`acm.Certificate.fromCertificateArn` accepts any region); a non-`us-east-1` cert ARN will only fail at CloudFormation deploy time, so this is a documentation-only guard — double-check the ARN's region before deploying.
+
+Config is intentionally **not committed** to [`cdk.json`](cdk.json), the same three ways as `apiDomain`:
+
+| Where | Format | When to use |
+| ----- | ------ | ----------- |
+| **`cdk.context.json`** (gitignored) | `{ "frontendDomain": { … } }` | Local deploys |
+| **A repo/CI secret** passed as `-c` | Single-line JSON of the inner object | CI / GitHub Actions |
+| **`-c` flag** | `-c ‘frontendDomain={"domainName":…}’` | One-off or scripted runs (e.g. `make deploy-dev`) |
+
+**`cdk.context.json`** shape (top-level key, no `"context"` wrapper):
+
+```json
+{
+  "frontendDomain": {
+    "domainName": "dev.fargopolis.com",
+    "hostedZoneDomain": "fargopolis.com",
+    "hostedZoneId": "Z1234567890ABC",
+    "certificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "createDnsRecord": true
+  }
+}
+```
+
+Field notes:
+
+- `certificateArn` must be in **`us-east-1`** — not the stack's own deploy region (contrast with `apiDomain`, same-region-as-API-Gateway).
+- `domainName` is the hostname the SPA is served on (e.g. `dev.fargopolis.com`), and — when configured — is also added as a 6th literal entry to `FargopolisApiStack`'s CORS `allowOrigins` (as `https://<domainName>`), since it's resolved once at `cdk synth` time and passed between the two stacks in-process (no cross-stack CloudFormation reference needed).
+- `hostedZoneDomain` is the Route 53 public zone root (e.g. `fargopolis.com`).
+- `hostedZoneId` is that zone's ID. Required when `createDnsRecord` is true.
+- Set `createDnsRecord: false` if DNS is managed outside Route 53 (CDK still attaches the alias/certificate to the CloudFront distribution).
+
+Omitting `frontendDomain` on a dev deploy is supported — `FargopolisFrontend-dev` still deploys on its raw CloudFront domain — but cross-origin calls from the dev web app to the dev API will fail CORS until it's configured, mirroring `apiDomain`'s own "omit it, deploy without the domain" fallback.
+
 ### Python Lambda bundling
 
 Per-function assets live under `infrastructure/lambdas/`. Shared packaging logic: [`lib/python-lambda-bundling.ts`](lib/python-lambda-bundling.ts) (picks a local Python 3.10+ for `pip install`, or Docker as fallback).
 
 ## Frontend stack (`FargopolisFrontend`)
 
-**[`FrontendStack`](lib/stacks/frontend-stack.ts)** — SPA hosting only. After deploy, sync `fargopolis-web/dist` to the output bucket and invalidate CloudFront (see repo root [README.md](../README.md) and [`.github/workflows/deploy-static-frontend.yml`](../.github/workflows/deploy-static-frontend.yml)).
+**[`FrontendStack`](lib/stacks/frontend-stack.ts)** — SPA hosting only. `cdk deploy` provisions the S3 bucket + CloudFront distribution but does **not** build or upload the SPA itself; after deploy, sync `fargopolis-web/dist` to the output bucket and invalidate CloudFront (see repo root [README.md](../README.md) and [`.github/workflows/deploy-static-frontend.yml`](../.github/workflows/deploy-static-frontend.yml)).
+
+**Makefile frontend content deploy:** from the repo root, `make deploy-prod`/`make deploy-dev` deploy infra **and** build/sync/invalidate the frontend content in one command — the content step is handled by `deploy-prod-content`/`deploy-dev-content`, which read the just-deployed stacks' `HttpApiUrl`/`SiteBucketName`/`CloudFrontDistributionId` outputs via `aws cloudformation describe-stacks`, build `fargopolis-web` with that `VITE_API_URL`, `aws s3 sync --delete` the build output, then `aws cloudfront create-invalidation --paths "/*"` — mirroring `.github/workflows/deploy-static-frontend.yml`. `deploy-api`/`deploy-web`/`deploy-dev-api`/`deploy-dev-web` remain infra-only (unchanged) if you want to deploy just the infra.
 
 ### GitHub Actions OIDC roles
 
@@ -197,8 +240,9 @@ npx cdk deploy --all --profile YOUR_PROFILE
 ```
 
 For a parallel dev environment, see [Dev stage deploy](#dev-stage-deploy) above — use
-`make deploy-dev` (from the repo root) rather than `npx cdk deploy --all -c dev=true`, since the
-dev frontend's CloudFront domain must exist before the dev API stack imports it for CORS.
+`make deploy-dev` (from the repo root) for a one-command deploy of both dev stacks and their
+frontend content; `npx cdk deploy --all -c tag=dev` also works for infra alone, since there's no
+cross-stack CloudFormation reference between the dev stacks.
 
 ## Adding a new vertical (pattern)
 

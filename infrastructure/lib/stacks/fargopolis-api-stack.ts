@@ -30,8 +30,10 @@ import {
 } from '../api-domain-context';
 
 export interface FargopolisApiStackProps extends cdk.StackProps {
-    /** Hardcoded dev-environment flag; adds a `Stage` tag and imports the dev frontend's CloudFront domain for CORS. */
-    dev?: boolean;
+    /** Generic stack-tag string (e.g. "dev"); adds a `Stage` tag. Only ever set at the Makefile level. */
+    tag?: string;
+    /** Resolved frontend custom-domain name (if any), appended to CORS `extraAllowOrigins` as `https://<name>`. */
+    frontendDomainName?: string;
 }
 
 /**
@@ -65,7 +67,7 @@ export class FargopolisApiStack extends cdk.Stack {
         super(scope, id, props);
 
         cdk.Tags.of(this).add('Project', 'recipes');
-        cdk.Tags.of(this).add('Stage', props?.dev ? 'dev' : 'default');
+        cdk.Tags.of(this).add('Stage', props?.tag || 'default');
 
         this.bounties = new BountiesConstruct(this, 'Bounties');
         this.recipes = new RecipesConstruct(this, 'Recipes');
@@ -86,16 +88,9 @@ export class FargopolisApiStack extends cdk.Stack {
             jwtIssuer: clerk.jwtIssuer ?? '',
         });
 
-        // Only the dev API stack needs an extra CORS origin: the dev frontend's CloudFront domain,
-        // imported via the CloudFormation export `FargopolisFrontend-dev` creates in frontend-stack.ts.
-        // This is a plain `Fn::ImportValue` intrinsic resolved at CloudFormation deploy time, not at
-        // `cdk synth` time, so synth succeeds with no AWS credentials either way. `FargopolisFrontend-dev`
-        // must be deployed at least once before `FargopolisApi-dev` so the export exists when this
-        // import resolves (see Makefile `deploy-dev` ordering and docs).
         const extraAllowOrigins: string[] = [];
-        if (props?.dev) {
-            const devFrontendDomain = cdk.Fn.importValue('FargopolisFrontend-dev-DistributionDomain');
-            extraAllowOrigins.push(`https://${devFrontendDomain}`);
+        if (props?.frontendDomainName) {
+            extraAllowOrigins.push(`https://${props.frontendDomainName}`);
         }
 
         this.httpApiGateway = new FargopolisHttpApiConstruct(this, 'HttpApiGateway', {
