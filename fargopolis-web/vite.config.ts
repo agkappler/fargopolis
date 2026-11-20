@@ -19,7 +19,10 @@ export default defineConfig({
         name: "Fargopolis",
         short_name: "Fargopolis",
         description: "Fargopolis personal tools, installable to your home screen",
-        start_url: "/",
+        // Launching the installed icon opens straight to Quests; scope stays
+        // "/" so the rest of the app is still reachable without browser chrome.
+        start_url: "/quests",
+        scope: "/",
         display: "standalone",
         background_color: BACKGROUND_COLOR,
         theme_color: THEME_COLOR,
