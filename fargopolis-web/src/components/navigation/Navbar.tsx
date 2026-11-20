@@ -11,6 +11,7 @@ import { SignInAvatar } from "./SignInAvatar";
 const NAV_ITEMS = [
     { label: "Recipe Box",   path: "/recipes" },
     { label: "Bounties",     path: "/bounties" },
+    { label: "Quests",       path: "/quests" },
     { label: "Camping",      path: "/camping" },
     { label: "DnD",          path: "/dnd" },
     { label: "About",        path: "/about" },
