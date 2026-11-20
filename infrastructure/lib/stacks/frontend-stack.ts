@@ -1,14 +1,24 @@
 import * as cdk from 'aws-cdk-lib';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { GithubActionsFrontendDeployRoleConstruct } from '../constructs/github-actions-frontend-deploy-role-construct';
 import { resolveImportedGithubActionsOidcProviderArn } from '../github-actions-oidc';
+import { FrontendDomainContext, resolveHasFrontendDomainConfig, shouldCreateFrontendDomainDnsRecord } from '../frontend-domain-context';
 
 export interface FrontendStackProps extends cdk.StackProps {
-    /** Hardcoded dev-environment flag; adds a `Stage` tag and exports the CloudFront domain for cross-stack CORS. */
-    dev?: boolean;
+    /** Generic stack-tag string (e.g. "dev"); adds a `Stage` tag. Only ever set at the Makefile level. */
+    tag?: string;
+    /**
+     * Already-parsed custom-domain config, resolved once by `bin/recipes-infra.ts` via
+     * `parseFrontendDomainContext`/`resolveHasFrontendDomainConfig` — this stack does not
+     * re-parse context itself.
+     */
+    frontendDomain?: FrontendDomainContext;
 }
 
 /**
@@ -24,7 +34,10 @@ export class FrontendStack extends cdk.Stack {
         super(scope, id, props);
 
         cdk.Tags.of(this).add('Project', 'recipes');
-        cdk.Tags.of(this).add('Stage', props?.dev ? 'dev' : 'default');
+        cdk.Tags.of(this).add('Stage', props?.tag || 'default');
+
+        const frontendDomain = props?.frontendDomain ?? {};
+        const hasFrontendDomainConfig = resolveHasFrontendDomainConfig(frontendDomain);
 
         this.bucket = new s3.Bucket(this, 'SiteBucket', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -36,6 +49,15 @@ export class FrontendStack extends cdk.Stack {
         });
 
         const s3Origin = origins.S3BucketOrigin.withOriginAccessControl(this.bucket);
+
+        // This certificate must be issued in us-east-1 regardless of this stack's own deploy
+        // region — CloudFront requires it. This is the opposite of `apiDomain`'s certificate,
+        // which must be in the same region as the API Gateway. Import by ARN only; never
+        // create+validate a cert here. CDK does not enforce the us-east-1 requirement at synth
+        // time — this is a doc-only guard.
+        const certificate = hasFrontendDomainConfig
+            ? acm.Certificate.fromCertificateArn(this, 'FrontendDomainCert', frontendDomain.certificateArn ?? '')
+            : undefined;
 
         this.distribution = new cloudfront.Distribution(this, 'Distribution', {
             comment: 'fargopolis-web',
@@ -64,14 +86,18 @@ export class FrontendStack extends cdk.Stack {
                     ttl: cdk.Duration.minutes(5),
                 },
             ],
+            ...(hasFrontendDomainConfig ? { domainNames: [frontendDomain.domainName ?? ''], certificate } : {}),
         });
 
-        if (props?.dev) {
-            // Lets the dev API stack (`FargopolisApi-dev`) import this domain via `Fn::ImportValue`
-            // to append it to CORS `allowOrigins` — see fargopolis-api-stack.ts. Only emitted for the
-            // dev build so the default/prod template gains no new Outputs/Exports.
-            this.exportValue(this.distribution.distributionDomainName, {
-                name: `${this.stackName}-DistributionDomain`,
+        if (hasFrontendDomainConfig && shouldCreateFrontendDomainDnsRecord(frontendDomain)) {
+            const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'FrontendDomainHostedZone', {
+                hostedZoneId: frontendDomain.hostedZoneId ?? '',
+                zoneName: frontendDomain.hostedZoneDomain ?? '',
+            });
+            new route53.ARecord(this, 'FrontendDomainAliasRecord', {
+                zone: hostedZone,
+                recordName: frontendDomain.domainName ?? '',
+                target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.distribution)),
             });
         }
 
@@ -111,5 +137,11 @@ export class FrontendStack extends cdk.Stack {
             description: `Role ARN for GitHub Actions OIDC deploys (${githubOwner}/${githubRepo}@${githubBranch})`,
             value: githubDeployRole.role.roleArn,
         });
+        if (hasFrontendDomainConfig) {
+            new cdk.CfnOutput(this, 'FrontendCustomDomainUrl', {
+                description: 'Custom domain for the static site',
+                value: `https://${frontendDomain.domainName}`,
+            });
+        }
     }
 }

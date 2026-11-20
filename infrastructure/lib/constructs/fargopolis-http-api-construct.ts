@@ -9,8 +9,8 @@ export interface FargopolisHttpApiConstructProps {
     readonly defaultAuthorizer?: apigwv2.IHttpRouteAuthorizer;
 
     /**
-     * Extra CORS origins to append to the hardcoded default list (e.g. a dev frontend's CloudFront
-     * domain). Appended, never replacing the existing origins.
+     * Extra CORS origins to append to the hardcoded default list (e.g. a configured
+     * `frontendDomain` custom domain). Appended, never replacing the existing origins.
      */
     readonly extraAllowOrigins?: string[];
 }

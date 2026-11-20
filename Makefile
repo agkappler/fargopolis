@@ -7,14 +7,21 @@ help:
 	@echo "  test           Run lambda tests (pytest via infra's npm script)"
 	@echo "  dev            Run the web dev server"
 	@echo "  ci             install + lint + build + synth + test (mirrors GitHub Actions)"
-	@echo "  deploy-dev     Deploy a parallel dev stack pair (web then api, -c dev=true)"
-	@echo "  deploy-prod    Deploy the default/prod stack pair (web then api)"
+	@echo "  deploy-api          Deploy the prod API stack only (infra only)"
+	@echo "  deploy-web          Deploy the prod frontend stack only (infra only)"
+	@echo "  deploy-dev-api      Deploy the dev API stack only (infra only, -c tag=dev)"
+	@echo "  deploy-dev-web      Deploy the dev frontend stack only (infra only, -c tag=dev)"
+	@echo "  deploy-prod-content Build+sync+invalidate the prod frontend content (depends on install-web; no-op after first run)"
+	@echo "  deploy-dev-content  Build+sync+invalidate the dev frontend content (depends on install-web; no-op after first run)"
+	@echo "  deploy-dev     Deploy the dev stack pair AND build/sync/invalidate its frontend content (api, web, then content)"
+	@echo "  deploy-prod    Deploy the default/prod stack pair AND build/sync/invalidate its frontend content (api, web, then content)"
 
 .PHONY: help install install-web install-infra install-python \
         lint lint-web \
         build build-web build-infra \
         synth deploy-api deploy-web diff \
         deploy-dev-web deploy-dev-api deploy-dev deploy-prod \
+        deploy-prod-content deploy-dev-content \
         test test-api \
         dev ci
 
@@ -52,14 +59,30 @@ deploy-web:
 	cd infrastructure && npx cdk deploy FargopolisFrontend
 
 deploy-dev-web:
-	cd infrastructure && npx cdk deploy FargopolisFrontend-dev -c dev=true
+	cd infrastructure && npx cdk deploy FargopolisFrontend-dev -c tag=dev
 
 deploy-dev-api:
-	cd infrastructure && npx cdk deploy FargopolisApi-dev -c dev=true
+	cd infrastructure && npx cdk deploy FargopolisApi-dev -c tag=dev
 
-deploy-dev: deploy-dev-web deploy-dev-api
+deploy-prod-content: install-web
+	api_url=$$(aws cloudformation describe-stacks --stack-name FargopolisApi --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text) && \
+	bucket=$$(aws cloudformation describe-stacks --stack-name FargopolisFrontend --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text) && \
+	dist_id=$$(aws cloudformation describe-stacks --stack-name FargopolisFrontend --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text) && \
+	cd fargopolis-web && VITE_API_URL="$$api_url" pnpm run build && cd .. && \
+	aws s3 sync fargopolis-web/dist "s3://$$bucket" --delete && \
+	aws cloudfront create-invalidation --distribution-id "$$dist_id" --paths "/*"
 
-deploy-prod: deploy-web deploy-api
+deploy-dev-content: install-web
+	api_url=$$(aws cloudformation describe-stacks --stack-name FargopolisApi-dev --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text) && \
+	bucket=$$(aws cloudformation describe-stacks --stack-name FargopolisFrontend-dev --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text) && \
+	dist_id=$$(aws cloudformation describe-stacks --stack-name FargopolisFrontend-dev --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text) && \
+	cd fargopolis-web && VITE_API_URL="$$api_url" pnpm run build && cd .. && \
+	aws s3 sync fargopolis-web/dist "s3://$$bucket" --delete && \
+	aws cloudfront create-invalidation --distribution-id "$$dist_id" --paths "/*"
+
+deploy-dev: deploy-dev-api deploy-dev-web deploy-dev-content
+
+deploy-prod: deploy-api deploy-web deploy-prod-content
 
 diff:
 	cd infrastructure && npx cdk diff FargopolisApi

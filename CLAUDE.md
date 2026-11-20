@@ -49,26 +49,34 @@ Add `--profile YOUR_PROFILE` (or `export AWS_PROFILE=...`) for named AWS credent
 
 #### Dev stage deploy
 
-Pass `-c dev=true` to deploy a second, parallel copy of both stacks — hardcoded stack IDs
+Pass `-c tag=dev` to deploy a second, parallel copy of both stacks — hardcoded stack IDs
 `FargopolisApi-dev` / `FargopolisFrontend-dev` — alongside the default/prod `FargopolisApi` /
-`FargopolisFrontend` stacks, in the same AWS account. `npx cdk list -c dev=true` prints the
-`-dev` stack IDs; without the flag, behavior is unchanged from today.
+`FargopolisFrontend` stacks, in the same AWS account. `-c tag=<anything>` is a generic string
+context value (not a special-cased boolean) — `dev` is only ever hardcoded at the Makefile level.
+`npx cdk list -c tag=dev` prints the `-dev` stack IDs; without the flag, behavior is unchanged
+from today.
 
-From the repo root, `make deploy-dev` (alias: `deploy-dev-web` then `deploy-dev-api`) and
-`make deploy-prod` (alias: `deploy-web` then `deploy-api`) wrap the equivalent `cdk deploy`
-commands. `deploy-dev` deploys the web/frontend stack **before** the api stack — the API stack
-imports the dev frontend's CloudFront domain (via a CloudFormation export/`Fn::ImportValue`) to
-add it to its CORS allow-list, so the export must exist first. This ordering is only strictly
-required the first time `FargopolisApi-dev` is deployed, or again after `FargopolisFrontend-dev`
-has been destroyed; later redeploys of either stack alone are fine. Prefer `make deploy-dev` over
-a raw `cdk deploy --all -c dev=true`, since CDK doesn't track that CloudFormation-level
-import/export as an inter-stack dependency and so can't guarantee the ordering itself.
+From the repo root, `make deploy-dev` (runs `deploy-dev-api`, `deploy-dev-web`, then
+`deploy-dev-content`) and `make deploy-prod` (runs `deploy-api`, `deploy-web`, then
+`deploy-prod-content`) now deploy infra **and** build/sync/invalidate the frontend content in one
+command — `deploy-*-content` reads the just-deployed stacks' `HttpApiUrl`/`SiteBucketName`/
+`CloudFrontDistributionId` outputs, builds `fargopolis-web` with that `VITE_API_URL`, `aws s3
+sync --delete`s the build output, then invalidates CloudFront — mirroring
+`.github/workflows/deploy-static-frontend.yml`. `deploy-api`/`deploy-web`/`deploy-dev-api`/
+`deploy-dev-web` remain infra-only (unchanged) for deploying just the infra. With `tag`, the dev
+frontend and API stacks have no deploy-order dependency on each other — there's no cross-stack
+CloudFormation reference between them — so `npx cdk deploy --all -c tag=dev` is also safe.
 
 Other dev-deploy notes:
 - `apiDomain` (custom API domain) is still one domain per deploy — never reuse the same
   `apiDomain` value across the default and dev stacks (both would try to claim the same custom
   domain name / Route 53 record). The simplest safe default is to omit `apiDomain` entirely for
   the dev API stack unless a second domain/certificate has actually been provisioned for dev.
+- `frontendDomain` (custom frontend domain, see `infrastructure/README.md`) is optional for a dev
+  deploy — if omitted, `FargopolisFrontend-dev` still deploys fine on its raw CloudFront domain,
+  but cross-origin calls from the dev web app to the dev API will fail CORS until it's
+  configured, since its resolved `domainName` is what gets added to the dev API's CORS
+  `allowOrigins`.
 - Never pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
   on the dev API stack — the GitHub Actions OIDC IAM identity provider is an account-wide
   singleton already created by the original bootstrap; creating it again fails.
@@ -128,7 +136,7 @@ Tables are per-domain (not single-table design) and use **on-demand capacity**. 
 ## Environment configuration
 
 - Frontend: copy `fargopolis-web/.env.example` to `.env`; requires `VITE_API_URL` (the deployed `HttpApiUrl`, no trailing slash) and `VITE_CLERK_PUBLISHABLE_KEY`.
-- Infrastructure: `context.clerk.jwtIssuer` in `infrastructure/cdk.json` configures the authorizer. Optional custom API domain config (`apiDomain`) is deliberately **not** committed — supply it via gitignored `infrastructure/cdk.context.json`, the `CDK_API_DOMAIN_JSON` GitHub secret, or a `-c` flag; see `infrastructure/README.md` for the exact shape.
+- Infrastructure: `context.clerk.jwtIssuer` in `infrastructure/cdk.json` configures the authorizer. Optional custom API domain config (`apiDomain`) is deliberately **not** committed — supply it via gitignored `infrastructure/cdk.context.json`, the `CDK_API_DOMAIN_JSON` GitHub secret, or a `-c` flag; see `infrastructure/README.md` for the exact shape. Optional custom frontend domain config (`frontendDomain`) follows the same shape/delivery paths, but its ACM certificate must be in **`us-east-1`** (CloudFront is global), unlike `apiDomain`'s same-region-as-API-Gateway certificate — see `infrastructure/README.md`'s "`frontendDomain` custom domain" section.
 - GitHub Actions deploys assume IAM roles via OIDC (no long-lived AWS keys). Frontend and API deploys use **different** role ARNs (`AWS_ROLE_TO_ASSUME` vs `AWS_API_DEPLOY_ROLE_TO_ASSUME`) — see `infrastructure/README.md` § "GitHub Actions OIDC roles" for bootstrap/troubleshooting.
 
 ## OpenSpec workflow
