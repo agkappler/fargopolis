@@ -36,22 +36,17 @@ export const RewardCard: FC<RewardCardProps> = ({ reward, balance, onRedeem, onE
     };
 
     return (
-        <ModelCard gap="2.5" opacity={reward.active ? 1 : 0.6}>
+        <ModelCard gap={{ base: "1", md: "1.5" }} p={{ base: "2", md: "3" }} opacity={reward.active ? 1 : 0.6}>
             <Text
                 as="h3"
                 m="0"
                 textStyle="display-title"
-                fontSize="md"
+                fontSize={{ base: "xs", md: "sm" }}
                 color="fg"
                 style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
             >
                 {reward.name}
             </Text>
-            {reward.description && (
-                <Text fontSize="xs" color="fg.secondary" lineHeight="1.45" flex="1">
-                    {reward.description}
-                </Text>
-            )}
             <Text textStyle="label" color="fg.muted">
                 {reward.pointCost} pts
             </Text>
@@ -62,7 +57,10 @@ export const RewardCard: FC<RewardCardProps> = ({ reward, balance, onRedeem, onE
             )}
             <Button
                 variant="primary"
-                size="sm"
+                w="full"
+                px={{ base: "2", md: "4" }}
+                py={{ base: "1", md: "2" }}
+                fontSize={{ base: "xs", md: "sm" }}
                 disabled={!canRedeem}
                 loading={isRedeeming}
                 onClick={handleRedeem}
@@ -71,7 +69,7 @@ export const RewardCard: FC<RewardCardProps> = ({ reward, balance, onRedeem, onE
             </Button>
             <ErrorMessage errorMessage={errorMessage} />
             {onEdit && (
-                <Text fontSize="xs" color="fg.muted" textDecoration="underline" onClick={onEdit}>
+                <Text fontSize={{ base: "2xs", md: "xs" }} color="fg.muted" textDecoration="underline" onClick={onEdit}>
                     Edit
                 </Text>
             )}

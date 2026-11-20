@@ -37,7 +37,8 @@ export const QuestCard: FC<QuestCardProps> = ({ quest, onComplete, onEdit }) => 
 
     return (
         <ModelCard
-            gap="2.5"
+            gap={{ base: "1", md: "1.5" }}
+            p={{ base: "2", md: "3" }}
             onClick={quest.active ? handleComplete : undefined}
             opacity={isCompleting ? 0.6 : quest.active ? 1 : 0.6}
         >
@@ -45,17 +46,12 @@ export const QuestCard: FC<QuestCardProps> = ({ quest, onComplete, onEdit }) => 
                 as="h3"
                 m="0"
                 textStyle="display-title"
-                fontSize="md"
+                fontSize={{ base: "xs", md: "sm" }}
                 color="fg"
                 style={{ fontVariationSettings: '"opsz" 18, "SOFT" 50' }}
             >
                 {quest.name}
             </Text>
-            {quest.description && (
-                <Text fontSize="xs" color="fg.secondary" lineHeight="1.45" flex="1">
-                    {quest.description}
-                </Text>
-            )}
             <Text textStyle="label" color="brand">
                 +{quest.pointValue} pts
             </Text>
@@ -67,7 +63,7 @@ export const QuestCard: FC<QuestCardProps> = ({ quest, onComplete, onEdit }) => 
             <ErrorMessage errorMessage={errorMessage} />
             {onEdit && (
                 <Text
-                    fontSize="xs"
+                    fontSize={{ base: "2xs", md: "xs" }}
                     color="fg.muted"
                     textDecoration="underline"
                     onClick={(e) => {
