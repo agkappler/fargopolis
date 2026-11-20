@@ -85,20 +85,24 @@ export function QuestsPage() {
 
     return (
         <>
-            <PageHeader title="Quests" />
-
-            <Box maxW="fp.container" mx="auto" px="4" display="flex" justifyContent="flex-end">
-                <Switch.Root
-                    checked={showArchived}
-                    onCheckedChange={(details) => setShowArchived(details.checked)}
-                >
-                    <Switch.HiddenInput />
-                    <Switch.Control>
-                        <Switch.Thumb />
-                    </Switch.Control>
-                    <Switch.Label>Show archived</Switch.Label>
-                </Switch.Root>
-            </Box>
+            <PageHeader
+                title="Quests"
+                rightContainer={
+                    <Switch.Root
+                        size="sm"
+                        checked={showArchived}
+                        onCheckedChange={(details) => setShowArchived(details.checked)}
+                    >
+                        <Switch.HiddenInput />
+                        <Switch.Control>
+                            <Switch.Thumb />
+                        </Switch.Control>
+                        <Switch.Label textStyle="label" color="fg.muted">
+                            Show archived
+                        </Switch.Label>
+                    </Switch.Root>
+                }
+            />
 
             <LoadingWrapper isLoading={isLoadingBalance}>
                 <ErrorWrapper error={balanceError} errorMessage="Failed to load point balance.">
