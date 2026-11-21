@@ -18,7 +18,7 @@ import { Box, Switch, Tabs, Text, useMediaQuery } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 
-type QuestsSection = "quests" | "rewards";
+type QuestsSection = "quests" | "rewards" | "history";
 
 export function QuestsPage() {
     const { getToken, isLoaded, isSignedIn } = useAuth();
@@ -135,6 +135,7 @@ export function QuestsPage() {
                     <Tabs.List>
                         <Tabs.Trigger value="quests">Quests</Tabs.Trigger>
                         <Tabs.Trigger value="rewards">Rewards</Tabs.Trigger>
+                        <Tabs.Trigger value="history">History</Tabs.Trigger>
                     </Tabs.List>
                 </Tabs.Root>
             )}
@@ -182,16 +183,18 @@ export function QuestsPage() {
                 </LoadingWrapper>
             )}
 
-            <Box maxW="fp.container" mx="auto" px="4" pb="8">
-                <Text textStyle="label" color="fg.muted" mb="2">
-                    History
-                </Text>
-                <LoadingWrapper isLoading={isLoadingHistory}>
-                    <ErrorWrapper error={historyError} errorMessage="Failed to load history.">
-                        <QuestHistoryList history={history ?? []} />
-                    </ErrorWrapper>
-                </LoadingWrapper>
-            </Box>
+            {(!isMobile || activeSection === "history") && (
+                <Box maxW="fp.container" mx="auto" px="4" pb="8">
+                    <Text textStyle="label" color="fg.muted" mb="2">
+                        History
+                    </Text>
+                    <LoadingWrapper isLoading={isLoadingHistory}>
+                        <ErrorWrapper error={historyError} errorMessage="Failed to load history.">
+                            <QuestHistoryList history={history ?? []} />
+                        </ErrorWrapper>
+                    </LoadingWrapper>
+                </Box>
+            )}
 
             <QuestForm isOpen={isQuestFormOpen} onClose={onQuestFormClose} quest={selectedQuest} updateQuests={mutateQuests} />
             <RewardForm isOpen={isRewardFormOpen} onClose={onRewardFormClose} reward={selectedReward} updateRewards={mutateRewards} />

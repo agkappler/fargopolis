@@ -5,7 +5,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // Keep in sync with the hand-added `theme-color` meta tag in index.html.
 const THEME_COLOR = "#1c1a17";
-const BACKGROUND_COLOR = "#29B6F6";
+const BACKGROUND_COLOR = "#4338CA";
 
 export default defineConfig({
   plugins: [

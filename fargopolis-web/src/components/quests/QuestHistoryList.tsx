@@ -8,9 +8,9 @@ interface QuestHistoryListProps {
 
 const describeEntry = (entry: QuestLedgerEntry): string => {
     if (entry.type === "COMPLETION") {
-        return "Completed a quest";
+        return entry.questName ? `Completed ${entry.questName}` : "Completed a quest";
     }
-    return "Redeemed a reward";
+    return entry.rewardName ? `Redeemed ${entry.rewardName}` : "Redeemed a reward";
 };
 
 export const QuestHistoryList: FC<QuestHistoryListProps> = ({ history }) => {

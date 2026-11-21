@@ -337,13 +337,19 @@ def test_complete_quest_success_creates_ledger_entry_and_increments_balance(
     assert created["type"] == "COMPLETION"
     assert created["pointsDelta"] == 7
     assert created["questId"] == "q1"
+    assert created["questName"] == "Chore"
 
     stored = quest_ledger_table.get_item(Key={"ledgerId": created["ledgerId"]})["Item"]
     assert stored["type"] == "COMPLETION"
     assert int(stored["pointsDelta"]) == 7
+    assert stored["questName"] == "Chore"
 
     balance_resp = quests_handler.handler(make_event("GET", "/api/questBalance", authenticated=True), None)
     assert json.loads(balance_resp["body"])["total"] == 7
+
+    history_resp = quests_handler.handler(make_event("GET", "/api/questHistory", authenticated=True), None)
+    history = json.loads(history_resp["body"])
+    assert history[0]["questName"] == "Chore"
 
 
 # --- History / balance consistency ---------------------------------------------------------------
@@ -546,12 +552,45 @@ def test_redeem_reward_success_debits_balance_and_writes_redemption_entry(
     assert created["type"] == "REDEMPTION"
     assert created["pointsDelta"] == -4
     assert created["rewardId"] == "r1"
+    assert created["rewardName"] == "Snack"
 
     stored = quest_ledger_table.get_item(Key={"ledgerId": created["ledgerId"]})["Item"]
     assert int(stored["pointsDelta"]) == -4
+    assert stored["rewardName"] == "Snack"
 
     balance_resp = quests_handler.handler(make_event("GET", "/api/questBalance", authenticated=True), None)
     assert json.loads(balance_resp["body"])["total"] == 6
+
+    history_resp = quests_handler.handler(make_event("GET", "/api/questHistory", authenticated=True), None)
+    history = json.loads(history_resp["body"])
+    redemption = next(h for h in history if h["type"] == "REDEMPTION")
+    assert redemption["rewardName"] == "Snack"
+
+
+def test_history_entry_without_name_fields_omits_them_without_error(
+    quests_handler, quest_ledger_table, make_event
+):
+    """Pre-existing `QuestLedger` rows written before `questName`/`rewardName` denormalization
+    simply don't have the attribute at all -- `_ledger_entry_to_api`'s `is not None` guard must
+    treat that the same as `None` (no `KeyError`), and omit the key entirely from the API
+    response rather than emitting it as `null`."""
+    quest_ledger_table.put_item(
+        Item={
+            "ledgerId": "old-ledger-1",
+            "entityType": "QUEST_LEDGER",
+            "type": "COMPLETION",
+            "pointsDelta": 5,
+            "occurredAt": "2020-01-01T00:00:00+00:00",
+            "questId": "q1",
+        }
+    )
+    resp = quests_handler.handler(make_event("GET", "/api/questHistory", authenticated=True), None)
+    assert resp["statusCode"] == 200
+    history = json.loads(resp["body"])
+    assert len(history) == 1
+    entry = history[0]
+    assert "questName" not in entry
+    assert "rewardName" not in entry
 
 
 # --- Routing edge cases --------------------------------------------------------------------------

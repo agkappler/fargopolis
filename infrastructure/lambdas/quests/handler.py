@@ -164,6 +164,10 @@ def _ledger_entry_to_api(item: dict[str, Any]) -> dict[str, Any]:
         out["questId"] = str(item["questId"])
     if item.get("rewardId") is not None:
         out["rewardId"] = str(item["rewardId"])
+    if item.get("questName") is not None:
+        out["questName"] = str(item["questName"])
+    if item.get("rewardName") is not None:
+        out["rewardName"] = str(item["rewardName"])
     return out
 
 
@@ -191,6 +195,7 @@ def _complete_quest(body: dict[str, Any]) -> dict[str, Any]:
         "pointsDelta": point_value,
         "occurredAt": _now_iso(),
         "questId": quest_id,
+        "questName": quest["name"],
     }
     transact_write_items(
         [
@@ -341,6 +346,7 @@ def _redeem_reward(body: dict[str, Any]) -> dict[str, Any]:
         "pointsDelta": -point_cost,
         "occurredAt": _now_iso(),
         "rewardId": reward_id,
+        "rewardName": reward["name"],
     }
     try:
         transact_write_items(
