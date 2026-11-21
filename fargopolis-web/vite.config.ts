@@ -14,7 +14,13 @@ export default defineConfig({
       registerType: "autoUpdate",
       // Only the shell-relevant images are precached; the unrelated brand/about
       // photos in public/ are intentionally left out of the service worker cache.
-      includeAssets: ["icon.png", "pwa-192x192.png", "pwa-512x512.png"],
+      includeAssets: [
+        "icon.png",
+        "pwa-192x192.png",
+        "pwa-512x512.png",
+        "pwa-maskable-192x192.png",
+        "pwa-maskable-512x512.png",
+      ],
       manifest: {
         name: "Fargopolis",
         short_name: "Fargopolis",
@@ -38,6 +44,21 @@ export default defineConfig({
             sizes: "512x512",
             type: "image/png",
             purpose: "any",
+          },
+          // Full-bleed square art (no transparent corners) for Android/adaptive-icon
+          // launchers: without a dedicated maskable icon, those launchers pad our
+          // pre-cropped circle icon with a white backdrop to fit their own mask shape.
+          {
+            src: "pwa-maskable-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
+          },
+          {
+            src: "pwa-maskable-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
