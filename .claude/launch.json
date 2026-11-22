@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fargopolis-web-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "fargopolis-web", "dev"],
+      "port": 3000
+    }
+  ]
+}

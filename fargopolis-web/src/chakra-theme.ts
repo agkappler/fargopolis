@@ -241,7 +241,7 @@ const config = defineConfig({
                 fp: {
                     container:       { value: "1180px" },
                     containerNarrow: { value: "720px" },
-                    nav:             { value: "64px" },
+                    nav:             { value: "56px" },
                 },
             },
         },

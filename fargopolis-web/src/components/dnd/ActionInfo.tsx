@@ -1,16 +1,17 @@
 import { AbilityInfo } from "./abilities/AbilityInfo";
 import { KnownSpellsDisplay } from "./spells/KnownSpellsDisplay";
 import { WeaponInfo } from "./weapons/WeaponInfo";
+import { SkillsBlock } from "./SkillsBlock";
 import { Box, NativeSelect, Tabs, useMediaQuery } from "@chakra-ui/react";
 import { useState } from "react";
 import { MOBILE_BREAK } from "@/constants/Media";
+import Character from "@/models/Character";
 
 interface ActionInfoProps {
-    characterId: string;
-    className: string;
+    character: Character;
 }
 
-export const ActionInfo: React.FC<ActionInfoProps> = ({ characterId, className }) => {
+export const ActionInfo: React.FC<ActionInfoProps> = ({ character }) => {
     const [value, setValue] = useState('1');
     const [isMobile] = useMediaQuery([`(max-width: ${MOBILE_BREAK})`], { fallback: [false] });
 
@@ -18,6 +19,7 @@ export const ActionInfo: React.FC<ActionInfoProps> = ({ characterId, className }
         { label: "Weapons", value: "1" },
         { label: "Abilities", value: "2" },
         { label: "Spells", value: "3" },
+        { label: "Skills", value: "4" },
     ];
 
     return (
@@ -41,17 +43,20 @@ export const ActionInfo: React.FC<ActionInfoProps> = ({ characterId, className }
                 )}
             </Box>
             <Tabs.Content value="1">
-                <WeaponInfo characterId={characterId} canEdit={false} />
+                <WeaponInfo characterId={character.characterId} canEdit={false} />
             </Tabs.Content>
             <Tabs.Content value="2">
-                <AbilityInfo characterId={characterId} canEdit={false} />
+                <AbilityInfo characterId={character.characterId} canEdit={false} />
             </Tabs.Content>
             <Tabs.Content value="3">
                 <KnownSpellsDisplay
-                    characterId={characterId}
-                    className={className}
+                    characterId={character.characterId}
+                    className={character.className}
                     canEdit={false}
                 />
+            </Tabs.Content>
+            <Tabs.Content value="4">
+                <SkillsBlock character={character} />
             </Tabs.Content>
         </Tabs.Root>
     );

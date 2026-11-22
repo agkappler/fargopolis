@@ -19,3 +19,8 @@ export function checkModifier(abilityScore: number, proficiencyBonus: number, is
     const mod = abilityModifier(abilityScore);
     return isProficient ? mod + proficiencyBonus : mod;
 }
+
+// Passive score (e.g. Passive Perception): 10 + the check modifier.
+export function passiveScore(abilityScore: number, proficiencyBonus: number, isProficient: boolean): number {
+    return 10 + checkModifier(abilityScore, proficiencyBonus, isProficient);
+}
