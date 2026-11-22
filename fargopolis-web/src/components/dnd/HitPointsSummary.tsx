@@ -1,7 +1,7 @@
 import { withStatDefaults } from "@/helpers/CharacterStats";
 import Character from "@/models/Character";
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { StatBox } from "./statBlockShared";
+import { StatBox } from "./StatBox";
 
 interface HitPointsSummaryProps {
     character: Character;

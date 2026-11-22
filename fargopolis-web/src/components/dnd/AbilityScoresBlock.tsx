@@ -1,46 +1,15 @@
 import { surfaceBorderProps } from "@/components/ui/surfaceStyle";
 import { ABILITY_KEYS } from "@/constants/Skills";
 import { withStatDefaults } from "@/helpers/CharacterStats";
-import { abilityModifier, checkModifier, formatModifier, proficiencyBonusForLevel } from "@/helpers/DndMath";
-import { rollD20 } from "@/helpers/Dice";
-import { rollToast } from "@/helpers/Toasts";
+import { abilityModifier, checkModifier, proficiencyBonusForLevel } from "@/helpers/DndMath";
 import Character from "@/models/Character";
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { rollMessage, rowProps } from "./statBlockShared";
+import { RollCell } from "./RollCell";
+import { rowProps } from "./statRowStyle";
 
 interface AbilityScoresBlockProps {
     character: Character;
 }
-
-interface RollCellProps {
-    label: string;
-    modifier: number;
-    color?: string;
-}
-
-const RollCell: React.FC<RollCellProps> = ({ label, modifier, color }) => {
-    const handleRoll = () => {
-        const { roll, total } = rollD20(modifier);
-        rollToast(rollMessage(label, modifier, roll, total));
-    };
-
-    return (
-        <Text
-            as="button"
-            onClick={handleRoll}
-            fontFamily="mono"
-            color={color}
-            w="9"
-            textAlign="right"
-            bg="transparent"
-            border="none"
-            cursor="pointer"
-            _hover={{ color: "accent.hover" }}
-        >
-            {formatModifier(modifier)}
-        </Text>
-    );
-};
 
 export const AbilityScoresBlock: React.FC<AbilityScoresBlockProps> = ({ character }) => {
     const c = withStatDefaults(character);

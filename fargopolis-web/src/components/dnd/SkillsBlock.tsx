@@ -2,11 +2,10 @@ import { surfaceBorderProps } from "@/components/ui/surfaceStyle";
 import { SKILLS } from "@/constants/Skills";
 import { withStatDefaults } from "@/helpers/CharacterStats";
 import { checkModifier, formatModifier, proficiencyBonusForLevel } from "@/helpers/DndMath";
-import { rollD20 } from "@/helpers/Dice";
+import { rollD20, rollMessage } from "@/helpers/Dice";
 import { rollToast } from "@/helpers/Toasts";
 import Character from "@/models/Character";
 import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
-import { rollMessage } from "./statBlockShared";
 
 interface SkillsBlockProps {
     character: Character;

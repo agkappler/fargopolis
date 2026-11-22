@@ -1,7 +1,9 @@
 import { withStatDefaults } from "@/helpers/CharacterStats";
 import { formatModifier, passiveScore, proficiencyBonusForLevel } from "@/helpers/DndMath";
 import Character from "@/models/Character";
-import { RollableStatRow, StatBox, StatRow } from "./statBlockShared";
+import { RollableStatRow } from "./RollableStatRow";
+import { StatBox } from "./StatBox";
+import { StatRow } from "./StatRow";
 
 interface CombatStatsBlockProps {
     character: Character;

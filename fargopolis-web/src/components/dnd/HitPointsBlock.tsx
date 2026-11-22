@@ -2,40 +2,15 @@ import { clamp, withStatDefaults } from "@/helpers/CharacterStats";
 import RequestManager from "@/helpers/RequestManager";
 import { successToast } from "@/helpers/Toasts";
 import Character, { HitPoints } from "@/models/Character";
-import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useAuth } from "@clerk/react";
 import { useEffect, useRef, useState } from "react";
-import { StatBox } from "./statBlockShared";
+import { HpButton } from "./HpButton";
+import { StatBox } from "./StatBox";
 
 interface HitPointsBlockProps {
     character: Character;
 }
-
-interface HpButtonProps {
-    label: string;
-    symbol: string;
-    disabled: boolean;
-    onClick: () => void;
-}
-
-const HpButton: React.FC<HpButtonProps> = ({ label, symbol, disabled, onClick }) => (
-    <IconButton
-        aria-label={label}
-        size="xs"
-        minW="5"
-        w="5"
-        h="5"
-        variant="outline"
-        borderRadius="full"
-        borderColor="pine.500"
-        color="pine.700"
-        _hover={{ borderColor: "ember.500", color: "ember.700" }}
-        disabled={disabled}
-        onClick={onClick}
-    >
-        {symbol}
-    </IconButton>
-);
 
 /** The editable HP tracker and Long Rest button — the gameplay (Actions page) card. */
 export const HitPointsBlock: React.FC<HitPointsBlockProps> = ({ character }) => {
