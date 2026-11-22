@@ -30,3 +30,12 @@ export const SKILLS = [
 
 export type Skill = (typeof SKILLS)[number];
 export type SkillKey = Skill["key"];
+
+export const ABILITY_NAMES: Readonly<Record<AbilityKey, string>> = {
+    str: "Strength",
+    dex: "Dexterity",
+    con: "Constitution",
+    int: "Intelligence",
+    wis: "Wisdom",
+    cha: "Charisma",
+};

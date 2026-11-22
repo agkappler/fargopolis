@@ -120,7 +120,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 </Flex>
 
                 {rightContainer && (
-                    <Flex align="center" gap="2" justifySelf="end" alignSelf="center">
+                    <Flex align="center" gap="2" flexWrap="wrap" justifySelf={{ base: "start", sm: "end" }} alignSelf="center">
                         {rightContainer}
                     </Flex>
                 )}
@@ -133,7 +133,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 right="0"
                 bottom="-1px"
                 h="2px"
-                style={{ backgroundImage: `linear-gradient(to right, #c25a30 0, #c25a30 56px, transparent 56px)` }}
+                style={{ backgroundImage: "linear-gradient(to right, var(--chakra-colors-ember-500) 0, var(--chakra-colors-ember-500) 56px, transparent 56px)" }}
                 aria-hidden="true"
             />
         </Box>

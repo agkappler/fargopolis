@@ -1,11 +1,12 @@
 import { DndItem, getRelativeUrlInfo } from "@/api/dnd5eapi";
 import { AbilitySource } from "@/constants/Abilities";
 import { Plus } from "lucide-react";
-import { Box, Button, Text } from "@chakra-ui/react";
+import { Button, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../../ui/LoadingWrapper";
 import { AbilityForm } from "../abilities/AbilityForm";
+import { FeatureRow, RacePill } from "../FeatureRow";
 import { OptionsList } from "../OptionsList";
 import { DraconicAncestryTable } from "./DraconicAncestryTable";
 
@@ -26,33 +27,34 @@ export const RacialTraitCard: React.FC<RacialTraitCardProps> = ({ trait, charact
 
     return (
         <>
-            <Box my={2} p={2} pt={3} borderTopWidth="1px" borderColor="border">
-                <Text fontWeight="bold" textAlign="center">{trait.name}</Text>
+            <FeatureRow
+                pill={<RacePill />}
+                name={trait.name}
+                action={characterId && traitInfo && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Create ability from ${trait.name}`}
+                        onClick={() => setIsAbilityFormOpen(true)}
+                    >
+                        <Plus size={14} />
+                        Ability
+                    </Button>
+                )}
+            >
                 <LoadingWrapper isLoading={isLoading} size={20}>
                     {traitInfo && <>
                         {traitInfo.desc.map((d: string, index: number) => (
-                            <Text key={index} textAlign="center">{d}</Text>
+                            <Text key={index} textAlign="left">{d}</Text>
                         ))}
                         {traitInfo.trait_specific && (
                             traitInfo.index === 'draconic-ancestry'
                                 ? <DraconicAncestryTable subOptions={traitInfo.trait_specific.subtrait_options} />
                                 : <OptionsList subOptions={traitInfo.trait_specific.subtrait_options ?? traitInfo.trait_specific.spell_options} />
                         )}
-                        {characterId && (
-                            <Box display="flex" justifyContent="center" mt={2}>
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => setIsAbilityFormOpen(true)}
-                                >
-                                    <Plus size={16} />
-                                    Create Ability
-                                </Button>
-                            </Box>
-                        )}
                     </>}
                 </LoadingWrapper>
-            </Box>
+            </FeatureRow>
             {characterId && (
                 <AbilityForm
                     isOpen={isAbilityFormOpen}
