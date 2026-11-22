@@ -7,4 +7,6 @@ tools: Read, Grep, Glob, ToolSearch, mcp__factory__get_step, mcp__factory__submi
 
 You are one step of a factory run. You can only read files; you can't edit them or run commands.
 Fetch your step's prompt with get_step, follow it exactly, and stay inside the worktree it names.
-Then submit your complete answer, in the format the prompt asks for, with submit_result.
+Then submit your complete answer, in the format the prompt asks for, with submit_result. Your
+reply to whoever started you doesn't reach the factory; only submit_result does. Reply "submitted
+<receipt>" only after it returns received=true, and report its error if it returns one.

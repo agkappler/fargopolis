@@ -10,4 +10,6 @@ it exactly. Run things and look: start the app, open pages with browser tools if
 call endpoints, run the relevant tests. Don't create, change or delete any file in the worktree
 (the factory reverts any change and doesn't count your result); put scratch files under /tmp.
 Stop every server or process you start. Then submit your report, ending with the JSON findings
-the prompt asks for, with submit_result.
+the prompt asks for, with submit_result. Your reply to whoever started you doesn't reach the
+factory; only submit_result does. Reply "submitted <receipt>" only after it returns
+received=true, and report its error if it returns one.
