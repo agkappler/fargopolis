@@ -1,7 +1,7 @@
 import { getLevelInfoForClass, LevelInfo } from "@/api/dnd5eapi";
 import { MOBILE_BREAK } from "@/constants/Media";
 import Character from "@/models/Character";
-import { Box, NativeSelect, Tabs, useMediaQuery } from "@chakra-ui/react";
+import { Box, Flex, NativeSelect, Tabs, useMediaQuery } from "@chakra-ui/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { LoadingWrapper } from "../ui/LoadingWrapper";
@@ -12,8 +12,10 @@ import { RacialTraits } from "./race/RacialTraits";
 import { SpellInfo } from "./spells/SpellInfo";
 import { WeaponInfo } from "./weapons/WeaponInfo";
 import { AbilityInfo } from "./abilities/AbilityInfo";
-import { ProficiencyBlock } from "./ProficiencyBlock";
-import { StatBlock } from "./StatBlock";
+import { AbilityScoresBlock } from "./AbilityScoresBlock";
+import { CombatStatsBlock } from "./CombatStatsBlock";
+import { HitPointsSummary } from "./HitPointsSummary";
+import { SkillsBlock } from "./SkillsBlock";
 
 interface CharacterInfoProps {
     character: Character;
@@ -31,10 +33,18 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
         { label: "Items", value: "4" },
     ];
 
-    // StatBlock sits outside LoadingWrapper so reloading class data never
-    // unmounts it (which would reset its local HP state).
     return <>
-        <StatBlock character={character} />
+        <Flex direction={{ base: "column", md: "row" }} align="flex-start" gap="4" mb="4">
+            <Box flex={{ base: "1 1 auto", md: "1" }} minW={{ base: "full", md: "0" }}>
+                <AbilityScoresBlock character={character} />
+            </Box>
+            <Box flex={{ base: "1 1 auto", md: "1" }} minW={{ base: "full", md: "0" }}>
+                <CombatStatsBlock character={character} />
+            </Box>
+            <Box flex={{ base: "1 1 auto", md: "1" }} minW={{ base: "full", md: "0" }}>
+                <HitPointsSummary character={character} />
+            </Box>
+        </Flex>
         <LoadingWrapper isLoading={isLoadingClassInfo}>
         <Tabs.Root value={value} onValueChange={(e) => setValue(e.value)}>
             <Box borderBottomWidth="1px" borderColor="border" display="flex" justifyContent="center">
@@ -55,8 +65,8 @@ export const CharacterInfo: React.FC<CharacterInfoProps> = ({ character }) => {
             </Box>
             <Tabs.Content value="1">
                 <Box>
-                    <StyledAccordion title="Proficiencies">
-                        <ProficiencyBlock character={character} />
+                    <StyledAccordion title="Skills">
+                        <SkillsBlock character={character} />
                     </StyledAccordion>
 
                     <StyledAccordion title="Class Features">

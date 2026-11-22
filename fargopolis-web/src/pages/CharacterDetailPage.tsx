@@ -1,13 +1,14 @@
 import { CharacterForm } from "@/components/dnd/CharacterForm";
 import { CharacterInfo } from "@/components/dnd/CharacterInfo";
-import { ActionMenu, MenuOption } from "@/components/ui/ActionMenu";
+import { CharacterSubtitle } from "@/components/dnd/CharacterSubtitle";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { ImageBox } from "@/components/ui/ImageBox";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import RequestManager from "@/helpers/RequestManager";
 import Character from "@/models/Character";
 import { Dice5, Pencil } from "lucide-react";
-import { Box } from "@chakra-ui/react";
+import { Box, Button, Flex } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
@@ -21,27 +22,6 @@ export function CharacterDetailPage() {
         () => RequestManager.get<Character>(`/character/${id}`),
     );
 
-    const handleEdit = () => {
-        setIsOpen(true);
-    };
-
-    const handleActions = () => {
-        navigate(`/dnd/${id}/actions`);
-    };
-
-    const menuOptions: MenuOption[] = [
-        {
-            label: "Edit Character",
-            icon: <Pencil size={16} />,
-            onClick: handleEdit,
-        },
-        {
-            label: "Actions",
-            icon: <Dice5 size={16} />,
-            onClick: handleActions,
-        },
-    ];
-
     if (!id) return <ErrorMessage errorMessage="Missing character id." />;
     if (error) return <ErrorMessage errorMessage={error.message} />;
     return (
@@ -50,8 +30,22 @@ export function CharacterDetailPage() {
                 <PageHeader
                     title={character?.name}
                     back={{ label: "All Characters", url: "/dnd" }}
-                    rightContainer={<ActionMenu options={menuOptions} size="medium" ariaLabel="Character options" />}
-                />
+                    avatar={<ImageBox fileId={character?.avatarId} altText="Character avatar" size={{ base: 48, sm: 64 }} />}
+                    rightContainer={
+                        <Flex gap="2">
+                            <Button size="sm" variant="outline" onClick={() => setIsOpen(true)}>
+                                <Pencil size={16} />
+                                Edit
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => navigate(`/dnd/${id}/actions`)}>
+                                <Dice5 size={16} />
+                                Actions
+                            </Button>
+                        </Flex>
+                    }
+                >
+                    {character && <CharacterSubtitle character={character} />}
+                </PageHeader>
                 {character && (
                     <Box maxW="fp.container" mx="auto" px="4" py="6">
                         <CharacterInfo character={character} />

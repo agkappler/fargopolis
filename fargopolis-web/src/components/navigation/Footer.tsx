@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
             bg="pine.900"
             color="fg.onDark"
             px="6"
-            py="4"
+            py="2.5"
             justify="space-between"
             align="center"
             borderTop="3px solid"

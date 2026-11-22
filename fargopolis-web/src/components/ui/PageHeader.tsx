@@ -5,6 +5,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 interface PageHeaderProps extends PropsWithChildren {
     title?: string;
     eyebrow?: string;
+    avatar?: ReactNode;
     back?: { label?: string; url?: string };
     /** @deprecated Use back prop instead */
     leftContainer?: ReactNode;
@@ -15,6 +16,7 @@ interface PageHeaderProps extends PropsWithChildren {
 export const PageHeader: React.FC<PageHeaderProps> = ({
     title,
     eyebrow,
+    avatar,
     back,
     leftContainer,
     rightContainer,
@@ -92,26 +94,29 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                     </Flex>
                 )}
 
-                <Flex direction="column" gap="1">
-                    {eyebrow && (
-                        <Text textStyle="eyebrow" color="accent">
-                            {eyebrow}
-                        </Text>
-                    )}
-                    {title && (
-                        <Text
-                            as="h1"
-                            m="0"
-                            textStyle="display-title"
-                            fontSize={{ base: "2xl", sm: "3xl" }}
-                            letterSpacing="-0.02em"
-                            color="fg"
-                            style={{ fontVariationSettings: '"opsz" 14, "SOFT" 80, "WONK" 1' }}
-                        >
-                            {title}
-                        </Text>
-                    )}
-                    {children}
+                <Flex align="center" gap="3">
+                    {avatar && <Box flexShrink="0">{avatar}</Box>}
+                    <Flex direction="column" gap="1" minW="0">
+                        {eyebrow && (
+                            <Text textStyle="eyebrow" color="accent">
+                                {eyebrow}
+                            </Text>
+                        )}
+                        {title && (
+                            <Text
+                                as="h1"
+                                m="0"
+                                textStyle="display-title"
+                                fontSize={{ base: "2xl", sm: "3xl" }}
+                                letterSpacing="-0.02em"
+                                color="fg"
+                                style={{ fontVariationSettings: '"opsz" 14, "SOFT" 80, "WONK" 1' }}
+                            >
+                                {title}
+                            </Text>
+                        )}
+                        {children}
+                    </Flex>
                 </Flex>
 
                 {rightContainer && (
