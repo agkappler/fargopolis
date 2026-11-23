@@ -25,17 +25,17 @@ import { DndGlossaryApiRoutesConstruct } from '../constructs/dnd-glossary-api-ro
 import { DndApiRoutesConstruct } from '../constructs/dnd-api-routes-construct';
 import { GithubActionsApiDeployRoleConstruct } from '../constructs/github-actions-api-deploy-role-construct';
 import { resolveApiGithubDeployOidcProviderArn } from '../github-actions-oidc';
-import {
-    parseApiDomainContext,
-    resolveHasApiDomainConfig,
-    shouldCreateApiDomainDnsRecord,
-} from '../api-domain-context';
+import { ResolvedDomains } from '../domain-context';
 
 export interface FargopolisApiStackProps extends cdk.StackProps {
     /** Generic stack-tag string (e.g. "dev"); adds a `Stage` tag. Only ever set at the Makefile level. */
     tag?: string;
-    /** Resolved frontend custom-domain name (if any), appended to CORS `extraAllowOrigins` as `https://<name>`. */
-    frontendDomainName?: string;
+    /**
+     * Custom domains resolved once by `bin/recipes-infra.ts` from the `domain` context (see
+     * `lib/domain-context.ts`): the API custom domain (untagged deploys only) and the frontend
+     * origins allowed for CORS. Undefined: raw `execute-api` URL and localhost-only CORS.
+     */
+    domains?: ResolvedDomains;
 }
 
 /**
@@ -93,10 +93,7 @@ export class FargopolisApiStack extends cdk.Stack {
             jwtIssuer: clerk.jwtIssuer ?? '',
         });
 
-        const extraAllowOrigins: string[] = [];
-        if (props?.frontendDomainName) {
-            extraAllowOrigins.push(`https://${props.frontendDomainName}`);
-        }
+        const extraAllowOrigins = props?.domains?.corsOrigins ?? [];
 
         this.httpApiGateway = new FargopolisHttpApiConstruct(this, 'HttpApiGateway', {
             defaultAuthorizer: this.clerkAuthorizer.authorizer,
@@ -164,22 +161,18 @@ export class FargopolisApiStack extends cdk.Stack {
             oidcProviderArn: githubOidcProviderArn,
         });
 
-        // Tolerates both the object form (local `cdk.context.json`) and the string form that
-        // `-c apiDomain=<json>` produces in CI; throws rather than silently synthesizing without
-        // the domain, which would delete the live domain and its Route 53 record.
-        const apiDomain = parseApiDomainContext(this.node.tryGetContext('apiDomain'));
-        const shouldCreateDnsRecord = shouldCreateApiDomainDnsRecord(apiDomain);
-        const hasDomainConfig = resolveHasApiDomainConfig(apiDomain);
-
-        if (hasDomainConfig) {
+        // Untagged (prod) deploys only: `api.<zone>`. Construct IDs are unchanged from the old
+        // `apiDomain` setup so the live domain, mapping and record are updated in place, not replaced.
+        const apiDomain = props?.domains?.api;
+        if (props?.domains && apiDomain) {
             const certificate = acm.Certificate.fromCertificateArn(
                 this,
                 'HttpApiCustomDomainCert',
-                apiDomain.certificateArn ?? '',
+                apiDomain.certificateArn,
             );
 
             this.customDomain = new apigwv2.DomainName(this, 'HttpApiCustomDomain', {
-                domainName: apiDomain.domainName ?? '',
+                domainName: apiDomain.hostname,
                 certificate,
             });
             new apigwv2.ApiMapping(this, 'HttpApiCustomDomainMapping', {
@@ -188,22 +181,20 @@ export class FargopolisApiStack extends cdk.Stack {
                 stage: this.httpApiGateway.httpApi.defaultStage,
             });
 
-            if (shouldCreateDnsRecord) {
-                const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HttpApiHostedZone', {
-                    hostedZoneId: apiDomain.hostedZoneId ?? '',
-                    zoneName: apiDomain.hostedZoneDomain ?? '',
-                });
-                new route53.ARecord(this, 'HttpApiCustomDomainAliasRecord', {
-                    zone: hostedZone,
-                    recordName: apiDomain.domainName ?? '',
-                    target: route53.RecordTarget.fromAlias(
-                        new targets.ApiGatewayv2DomainProperties(
-                            this.customDomain.regionalDomainName,
-                            this.customDomain.regionalHostedZoneId,
-                        ),
+            const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HttpApiHostedZone', {
+                hostedZoneId: props.domains.hostedZoneId,
+                zoneName: props.domains.zone,
+            });
+            new route53.ARecord(this, 'HttpApiCustomDomainAliasRecord', {
+                zone: hostedZone,
+                recordName: apiDomain.hostname,
+                target: route53.RecordTarget.fromAlias(
+                    new targets.ApiGatewayv2DomainProperties(
+                        this.customDomain.regionalDomainName,
+                        this.customDomain.regionalHostedZoneId,
                     ),
-                });
-            }
+                ),
+            });
         }
 
         new cdk.CfnOutput(this, 'BountyCategoriesTableName', {

@@ -19,7 +19,7 @@ help:
 .PHONY: help install install-web install-infra install-python \
         lint lint-web \
         build build-web build-infra \
-        synth deploy-api deploy-web diff \
+        synth deploy-api deploy-web diff check-prod-domain \
         deploy-dev-web deploy-dev-api deploy-dev deploy-prod \
         deploy-prod-content deploy-dev-content \
         test test-api \
@@ -52,10 +52,14 @@ build-infra:
 synth:
 	cd infrastructure && npx cdk synth --all
 
-deploy-api:
+# Prod deploys must carry the `domain` context, or they would remove fargopolis.com / api.fargopolis.com.
+check-prod-domain:
+	@grep -q '"domain"' infrastructure/cdk.context.json 2>/dev/null || { echo "infrastructure/cdk.context.json has no \"domain\" config; refusing a prod deploy (see infrastructure/README.md)"; exit 1; }
+
+deploy-api: check-prod-domain
 	cd infrastructure && npx cdk deploy FargopolisApi
 
-deploy-web:
+deploy-web: check-prod-domain
 	cd infrastructure && npx cdk deploy FargopolisFrontend
 
 deploy-dev-web:

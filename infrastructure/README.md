@@ -30,15 +30,10 @@ them); `npx cdk deploy --all -c tag=dev` is safe.
 
 Operational notes specific to the dev stacks:
 
-- **`apiDomain`** is still one custom domain per deploy — never reuse the same `apiDomain` value
-  across the default stack and the dev stack; both would try to claim the same custom domain
-  name / Route 53 record. The simplest safe default is to **omit `apiDomain` for the dev API
-  stack** (it deploys fine on the plain `execute-api` URL) unless a second domain/certificate has
-  actually been provisioned for dev.
-- **`frontendDomain`** is optional for a dev deploy — see [`frontendDomain` custom domain](#frontenddomain-custom-domain)
-  below. If omitted, `FargopolisFrontend-dev` still deploys fine on its raw CloudFront domain, but
-  cross-origin calls from the dev web app to the dev API will fail CORS until `frontendDomain` is
-  configured (its resolved `domainName` is what gets added to the API's CORS `allowOrigins`).
+- **Custom domains** come from the single `domain` config (see [Custom domains](#custom-domains-domain)).
+  A tagged deploy automatically gets `<tag>.fargopolis.com` for its CloudFront alias and the API's
+  CORS origin, and never claims the prod hostnames (`fargopolis.com`, `www.`, `api.`). Without
+  `domain`, the dev stacks deploy on raw AWS URLs and the dev site's API calls fail CORS.
 - **Never** pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
   on the dev API stack — the GitHub Actions IAM OIDC identity provider is an account-wide
   singleton already created by the original bootstrap; attempting to create it again fails.
@@ -79,83 +74,48 @@ Operational notes specific to the dev stacks:
 
 JWT verification for **mutations** is configured in [`cdk.json`](cdk.json) under `context.clerk.jwtIssuer` (Clerk “Frontend API URL” / issuer). The authorizer Lambda receives this at deploy time. Update the value when you change Clerk instances; then redeploy `FargopolisApi`.
 
-### API custom domain
+### Custom domains (`domain`)
 
-`FargopolisApiStack` provisions a custom domain from CDK **`context.apiDomain`**. The field is optional — omit it and the stack deploys without a custom domain, using the raw `execute-api` URL.
+Both stacks take every hostname from one CDK context value, **`domain`**, and derive the names from
+the deploy's `tag` (see [`lib/domain-context.ts`](lib/domain-context.ts)):
 
-Config is intentionally **not committed** to [`cdk.json`](cdk.json) (contains account IDs / ARNs). Supply it one of three ways:
+| Deploy | Frontend (CloudFront aliases + Route 53 A records) | API custom domain | API CORS origins |
+| --- | --- | --- | --- |
+| untagged (prod) | `fargopolis.com`, `www.fargopolis.com` | `api.fargopolis.com` | the two frontend hostnames |
+| `-c tag=<tag>` | `<tag>.fargopolis.com` | none (raw `execute-api` URL) | `https://<tag>.fargopolis.com` |
 
-| Where | Format | When to use |
-| ----- | ------ | ----------- |
-| **`cdk.context.json`** (gitignored) | `{ "apiDomain": { … } }` | Local deploys |
-| **`CDK_API_DOMAIN_JSON`** GitHub secret | Single-line JSON of the inner object | CI / GitHub Actions |
-| **`-c` flag** | `-c ‘apiDomain={"domainName":…}’` | One-off or scripted runs |
-
-**`cdk.context.json`** shape (top-level key, no `"context"` wrapper):
+localhost:3000 is always allowed for CORS. Omit `domain` entirely and both stacks deploy on raw AWS
+URLs (and the API only allows localhost).
 
 ```json
 {
-  "apiDomain": {
-    "domainName": "api.example.com",
-    "hostedZoneDomain": "example.com",
-    "hostedZoneId": "Z1234567890ABC",
-    "certificateArn": "arn:aws:acm:us-east-2:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    "createDnsRecord": true
+  "domain": {
+    "zone": "fargopolis.com",
+    "hostedZoneId": "Z0123456789ABCDEFGHIJ",
+    "frontendCertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/…",
+    "apiCertificateArn": "arn:aws:acm:us-east-2:123456789012:certificate/…"
   }
 }
 ```
 
-**`CDK_API_DOMAIN_JSON`** secret value (inner object only, single line):
+- `frontendCertificateArn` must be in **`us-east-1`** (CloudFront only accepts us-east-1) and cover
+  both `fargopolis.com` and `*.fargopolis.com`, so one certificate serves prod and every tag.
+- `apiCertificateArn` must be in the **API's own region** (us-east-2) and cover `api.fargopolis.com`.
+- CDK doesn't check certificate regions at synth time; a wrong-region ARN only fails at deploy.
+- A partially-filled `domain`, or a tag that isn't a DNS label, fails synth rather than quietly
+  dropping live domains.
+- Frontend A records use `deleteExisting`, so CDK adopts records that were created by hand.
 
-```
-{"domainName":"api.example.com","hostedZoneDomain":"example.com","hostedZoneId":"Z1234567890ABC","certificateArn":"arn:aws:acm:us-east-2:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx","createDnsRecord":true}
-```
+Config is intentionally **not committed** to [`cdk.json`](cdk.json):
 
-Field notes:
+| Delivery | Shape | Typical use |
+| --- | --- | --- |
+| **`cdk.context.json`** (gitignored) | `{ "domain": { … } }` | Local deploys (`make deploy-*`) |
+| **`CDK_DOMAIN_JSON`** GitHub secret | Single-line JSON of the inner object | CI (`deploy-api-stack` workflow) |
+| **`-c` flag** | `-c 'domain={"zone":…}'` | One-off runs |
 
-- `certificateArn` must be in the **same region** as the HTTP API (`FargopolisApi` stack region).
-- `domainName` is the API hostname clients use.
-- `hostedZoneDomain` is the Route 53 public zone root (e.g. `example.com`).
-- `hostedZoneId` is that zone’s ID (from Route 53 or `list-hosted-zones-by-name`). Required when `createDnsRecord` is true.
-- Set `createDnsRecord: false` if DNS is managed outside Route 53 (CDK still creates API Gateway domain + mapping).
-
-### `frontendDomain` custom domain
-
-`FrontendStack` provisions a custom domain from CDK **`context.frontendDomain`**. The field is optional — omit it and the stack deploys without a custom domain, using the raw CloudFront domain (e.g. `d1234abcd.cloudfront.net`).
-
-**Contrast with `apiDomain`:** the ACM certificate for `frontendDomain` must be issued in **`us-east-1`**, regardless of which region `FargopolisFrontend` itself deploys to — CloudFront is a global service and only accepts certificates from `us-east-1`. This is the **opposite** of `apiDomain`'s certificate, which must be in the **same region** as the API Gateway. CDK does **not** enforce this at synth time (`acm.Certificate.fromCertificateArn` accepts any region); a non-`us-east-1` cert ARN will only fail at CloudFormation deploy time, so this is a documentation-only guard — double-check the ARN's region before deploying.
-
-Config is intentionally **not committed** to [`cdk.json`](cdk.json), the same three ways as `apiDomain`:
-
-| Where | Format | When to use |
-| ----- | ------ | ----------- |
-| **`cdk.context.json`** (gitignored) | `{ "frontendDomain": { … } }` | Local deploys |
-| **A repo/CI secret** passed as `-c` | Single-line JSON of the inner object | CI / GitHub Actions |
-| **`-c` flag** | `-c ‘frontendDomain={"domainName":…}’` | One-off or scripted runs (e.g. `make deploy-dev`) |
-
-**`cdk.context.json`** shape (top-level key, no `"context"` wrapper):
-
-```json
-{
-  "frontendDomain": {
-    "domainName": "dev.fargopolis.com",
-    "hostedZoneDomain": "fargopolis.com",
-    "hostedZoneId": "Z1234567890ABC",
-    "certificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    "createDnsRecord": true
-  }
-}
-```
-
-Field notes:
-
-- `certificateArn` must be in **`us-east-1`** — not the stack's own deploy region (contrast with `apiDomain`, same-region-as-API-Gateway).
-- `domainName` is the hostname the SPA is served on (e.g. `dev.fargopolis.com`), and — when configured — is also added as a 6th literal entry to `FargopolisApiStack`'s CORS `allowOrigins` (as `https://<domainName>`), since it's resolved once at `cdk synth` time and passed between the two stacks in-process (no cross-stack CloudFormation reference needed).
-- `hostedZoneDomain` is the Route 53 public zone root (e.g. `fargopolis.com`).
-- `hostedZoneId` is that zone's ID. Required when `createDnsRecord` is true.
-- Set `createDnsRecord: false` if DNS is managed outside Route 53 (CDK still attaches the alias/certificate to the CloudFront distribution).
-
-Omitting `frontendDomain` on a dev deploy is supported — `FargopolisFrontend-dev` still deploys on its raw CloudFront domain — but cross-origin calls from the dev web app to the dev API will fail CORS until it's configured, mirroring `apiDomain`'s own "omit it, deploy without the domain" fallback.
+Prod deploys refuse to run without it: `make deploy-api` / `make deploy-web` check
+`cdk.context.json`, and the API workflow fails when `CDK_DOMAIN_JSON` is unset.
 
 ### Python Lambda bundling
 
@@ -201,7 +161,7 @@ When CDK creates the IdP resource, **`RemovalPolicy.RETAIN`** is set on the IdP 
 
 - `GithubActionsApiDeployRoleArn` → GitHub secret `AWS_API_DEPLOY_ROLE_TO_ASSUME`
 
-**Optional:** **`CDK_API_DOMAIN_JSON`** repository secret — single-line JSON with `domainName`, `hostedZoneDomain`, `hostedZoneId`, `certificateArn`, `createDnsRecord`. If set, the [`deploy-api-stack` workflow](../.github/workflows/deploy-api-stack.yml) passes it via `cdk deploy -c`; if unset, the workflow deploys without a custom domain (`apiDomain` is absent from committed [`cdk.json`](cdk.json) and `cdk.context.json` is gitignored).
+**Required:** **`CDK_DOMAIN_JSON`** repository secret — single-line JSON of the `domain` config (`zone`, `hostedZoneId`, `frontendCertificateArn`, `apiCertificateArn`). The [`deploy-api-stack` workflow](../.github/workflows/deploy-api-stack.yml) passes it via `cdk deploy -c domain=…` and fails if it is unset, since deploying without it would remove `api.fargopolis.com` and the frontend CORS origins.
 
 API deploy workflow: [`.github/workflows/deploy-api-stack.yml`](../.github/workflows/deploy-api-stack.yml).
 
