@@ -37,7 +37,7 @@ export const SpellSlotsCard: React.FC<SpellSlotsCardProps> = ({ max, used, onTog
                         bg={flashLevel === l.level ? "ember.100" : "transparent"}
                         transition="background-color 200ms"
                     >
-                        <Text textStyle="label" color="fg.muted" w="3.5ch" flexShrink="0">{ordinal(l.level)}</Text>
+                        <Text textStyle="label" color="fg.muted" minW="9" whiteSpace="nowrap" flexShrink="0">{ordinal(l.level)}</Text>
                         <Flex gap="1" flexWrap="wrap" minW="0">
                             {Array.from({ length: l.max }, (_, i) => {
                                 const spent = i < l.used;
