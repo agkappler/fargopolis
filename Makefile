@@ -1,3 +1,8 @@
+# The stacks' region is committed in infrastructure/cdk.json; export it so the aws CLI calls below
+# (and anything else in a target) use it regardless of the machine's default region.
+export AWS_REGION := $(shell node -p "require('./infrastructure/cdk.json').context.region")
+export AWS_DEFAULT_REGION := $(AWS_REGION)
+
 help:
 	@echo "Targets:"
 	@echo "  install        Install deps for web, infra, and the lambda venv"
@@ -19,7 +24,7 @@ help:
 .PHONY: help install install-web install-infra install-python \
         lint lint-web \
         build build-web build-infra \
-        synth deploy-api deploy-web diff check-prod-domain \
+        synth deploy-api deploy-web diff \
         deploy-dev-web deploy-dev-api deploy-dev deploy-prod \
         deploy-prod-content deploy-dev-content \
         test test-api \
@@ -52,21 +57,19 @@ build-infra:
 synth:
 	cd infrastructure && npx cdk synth --all
 
-# Prod deploys must carry the `domain` context, or they would remove fargopolis.com / api.fargopolis.com.
-check-prod-domain:
-	@grep -q '"domain"' infrastructure/cdk.context.json 2>/dev/null || { echo "infrastructure/cdk.context.json has no \"domain\" config; refusing a prod deploy (see infrastructure/README.md)"; exit 1; }
-
-deploy-api: check-prod-domain
+deploy-api:
 	cd infrastructure && npx cdk deploy FargopolisApi
 
-deploy-web: check-prod-domain
+deploy-web:
 	cd infrastructure && npx cdk deploy FargopolisFrontend
 
+# Dev deploys skip CDK's IAM-change approval prompt (dev is disposable and often run without a TTY);
+# prod targets keep it, and prod normally deploys from CI.
 deploy-dev-web:
-	cd infrastructure && npx cdk deploy FargopolisFrontend-dev -c tag=dev
+	cd infrastructure && npx cdk deploy FargopolisFrontend-dev -c tag=dev --require-approval never
 
 deploy-dev-api:
-	cd infrastructure && npx cdk deploy FargopolisApi-dev -c tag=dev
+	cd infrastructure && npx cdk deploy FargopolisApi-dev -c tag=dev --require-approval never
 
 deploy-prod-content: install-web
 	api_url=$$(aws cloudformation describe-stacks --stack-name FargopolisApi --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text) && \

@@ -1,13 +1,20 @@
 {
     "app": "npx ts-node --prefer-ts-exts bin/recipes-infra.ts",
     "context": {
-"clerk": {
+        "clerk": {
             "jwtIssuer": "https://direct-sawfly-53.clerk.accounts.dev"
         },
         "githubActions": {
             "owner": "agkappler",
             "repo": "fargopolis",
             "branch": "main"
+        },
+        "region": "us-east-2",
+        "domain": {
+            "zone": "fargopolis.com",
+            "hostedZoneId": "Z01030312ASWC78GU69VO",
+            "frontendCertificateArn": "arn:aws:acm:us-east-1:657246004828:certificate/1080c6ad-a2bf-4fd1-8c12-307747b3081f",
+            "apiCertificateArn": "arn:aws:acm:us-east-2:657246004828:certificate/46bf87ac-83c5-4135-8b24-ef69d7294e50"
         }
     },
     "watch": {
