@@ -10,12 +10,14 @@ on:
     paths:
       - 'infrastructure/lambdas/**'
       - 'scripts/setup-python-lambdas.sh'
+      - '.python-version'
       - '.github/workflows/test-lambdas.yml'
   push:
     branches: [main]
     paths:
       - 'infrastructure/lambdas/**'
       - 'scripts/setup-python-lambdas.sh'
+      - '.python-version'
       - '.github/workflows/test-lambdas.yml'
 
 concurrency:
@@ -32,10 +34,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.12
+      - name: Setup Python (pinned in .python-version)
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version-file: .python-version
           cache: 'pip'
           cache-dependency-path: infrastructure/lambdas/requirements-dev.txt
 

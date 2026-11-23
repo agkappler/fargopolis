@@ -5,6 +5,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { bundlingForPythonHandlerInLambdasTree, resolveLambdasRoot } from '../python-lambda-bundling';
+import { LAMBDA_PYTHON_RUNTIME } from '../lambda-python';
 
 export interface DndGlossaryApiRoutesProps {
     readonly pythonSharedLayer: lambda.LayerVersion;
@@ -31,7 +32,7 @@ export class DndGlossaryApiRoutesConstruct extends Construct {
         );
 
         this.handler = new lambda.Function(this, 'DndGlossaryHandler', {
-            runtime: lambda.Runtime.PYTHON_3_12,
+            runtime: LAMBDA_PYTHON_RUNTIME,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
                 bundling: bundlingForPythonHandlerInLambdasTree(assetPath, DND_GLOSSARY_ASSET.layout),

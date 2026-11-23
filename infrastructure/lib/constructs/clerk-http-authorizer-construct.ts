@@ -4,6 +4,7 @@ import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-ap
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { bundlingForPythonHandlerInLambdasTree, resolveLambdasRoot } from '../python-lambda-bundling';
+import { LAMBDA_PYTHON_RUNTIME } from '../lambda-python';
 
 /** Clerk JWT verification for the shared HTTP API default authorizer. CDK context key `clerk`. */
 export interface ClerkHttpAuthorizerProps {
@@ -35,7 +36,7 @@ export class ClerkHttpAuthorizerConstruct extends Construct {
         );
 
         this.handler = new lambda.Function(this, 'ClerkAuthorizer', {
-            runtime: lambda.Runtime.PYTHON_3_12,
+            runtime: LAMBDA_PYTHON_RUNTIME,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
                 bundling: bundlingForPythonHandlerInLambdasTree(assetPath, CLERK_AUTHORIZER_ASSET.layout),

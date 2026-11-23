@@ -5,6 +5,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { bundlingForPythonHandlerInLambdasTree, resolveLambdasRoot } from '../python-lambda-bundling';
+import { LAMBDA_PYTHON_RUNTIME } from '../lambda-python';
 
 export interface QuestsApiRoutesProps {
     /** `shared` package + common wheels (`python-lambda-bundling` / `PythonSharedLayerConstruct`). */
@@ -38,7 +39,7 @@ export class QuestsApiRoutesConstruct extends Construct {
         const assetPath = resolveLambdasRoot([...QUESTS_ASSET.requiredPaths], 'quests + shared/lambda_utils');
 
         this.handler = new lambda.Function(this, 'QuestHandler', {
-            runtime: lambda.Runtime.PYTHON_3_12,
+            runtime: LAMBDA_PYTHON_RUNTIME,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
                 bundling: bundlingForPythonHandlerInLambdasTree(assetPath, QUESTS_ASSET.layout),

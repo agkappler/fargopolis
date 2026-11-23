@@ -88,12 +88,12 @@ Other dev-deploy notes:
 ### Python Lambdas (local editor/type-checking only)
 
 ```bash
-./scripts/setup-python-lambdas.sh   # creates repo .venv with a Python 3.10+ interpreter
+./scripts/setup-python-lambdas.sh   # creates repo .venv at the version pinned in .python-version
 source .venv/bin/activate
 .venv/bin/ruff check infrastructure/lambdas   # lint (from repo root); CI runs this before pytest
 ```
 
-CDK needs a local Python 3.10+ (3.12 matches the Lambda runtime) on `PATH` to bundle Lambdas without Docker; macOS's stock `python3` (Xcode CLT) is often 3.9 and too old. `pyrightconfig.json` points the editor at `infrastructure/lambdas` with `shared/` as an extra path — select `.venv/bin/python` as the interpreter.
+The Lambda Python version is pinned once, in root **`.python-version`** (read by `infrastructure/lib/lambda-python.ts` for every function/layer runtime and pip's bundling target, by the setup script, and by `actions/setup-python` in CI); bump the runtime by editing that file (and `target-version` in `infrastructure/lambdas/ruff.toml`). CDK bundles Lambdas locally with the repo `.venv` (or `CDK_BUNDLING_PYTHON`, `python<pinned>`, `python3` — any interpreter with pip works since pip's target is pinned) and only falls back to Docker when none is found. `pyrightconfig.json` points the editor at `infrastructure/lambdas` with `shared/` as an extra path — select `.venv/bin/python` as the interpreter.
 
 Dependency source of truth is **per-lambda `requirements.txt`** (e.g. `infrastructure/lambdas/bounties/requirements.txt`), not a repo-wide file. `infrastructure/lambdas/requirements-dev.txt` aggregates those plus local-only helpers (`boto3`, provided by the Lambda runtime in prod). To add a dependency: add it to the specific lambda's `requirements.txt`, rerun the setup script, and redeploy `FargopolisApi` so CDK bundles it.
 

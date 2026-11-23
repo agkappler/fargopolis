@@ -10,14 +10,15 @@ if [[ ! -f "${REQ_FILE}" ]]; then
   exit 1
 fi
 
-# Matches Lambda runtime + CDK local `pip install -t` (see infrastructure/lib/lambda-bundling-python.ts).
-if ! command -v python3.12 >/dev/null 2>&1; then
-  echo "python3.12 is required. Install e.g.:" >&2
-  echo "  brew install python@3.12 && echo 'export PATH=\"/opt/homebrew/opt/python@3.12/bin:\$PATH\"' >> ~/.zshrc" >&2
+# The Lambda runtime version, pinned in /.python-version (see infrastructure/lib/lambda-python.ts).
+PY_VERSION="$(tr -d '[:space:]' < "${ROOT_DIR}/.python-version")"
+if ! command -v "python${PY_VERSION}" >/dev/null 2>&1; then
+  echo "python${PY_VERSION} is required (pinned in .python-version). Install e.g.:" >&2
+  echo "  brew install python@${PY_VERSION}" >&2
   exit 1
 fi
 
-PYTHON_BIN="$(command -v python3.12)"
+PYTHON_BIN="$(command -v "python${PY_VERSION}")"
 
 echo "Using Python: ${PYTHON_BIN} ($("${PYTHON_BIN}" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")'))"
 echo "Creating virtual environment at ${VENV_DIR}"
@@ -38,5 +39,5 @@ Activate with:
 Then in Cursor/VS Code:
   Python: Select Interpreter -> ${VENV_DIR}/bin/python
 
-For \`npx cdk deploy\` / \`npx cdk synth\`, local Lambda asset bundling needs any Python 3.10+ with pip on your PATH (python3.12 preferred); without one it falls back to Docker.
+\`npx cdk deploy\` / \`npx cdk synth\` bundle Lambda assets with this .venv's Python (no Docker needed).
 EOF

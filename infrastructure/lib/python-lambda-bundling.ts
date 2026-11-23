@@ -4,6 +4,7 @@ import type { BundlingOptions, ILocalBundling } from 'aws-cdk-lib/core';
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { LAMBDA_PYTHON_RUNTIME, LAMBDA_PYTHON_VERSION, REPO_ROOT } from './lambda-python';
 
 const LAMBDAS_ROOT_CANDIDATES = (cwd: string) => [path.join(cwd, 'lambdas'), path.join(cwd, 'infrastructure', 'lambdas')];
 
@@ -48,53 +49,45 @@ const PIP_INSTALL_FLAGS = [
     '--implementation',
     'cp',
     '--python-version',
-    '3.12',
+    LAMBDA_PYTHON_VERSION,
     '--only-binary=:all:',
-    // Skip .pyc files: they'd be compiled for the bundling interpreter, not the 3.12 runtime.
+    // Skip .pyc files: they'd be compiled for the bundling interpreter, not the Lambda runtime.
     '--no-compile',
 ];
 
 /**
- * Interpreters to try for local bundling, best match first. 3.12 matches the Lambda runtime, but any
- * Python 3.10+ works: `PIP_INSTALL_FLAGS` pins `--python-version 3.12`, the arm64 manylinux platform
- * and `--only-binary=:all:`, so pip downloads the same prebuilt 3.12 wheels whichever interpreter
- * runs it, and nothing is compiled. (`handler.py` and `shared/` are copied as-is.)
+ * Python used to *run* pip for local bundling. Its version doesn't affect the bundle:
+ * `PIP_INSTALL_FLAGS` pins the target (`--python-version`, the arm64 manylinux platform,
+ * `--only-binary=:all:`), so pip downloads the same prebuilt wheels whichever interpreter runs it,
+ * and nothing is compiled. So there is no list of allowed versions, only an order of preference:
+ *
+ * 1. `CDK_BUNDLING_PYTHON` (explicit override),
+ * 2. the repo's `.venv` (created at the pinned version by `scripts/setup-python-lambdas.sh`),
+ * 3. `python<pinned>` on PATH (what `actions/setup-python` provides in CI),
+ * 4. `python3` on PATH.
+ *
+ * The first one that can `import pip` wins; with none, CDK falls back to Docker.
  */
-const LOCAL_PYTHON_CANDIDATES = [
-    'python3.12',
-    ...Array.from({ length: 8 }, (_, i) => `python3.${13 + i}`), // python3.13 … python3.20
-    'python3.11',
-    'python3.10',
-    'python3',
-];
-const MIN_LOCAL_PYTHON_MINOR = 10;
+function localPythonCandidates(): string[] {
+    const venvPython = path.join(REPO_ROOT, '.venv', 'bin', 'python');
+    return [process.env.CDK_BUNDLING_PYTHON, venvPython, `python${LAMBDA_PYTHON_VERSION}`, 'python3'].filter(
+        (c): c is string => !!c && c.trim().length > 0,
+    );
+}
 
 let cachedLocalPython: string | null | undefined;
 
-/**
- * First Python 3.10+ on PATH that has `pip` (see {@link LOCAL_PYTHON_CANDIDATES}), or `undefined` to fall
- * back to Docker. Requiring `pip` here skips interpreters that would only fail later at install time.
- */
 function findLocalPython(): string | undefined {
-    if (cachedLocalPython !== undefined) {
-        return cachedLocalPython ?? undefined;
-    }
-    cachedLocalPython = null;
-    for (const candidate of LOCAL_PYTHON_CANDIDATES) {
-        try {
-            const [major, minor] = execFileSync(candidate, ['-c', 'import sys, pip; print(sys.version_info.major, sys.version_info.minor)'], {
-                stdio: ['ignore', 'pipe', 'ignore'],
-            })
-                .toString()
-                .trim()
-                .split(' ')
-                .map(Number);
-            if (major === 3 && minor >= MIN_LOCAL_PYTHON_MINOR) {
+    if (cachedLocalPython === undefined) {
+        cachedLocalPython = null;
+        for (const candidate of localPythonCandidates()) {
+            try {
+                execFileSync(candidate, ['-c', 'import pip'], { stdio: 'ignore' });
                 cachedLocalPython = candidate;
                 break;
+            } catch {
+                // Missing, or no pip; try the next candidate.
             }
-        } catch {
-            // Not on PATH, or no pip; try the next candidate.
         }
     }
     return cachedLocalPython ?? undefined;
@@ -121,8 +114,8 @@ function copySharedInto(lambdasRoot: string, shared: PythonLambdaSharedInBundle,
 }
 
 /**
- * Tries a local Python 3.10+ first (same manylinux-wheel-only `pip install` as Docker — see
- * {@link findLocalPython}); returns `false` on any failure (no suitable Python on PATH, or the
+ * Tries a local Python first (same manylinux-wheel-only `pip install` as Docker — see
+ * {@link findLocalPython}); returns `false` on any failure (no Python with pip found, or the
  * install itself failing) so CDK falls back to {@link dockerBundleBashForPythonHandler}.
  */
 function localBundlingForPythonHandler(lambdasRoot: string, layout: PythonHandlerInLambdasLayout): ILocalBundling {
@@ -171,9 +164,9 @@ export function dockerBundleBashForPythonHandler(layout: PythonHandlerInLambdasL
 }
 
 /**
- * Bundling for `lambda.Code.fromAsset(lambdasRoot, { bundling })`. Tries a local Python 3.10+ first
+ * Bundling for `lambda.Code.fromAsset(lambdasRoot, { bundling })`. Tries a local Python first
  * (no Docker needed — see {@link localBundlingForPythonHandler}); falls back to Docker
- * (`Runtime.PYTHON_3_12` + manylinux arm64 wheels) when it's not on `PATH` or fails, so the result
+ * (the pinned runtime's build image + manylinux arm64 wheels) when it's not on `PATH` or fails, so the result
  * is the same either way.
  *
  * **CI:** when Docker fallback is needed, run `cdk synth` / `cdk deploy` with Docker available
@@ -181,7 +174,7 @@ export function dockerBundleBashForPythonHandler(layout: PythonHandlerInLambdasL
  */
 export function bundlingForPythonHandlerInLambdasTree(lambdasRoot: string, layout: PythonHandlerInLambdasLayout): BundlingOptions {
     return {
-        image: lambda.Runtime.PYTHON_3_12.bundlingImage,
+        image: LAMBDA_PYTHON_RUNTIME.bundlingImage,
         user: 'root',
         bundlingFileAccess: cdk.BundlingFileAccess.VOLUME_COPY,
         command: ['bash', '-c', dockerBundleBashForPythonHandler(layout)],
@@ -193,7 +186,7 @@ export function bundlingForPythonHandlerInLambdasTree(lambdasRoot: string, layou
  * Path inside the layer zip: imports resolve via `/opt` on Lambda. Must match
  * [Runtimes and layout](https://docs.aws.amazon.com/lambda/latest/dg/python-layers.html).
  */
-export const PYTHON_312_LAYER_SITE_PACKAGES = 'python/lib/python3.12/site-packages';
+export const LAYER_SITE_PACKAGES = `python/lib/python${LAMBDA_PYTHON_VERSION}/site-packages`;
 
 function localBundlingForPythonSharedLayer(lambdasRoot: string): ILocalBundling {
     return {
@@ -203,7 +196,7 @@ function localBundlingForPythonSharedLayer(lambdasRoot: string): ILocalBundling 
                 return false;
             }
             try {
-                const targetDir = path.join(outputDir, PYTHON_312_LAYER_SITE_PACKAGES);
+                const targetDir = path.join(outputDir, LAYER_SITE_PACKAGES);
                 fs.mkdirSync(targetDir, { recursive: true });
                 fs.cpSync(path.join(lambdasRoot, 'shared'), path.join(targetDir, 'shared'), { recursive: true });
                 const req = path.join(lambdasRoot, 'shared', 'requirements.txt');
@@ -220,7 +213,7 @@ function localBundlingForPythonSharedLayer(lambdasRoot: string): ILocalBundling 
 }
 
 export function dockerBashForPythonSharedLayer(): string {
-    const sp = PYTHON_312_LAYER_SITE_PACKAGES;
+    const sp = LAYER_SITE_PACKAGES;
     return [
         `mkdir -p /asset-output/${sp}`,
         `cp -R shared /asset-output/${sp}/`,
@@ -229,12 +222,12 @@ export function dockerBashForPythonSharedLayer(): string {
 }
 
 /**
- * Bundles `lambdas/shared` + `shared/requirements.txt` into a Python 3.12 / ARM64–compatible layer.
- * Tries a local Python 3.10+ first, falls back to Docker — see {@link bundlingForPythonHandlerInLambdasTree}.
+ * Bundles `lambdas/shared` + `shared/requirements.txt` into a pinned-Python / ARM64–compatible layer.
+ * Tries a local Python first, falls back to Docker — see {@link bundlingForPythonHandlerInLambdasTree}.
  */
 export function bundlingForPythonSharedLayer(lambdasRoot: string): BundlingOptions {
     return {
-        image: lambda.Runtime.PYTHON_3_12.bundlingImage,
+        image: LAMBDA_PYTHON_RUNTIME.bundlingImage,
         user: 'root',
         bundlingFileAccess: cdk.BundlingFileAccess.VOLUME_COPY,
         command: ['bash', '-c', dockerBashForPythonSharedLayer()],
