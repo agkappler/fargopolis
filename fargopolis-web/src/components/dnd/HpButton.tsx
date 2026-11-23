@@ -5,15 +5,20 @@ interface HpButtonProps {
     symbol: string;
     disabled: boolean;
     onClick: () => void;
+    /** Square size token (default "5"); the Play-page steppers use "11" for a 44px tap target. */
+    boxSize?: string;
+    title?: string;
 }
 
-export const HpButton: React.FC<HpButtonProps> = ({ label, symbol, disabled, onClick }) => (
+export const HpButton: React.FC<HpButtonProps> = ({ label, symbol, disabled, onClick, boxSize = "5", title }) => (
     <IconButton
         aria-label={label}
+        title={title}
         size="xs"
-        minW="5"
-        w="5"
-        h="5"
+        minW={boxSize}
+        w={boxSize}
+        h={boxSize}
+        fontSize={boxSize === "5" ? undefined : "lg"}
         variant="outline"
         borderRadius="full"
         borderColor="pine.500"

@@ -1,9 +1,14 @@
+import { PLAY_SHELL_BREAK } from "@/constants/Media";
 import { Flex, Link, Text } from "@chakra-ui/react";
+import { useMatch } from "react-router-dom";
 
 export const Footer: React.FC = () => {
+    // The Play page is a one-viewport app shell on desktop (only its actions column scrolls), so the footer hides there.
+    const onPlay = useMatch("/dnd/:id/actions");
     return (
         <Flex
             as="footer"
+            css={onPlay ? { [`@media (min-width: ${PLAY_SHELL_BREAK})`]: { display: "none" } } : undefined}
             bg="pine.900"
             color="fg.onDark"
             px="6"

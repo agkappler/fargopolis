@@ -16,6 +16,15 @@ export const ABILITY_SOURCE_OPTIONS = [
     { value: AbilitySource.Background, label: "Background" }
 ];
 
+/** Display order for abilities grouped by source (AbilityInfo and the Play page). */
+export const ABILITY_SOURCE_ORDER: readonly AbilitySource[] = [
+    AbilitySource.Class,
+    AbilitySource.Race,
+    AbilitySource.Feat,
+    AbilitySource.Background,
+    AbilitySource.Other,
+];
+
 export function getLabelForAbilitySource(source: AbilitySource): string {
     return ABILITY_SOURCE_OPTIONS.find(o => o.value === source)?.label ?? "Unknown";
 }

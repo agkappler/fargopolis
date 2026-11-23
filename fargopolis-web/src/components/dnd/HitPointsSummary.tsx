@@ -5,6 +5,7 @@ import { Box, Flex, Link, Text } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { StatBox } from "./StatBox";
 import { StatEmptyState } from "./StatEmptyState";
+import { TempHpPill } from "./TempHpPill";
 
 interface HitPointsSummaryProps {
     character: Character;
@@ -18,20 +19,7 @@ export const HitPointsSummary: React.FC<HitPointsSummaryProps> = ({ character, o
     const { current, max, temp } = c.hitPoints;
     const pct = max > 0 ? Math.min(100, Math.max(0, (current / max) * 100)) : 0;
 
-    const tempPill = temp > 0 ? (
-        <Text
-            as="span"
-            textStyle="label"
-            bg="pine.100"
-            color="pine.700"
-            borderRadius="full"
-            px="2"
-            py="0.5"
-            whiteSpace="nowrap"
-        >
-            +{temp} temp
-        </Text>
-    ) : undefined;
+    const tempPill = temp > 0 ? <TempHpPill temp={temp} /> : undefined;
 
     return (
         <StatBox title="HP" headerRight={tempPill}>

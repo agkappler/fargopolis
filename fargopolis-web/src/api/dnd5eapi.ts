@@ -180,3 +180,20 @@ export async function getSubraces(race: string): Promise<BaseDndResponse> {
 export async function getSubraceTraits(subrace: string): Promise<BaseDndResponse> {
     return fetch(BASE_URL + "/subraces/" + subrace + "/traits").then((response) => response.json());
 }
+/// SPELLS
+export interface SpellDetails extends DndItem {
+    level: number;
+    casting_time: string;
+    concentration: boolean;
+    ritual: boolean;
+    range: string;
+    duration: string;
+    desc?: string[];
+}
+
+export async function getSpellDetails(index: string): Promise<SpellDetails> {
+    return fetch(BASE_URL + "/spells/" + encodeURIComponent(index)).then((response) => {
+        if (!response.ok) throw new Error(`Spell ${index} not found`);
+        return response.json();
+    });
+}
