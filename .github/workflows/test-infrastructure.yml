@@ -41,6 +41,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: infrastructure/package-lock.json
 
+      - name: Setup Python 3.12
+        # CDK bundles the Python Lambdas locally with `python3.12` (see lib/python-lambda-bundling.ts)
+        # and only falls back to Docker without it. ubuntu-latest no longer ships 3.12, and the Docker
+        # fallback's image pull from public.ecr.aws gets rate-limited ("Data limit exceeded").
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install dependencies
         run: npm ci
 
