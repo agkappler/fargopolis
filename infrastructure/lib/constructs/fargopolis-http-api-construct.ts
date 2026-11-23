@@ -9,8 +9,8 @@ export interface FargopolisHttpApiConstructProps {
     readonly defaultAuthorizer?: apigwv2.IHttpRouteAuthorizer;
 
     /**
-     * Extra CORS origins to append to the hardcoded default list (e.g. a configured
-     * `frontendDomain` custom domain). Appended, never replacing the existing origins.
+     * Frontend origins to allow, derived from the `domain` context (`lib/domain-context.ts`).
+     * Appended to the localhost dev-server origins.
      */
     readonly extraAllowOrigins?: string[];
 }
@@ -43,9 +43,6 @@ export class FargopolisHttpApiConstruct extends Construct {
                 allowOrigins: [
                     'http://localhost:3000',
                     'https://localhost:3000',
-                    'https://fargopolis.com',
-                    'https://www.fargopolis.com',
-                    'https://d19091yi7btsr0.cloudfront.net',
                     ...(props?.extraAllowOrigins ?? []),
                 ],
                 // Required if the browser sends credentialed requests (`credentials: 'include'`).
