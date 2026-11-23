@@ -12,7 +12,7 @@ interface RacialTraitsProps {
 export const RacialTraits: React.FC<RacialTraitsProps> = ({ race, characterId }) => {
     const { data: racialTraits, isLoading } = useSWR(race, () => getRace(race));
     return <LoadingWrapper isLoading={isLoading}>
-        <Heading size="lg" textAlign="center">{racialTraits?.name}</Heading>
+        <Heading size="lg" textAlign="left">{racialTraits?.name}</Heading>
         {racialTraits?.traits.map((t: DndItem, index: number) => (
             <RacialTraitCard
                 key={index}

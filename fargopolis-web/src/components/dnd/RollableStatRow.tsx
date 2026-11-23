@@ -1,29 +1,23 @@
-import { rollD20, rollMessage } from "@/helpers/Dice";
 import { formatModifier } from "@/helpers/DndMath";
-import { rollToast } from "@/helpers/Toasts";
 import { Flex, Text } from "@chakra-ui/react";
+import { RollCell } from "./RollCell";
 import { rowProps } from "./statRowStyle";
 
-/** A StatRow that rolls 1d20 + modifier and toasts the result on click. */
-export const RollableStatRow: React.FC<{ label: string; modifier: number; displayValue?: React.ReactNode }> = ({ label, modifier, displayValue }) => {
-    const handleRoll = () => {
-        const { roll, total } = rollD20(modifier);
-        rollToast(rollMessage(label, modifier, roll, total));
-    };
+interface RollableStatRowProps {
+    label: string;
+    modifier: number;
+    /** Defaults to "Roll <label>, <modifier>". */
+    ariaLabel?: string;
+}
 
-    return (
-        <Flex
-            as="button"
-            onClick={handleRoll}
-            {...rowProps}
-            w="full"
-            bg="transparent"
-            border="none"
-            cursor="pointer"
-            _hover={{ bg: "bg.sunk" }}
-        >
-            <Text textStyle="label">{label}</Text>
-            <Text fontFamily="mono">{displayValue ?? formatModifier(modifier)}</Text>
-        </Flex>
-    );
-};
+/** A stat row whose value is a roll pill (rolls 1d20 + modifier and toasts the result). */
+export const RollableStatRow: React.FC<RollableStatRowProps> = ({ label, modifier, ariaLabel }) => (
+    <Flex {...rowProps}>
+        <Text textStyle="label">{label}</Text>
+        <RollCell
+            label={label}
+            modifier={modifier}
+            ariaLabel={ariaLabel ?? `Roll ${label.toLowerCase()}, ${formatModifier(modifier)}`}
+        />
+    </Flex>
+);

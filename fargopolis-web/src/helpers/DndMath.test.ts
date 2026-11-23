@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { abilityModifier, checkModifier, formatModifier, proficiencyBonusForLevel } from "./DndMath";
+import {
+    abilityModifier,
+    checkModifier,
+    formatModifier,
+    proficiencyBonusForLevel,
+    spellAttackBonus,
+    spellcastingAbilityForClass,
+    spellSaveDc,
+} from "./DndMath";
 
 describe("abilityModifier", () => {
     it.each([
@@ -46,5 +54,54 @@ describe("checkModifier", () => {
     });
     it("uses only the ability modifier when not proficient", () => {
         expect(checkModifier(14, 3, false)).toBe(2);
+    });
+});
+
+describe("spellcastingAbilityForClass", () => {
+    it.each([
+        ["bard", "cha"],
+        ["paladin", "cha"],
+        ["sorcerer", "cha"],
+        ["warlock", "cha"],
+        ["cleric", "wis"],
+        ["druid", "wis"],
+        ["ranger", "wis"],
+        ["wizard", "int"],
+        ["artificer", "int"],
+    ])("%s → %s", (className: string, expected: string) => {
+        expect(spellcastingAbilityForClass(className)).toBe(expected);
+    });
+
+    it.each(["barbarian", "fighter", "monk", "rogue"])("%s has no spellcasting ability", (className: string) => {
+        expect(spellcastingAbilityForClass(className)).toBeUndefined();
+    });
+
+    it("matches case-insensitively and ignores surrounding whitespace", () => {
+        expect(spellcastingAbilityForClass("Wizard")).toBe("int");
+        expect(spellcastingAbilityForClass(" RANGER ")).toBe("wis");
+    });
+
+    it.each([[""], [undefined], [null], ["homebrew"], ["toString"]])("%s → undefined", (className: string | null | undefined) => {
+        expect(spellcastingAbilityForClass(className)).toBeUndefined();
+    });
+});
+
+describe("spellSaveDc", () => {
+    it.each([
+        [16, 3, 14],
+        [10, 2, 10],
+        [8, 2, 9],
+    ])("score %i, PB +%i → DC %i", (score: number, pb: number, expected: number) => {
+        expect(spellSaveDc(score, pb)).toBe(expected);
+    });
+});
+
+describe("spellAttackBonus", () => {
+    it.each([
+        [16, 3, 6],
+        [8, 2, 1],
+        [10, 2, 2],
+    ])("score %i, PB +%i → +%i", (score: number, pb: number, expected: number) => {
+        expect(spellAttackBonus(score, pb)).toBe(expected);
     });
 });

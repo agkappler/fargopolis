@@ -1,7 +1,12 @@
 import { Text } from "@chakra-ui/react"
 
-export const DescriptionList: React.FC<{ descriptions: string[] }> = ({ descriptions }) => {
-    return descriptions.map((description, index) => (
-        <Text key={index} textAlign="center">{description}</Text>
+interface DescriptionListProps {
+    descriptions: string[];
+    textAlign?: "left" | "center";
+}
+
+export const DescriptionList: React.FC<DescriptionListProps> = ({ descriptions, textAlign = "center" }) => {
+    return descriptions?.map((description, index) => (
+        <Text key={index} textAlign={textAlign}>{description}</Text>
     ));
 }
