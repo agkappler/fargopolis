@@ -94,16 +94,10 @@ export class FrontendStack extends cdk.Stack {
             });
             hostnames.forEach((hostname, i) => {
                 // The first hostname keeps the original logical ID so an existing record isn't replaced.
-                // Prod only: `deleteExisting` adopts the apex/www records that were created by hand
-                // outside CDK, deleting and recreating them in the same deploy (a few seconds' gap).
-                // It only acts when the record is first created, so it is a no-op on later deploys.
-                // Deprecated upstream (a failed deploy could leave the record deleted); remove it once
-                // FargopolisFrontend owns the prod records.
                 new route53.ARecord(this, i === 0 ? 'FrontendDomainAliasRecord' : `FrontendDomainAliasRecord${i}`, {
                     zone: hostedZone,
                     recordName: hostname,
                     target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.distribution)),
-                    deleteExisting: !props?.tag,
                 });
             });
         }

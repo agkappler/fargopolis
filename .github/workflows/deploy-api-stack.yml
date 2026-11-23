@@ -2,14 +2,12 @@
 #   AWS_REGION
 #   AWS_API_DEPLOY_ROLE_TO_ASSUME — IAM role ARN from FargopolisApi output GithubActionsApiDeployRoleArn
 #
-#   CDK_DOMAIN_JSON — single-line/minified JSON matching context.domain
-#     (zone, hostedZoneId, frontendCertificateArn, apiCertificateArn); see infrastructure/README.md.
-#     Required: without it the deploy would remove api.<zone> and the frontend CORS origins, so the
-#     job fails instead.
-#
-# This workflow deploys the CDK API stack (FargopolisApi) via GitHub OIDC.
+# Deploys both prod CDK stacks (FargopolisApi, FargopolisFrontend) via GitHub OIDC whenever
+# infrastructure changes land on main, so prod infra always matches main. Region and custom-domain
+# config are committed in infrastructure/cdk.json; no extra secrets are needed. The site content
+# itself is uploaded by deploy-static-frontend.yml.
 
-name: Deploy API stack (CDK)
+name: Deploy CDK stacks
 
 on:
   push:
@@ -17,11 +15,13 @@ on:
     paths:
       - 'infrastructure/**'
       - '.github/workflows/deploy-api-stack.yml'
+      - '.python-version'
   workflow_dispatch:
 
 concurrency:
   group: deploy-api-stack
-  cancel-in-progress: true
+  # Queue, never cancel: cancelling mid-deploy leaves the next run waiting on an in-progress stack.
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -45,6 +45,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: infrastructure/package-lock.json
 
+      - name: Setup Python (pinned in .python-version)
+        # CDK bundles the Python Lambdas locally with this interpreter (lib/python-lambda-bundling.ts),
+        # so it never needs Docker or an image pull.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
       - name: Install dependencies
         run: npm ci
 
@@ -55,14 +62,5 @@ jobs:
           role-session-name: github-actions-fargopolis-api-deploy
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Pass the domain JSON without shell-quote bugs (JSON contains "); use Python subprocess argv.
-      - name: CDK deploy FargopolisApi
-        env:
-          CDK_DOMAIN_JSON: ${{ secrets.CDK_DOMAIN_JSON }}
-        run: |
-          set -euo pipefail
-          if [ -z "${CDK_DOMAIN_JSON:-}" ]; then
-            echo "::error::CDK_DOMAIN_JSON secret is not set; refusing to deploy FargopolisApi without its custom domain."
-            exit 1
-          fi
-          python3 -c "import json,os,subprocess;d=json.loads(os.environ['CDK_DOMAIN_JSON']);subprocess.check_call(['npx','cdk','deploy','FargopolisApi','--require-approval','never','-c','domain='+json.dumps(d)])"
+      - name: CDK deploy FargopolisApi and FargopolisFrontend
+        run: npx cdk deploy FargopolisApi FargopolisFrontend --require-approval never

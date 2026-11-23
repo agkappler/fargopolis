@@ -104,18 +104,11 @@ URLs (and the API only allows localhost).
 - CDK doesn't check certificate regions at synth time; a wrong-region ARN only fails at deploy.
 - A partially-filled `domain`, or a tag that isn't a DNS label, fails synth rather than quietly
   dropping live domains.
-- Frontend A records use `deleteExisting`, so CDK adopts records that were created by hand.
 
-Config is intentionally **not committed** to [`cdk.json`](cdk.json):
-
-| Delivery | Shape | Typical use |
-| --- | --- | --- |
-| **`cdk.context.json`** (gitignored) | `{ "domain": { … } }` | Local deploys (`make deploy-*`) |
-| **`CDK_DOMAIN_JSON`** GitHub secret | Single-line JSON of the inner object | CI (`deploy-api-stack` workflow) |
-| **`-c` flag** | `-c 'domain={"zone":…}'` | One-off runs |
-
-Prod deploys refuse to run without it: `make deploy-api` / `make deploy-web` check
-`cdk.context.json`, and the API workflow fails when `CDK_DOMAIN_JSON` is unset.
+The config is committed in [`cdk.json`](cdk.json) under `context.domain` (it holds only the zone ID
+and certificate ARNs, nothing secret), next to `context.region`, the region both stacks are pinned
+to. Synth fails for an untagged (prod) deploy if `domain` is missing, so prod can never be deployed
+without its domains.
 
 ### Python Lambda bundling
 
@@ -161,7 +154,7 @@ When CDK creates the IdP resource, **`RemovalPolicy.RETAIN`** is set on the IdP 
 
 - `GithubActionsApiDeployRoleArn` → GitHub secret `AWS_API_DEPLOY_ROLE_TO_ASSUME`
 
-**Required:** **`CDK_DOMAIN_JSON`** repository secret — single-line JSON of the `domain` config (`zone`, `hostedZoneId`, `frontendCertificateArn`, `apiCertificateArn`). The [`deploy-api-stack` workflow](../.github/workflows/deploy-api-stack.yml) passes it via `cdk deploy -c domain=…` and fails if it is unset, since deploying without it would remove `api.fargopolis.com` and the frontend CORS origins.
+No domain secret is needed: the [`deploy-api-stack` workflow](../.github/workflows/deploy-api-stack.yml) ("Deploy CDK stacks") deploys **both** `FargopolisApi` and `FargopolisFrontend` from `main` with the committed `cdk.json` config whenever `infrastructure/**` or `.python-version` changes.
 
 API deploy workflow: [`.github/workflows/deploy-api-stack.yml`](../.github/workflows/deploy-api-stack.yml).
 

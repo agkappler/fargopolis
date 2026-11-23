@@ -5,6 +5,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { bundlingForPythonHandlerInLambdasTree, resolveLambdasRoot } from '../python-lambda-bundling';
+import { LAMBDA_PYTHON_RUNTIME } from '../lambda-python';
 
 export interface DndApiRoutesProps {
     readonly pythonSharedLayer: lambda.LayerVersion;
@@ -28,7 +29,7 @@ export class DndApiRoutesConstruct extends Construct {
         const assetPath = resolveLambdasRoot([...DND_ASSET.requiredPaths], 'dnd handler + shared/lambda_utils');
 
         this.handler = new lambda.Function(this, 'DndHandler', {
-            runtime: lambda.Runtime.PYTHON_3_12,
+            runtime: LAMBDA_PYTHON_RUNTIME,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
                 bundling: bundlingForPythonHandlerInLambdasTree(assetPath, DND_ASSET.layout),

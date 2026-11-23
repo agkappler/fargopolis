@@ -51,7 +51,7 @@ export class FargopolisApiStack extends cdk.Stack {
     public readonly files: FilesConstruct;
     /** Private S3 bucket for user uploads (presigned GET/PUT); not the static-site bucket. */
     public readonly userUploads: FargopolisBucketConstruct;
-    /** Shared `shared` package + common wheels; attach to new Python 3.12 arm64 handlers that import it. */
+    /** Shared `shared` package + common wheels; attach to new Python (pinned in /.python-version) arm64 handlers that import it. */
     public readonly pythonSharedLayer: lambda.LayerVersion;
     public readonly clerkAuthorizer: ClerkHttpAuthorizerConstruct;
     public readonly httpApiGateway: FargopolisHttpApiConstruct;

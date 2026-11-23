@@ -6,6 +6,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { FargopolisBucketConstruct } from './fargopolis-bucket-construct';
 import { bundlingForPythonHandlerInLambdasTree, resolveLambdasRoot } from '../python-lambda-bundling';
+import { LAMBDA_PYTHON_RUNTIME } from '../lambda-python';
 
 export interface FilesApiRoutesProps {
     readonly pythonSharedLayer: lambda.LayerVersion;
@@ -33,7 +34,7 @@ export class FilesApiRoutesConstruct extends Construct {
         const assetPath = resolveLambdasRoot([...FILES_ASSET.requiredPaths], 'files handler + shared/lambda_utils');
 
         this.handler = new lambda.Function(this, 'FilesHandler', {
-            runtime: lambda.Runtime.PYTHON_3_12,
+            runtime: LAMBDA_PYTHON_RUNTIME,
             handler: 'handler.handler',
             code: lambda.Code.fromAsset(assetPath, {
                 bundling: bundlingForPythonHandlerInLambdasTree(assetPath, FILES_ASSET.layout),

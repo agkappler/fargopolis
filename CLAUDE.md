@@ -68,14 +68,12 @@ frontend and API stacks have no deploy-order dependency on each other — there'
 CloudFormation reference between them — so `npx cdk deploy --all -c tag=dev` is also safe.
 
 Other dev-deploy notes:
-- Custom domains come from one `domain` context value (gitignored `cdk.context.json`, see
+- Custom domains come from one `domain` value committed in `infrastructure/cdk.json` (see
   `infrastructure/README.md` § "Custom domains"). Hostnames are derived from the tag: prod gets
   `fargopolis.com` + `www.` + `api.`; `-c tag=<tag>` gets `<tag>.fargopolis.com` for its CloudFront
-  alias and API CORS origin (no API custom domain), so stages can't collide. The same
-  `cdk.context.json` is safe for dev and prod deploys. Without `domain`, the dev site's API calls
-  fail CORS, and prod deploys refuse to run.
-- The stacks live in **us-east-2**. CDK deploys to whatever region the AWS CLI resolves, so run
-  Makefile deploys with `AWS_REGION=us-east-2` if your CLI defaults elsewhere.
+  alias and API CORS origin (no API custom domain), so stages can't collide.
+- The region (**us-east-2**) is also committed in `cdk.json` and pinned on both stacks; the
+  Makefile exports it for its `aws` CLI calls, so the machine's default region doesn't matter.
 - Never pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
   on the dev API stack — the GitHub Actions OIDC IAM identity provider is an account-wide
   singleton already created by the original bootstrap; creating it again fails.
@@ -88,12 +86,12 @@ Other dev-deploy notes:
 ### Python Lambdas (local editor/type-checking only)
 
 ```bash
-./scripts/setup-python-lambdas.sh   # creates repo .venv with a Python 3.10+ interpreter
+./scripts/setup-python-lambdas.sh   # creates repo .venv at the version pinned in .python-version
 source .venv/bin/activate
 .venv/bin/ruff check infrastructure/lambdas   # lint (from repo root); CI runs this before pytest
 ```
 
-CDK needs a local Python 3.10+ (3.12 matches the Lambda runtime) on `PATH` to bundle Lambdas without Docker; macOS's stock `python3` (Xcode CLT) is often 3.9 and too old. `pyrightconfig.json` points the editor at `infrastructure/lambdas` with `shared/` as an extra path — select `.venv/bin/python` as the interpreter.
+The Lambda Python version is pinned once, in root **`.python-version`** (read by `infrastructure/lib/lambda-python.ts` for every function/layer runtime and pip's bundling target, by the setup script, and by `actions/setup-python` in CI); bump the runtime by editing that file (and `target-version` in `infrastructure/lambdas/ruff.toml`). CDK bundles Lambdas locally with the repo `.venv` (or `CDK_BUNDLING_PYTHON`, `python<pinned>`, `python3` — any interpreter with pip works since pip's target is pinned) and only falls back to Docker when none is found. `pyrightconfig.json` points the editor at `infrastructure/lambdas` with `shared/` as an extra path — select `.venv/bin/python` as the interpreter.
 
 Dependency source of truth is **per-lambda `requirements.txt`** (e.g. `infrastructure/lambdas/bounties/requirements.txt`), not a repo-wide file. `infrastructure/lambdas/requirements-dev.txt` aggregates those plus local-only helpers (`boto3`, provided by the Lambda runtime in prod). To add a dependency: add it to the specific lambda's `requirements.txt`, rerun the setup script, and redeploy `FargopolisApi` so CDK bundles it.
 
@@ -135,7 +133,7 @@ Tables are per-domain (not single-table design) and use **on-demand capacity**. 
 ## Environment configuration
 
 - Frontend: copy `fargopolis-web/.env.example` to `.env`; requires `VITE_API_URL` (the deployed `HttpApiUrl`, no trailing slash) and `VITE_CLERK_PUBLISHABLE_KEY`.
-- Infrastructure: `context.clerk.jwtIssuer` in `infrastructure/cdk.json` configures the authorizer. Custom domains (frontend aliases, `api.` domain and API CORS origins) all come from one `domain` context value that is deliberately **not** committed — supply it via gitignored `infrastructure/cdk.context.json`, the `CDK_DOMAIN_JSON` GitHub secret, or a `-c` flag; see `infrastructure/README.md` § "Custom domains". Its frontend certificate must be in **`us-east-1`** (CloudFront is global); its API certificate is in the API's own region.
+- Infrastructure: `context.clerk.jwtIssuer` in `infrastructure/cdk.json` configures the authorizer. Region and custom domains (frontend aliases, `api.` domain and API CORS origins) are committed in `infrastructure/cdk.json` (`context.region`, `context.domain`); see `infrastructure/README.md` § "Custom domains". The domain's frontend certificate is in **`us-east-1`** (CloudFront is global); its API certificate is in the API's own region. Both prod stacks are deployed by the `deploy-api-stack.yml` workflow ("Deploy CDK stacks") on every infrastructure change to `main`.
 - GitHub Actions deploys assume IAM roles via OIDC (no long-lived AWS keys). Frontend and API deploys use **different** role ARNs (`AWS_ROLE_TO_ASSUME` vs `AWS_API_DEPLOY_ROLE_TO_ASSUME`) — see `infrastructure/README.md` § "GitHub Actions OIDC roles" for bootstrap/troubleshooting.
 
 ## OpenSpec workflow
