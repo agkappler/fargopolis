@@ -76,7 +76,11 @@ Other dev-deploy notes:
   deploy — if omitted, `FargopolisFrontend-dev` still deploys fine on its raw CloudFront domain,
   but cross-origin calls from the dev web app to the dev API will fail CORS until it's
   configured, since its resolved `domainName` is what gets added to the dev API's CORS
-  `allowOrigins`.
+  `allowOrigins`. Prefer `tagDomain` (one base domain + a us-east-1 `*.fargopolis.com` wildcard
+  certificate, in gitignored `cdk.context.json`): every `-c tag=<tag>` deploy then gets
+  `<tag>.fargopolis.com` for both the CloudFront alias and the API's CORS origin.
+- The stacks live in **us-east-2**. CDK deploys to whatever region the AWS CLI resolves, so run
+  Makefile deploys with `AWS_REGION=us-east-2` if your CLI defaults elsewhere.
 - Never pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
   on the dev API stack — the GitHub Actions OIDC IAM identity provider is an account-wide
   singleton already created by the original bootstrap; creating it again fails.

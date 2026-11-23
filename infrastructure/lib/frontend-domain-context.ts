@@ -106,3 +106,68 @@ export function resolveHasFrontendDomainConfig(frontendDomain: FrontendDomainCon
 
     return true;
 }
+
+/**
+ * `tagDomain` context: one shared base config that gives every tagged (`-c tag=<tag>`) frontend
+ * deploy its own subdomain, `<tag>.<baseDomain>` (e.g. `dev.fargopolis.com`), without a separate
+ * `frontendDomain` per tag. `certificateArn` must be a **us-east-1** wildcard certificate for
+ * `*.<baseDomain>` (CloudFront only accepts us-east-1 certificates).
+ */
+export type TagDomainContext = {
+    baseDomain?: string;
+    hostedZoneId?: string;
+    certificateArn?: string;
+};
+
+/**
+ * Resolve the effective `frontendDomain` for this deploy.
+ *
+ * An explicit `frontendDomain` always wins. Otherwise, when a `tag` is set and `tagDomain` is fully
+ * configured, derive `<tag>.<baseDomain>`. Untagged (prod) deploys never use `tagDomain`. Because
+ * both stacks derive the same name from the tag, the API stack's CORS origin matches the frontend's
+ * alias with no cross-stack reference.
+ */
+export function resolveFrontendDomainForTag(
+    frontendDomain: FrontendDomainContext,
+    tag: string | undefined,
+    rawTagDomain: unknown,
+): FrontendDomainContext {
+    if (Object.keys(frontendDomain).length > 0 || !tag) {
+        return frontendDomain;
+    }
+    if (rawTagDomain === undefined || rawTagDomain === null || rawTagDomain === '') {
+        return frontendDomain;
+    }
+
+    let value: unknown = rawTagDomain;
+    if (typeof rawTagDomain === 'string') {
+        try {
+            value = JSON.parse(rawTagDomain.trim());
+        } catch (err) {
+            throw new Error(`Context "tagDomain" was supplied as a string that is not valid JSON. Parse error: ${err}`);
+        }
+    }
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        throw new Error(`Context "tagDomain" must be a JSON object, got ${typeof value}.`);
+    }
+
+    const tagDomain = value as TagDomainContext;
+    const missing = (['baseDomain', 'hostedZoneId', 'certificateArn'] as const).filter((k) => isBlank(tagDomain[k]));
+    if (missing.length > 0) {
+        throw new Error(
+            `Context "tagDomain" is partially configured — missing/blank: ${missing.join(', ')}. ` +
+                `Supply baseDomain, hostedZoneId and certificateArn, or remove "tagDomain".`,
+        );
+    }
+    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(tag)) {
+        throw new Error(`Context "tag" ("${tag}") is not a valid DNS label, so it can't be used as a subdomain.`);
+    }
+
+    const baseDomain = tagDomain.baseDomain!.trim().replace(/\.$/, '');
+    return {
+        domainName: `${tag}.${baseDomain}`,
+        hostedZoneDomain: baseDomain,
+        hostedZoneId: tagDomain.hostedZoneId!.trim(),
+        certificateArn: tagDomain.certificateArn!.trim(),
+    };
+}

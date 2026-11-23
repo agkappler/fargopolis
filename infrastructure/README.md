@@ -39,6 +39,8 @@ Operational notes specific to the dev stacks:
   below. If omitted, `FargopolisFrontend-dev` still deploys fine on its raw CloudFront domain, but
   cross-origin calls from the dev web app to the dev API will fail CORS until `frontendDomain` is
   configured (its resolved `domainName` is what gets added to the API's CORS `allowOrigins`).
+  The easy way for tagged stacks is **`tagDomain`** (see [Tagged subdomains](#tagged-subdomains-tagdomain)),
+  which gives every `-c tag=<tag>` deploy `<tag>.fargopolis.com` automatically.
 - **Never** pass `-c bootstrapGithubActionsOidcProvider=true` (or `githubActions.createOidcProvider`)
   on the dev API stack — the GitHub Actions IAM OIDC identity provider is an account-wide
   singleton already created by the original bootstrap; attempting to create it again fails.
@@ -156,6 +158,29 @@ Field notes:
 - Set `createDnsRecord: false` if DNS is managed outside Route 53 (CDK still attaches the alias/certificate to the CloudFront distribution).
 
 Omitting `frontendDomain` on a dev deploy is supported — `FargopolisFrontend-dev` still deploys on its raw CloudFront domain — but cross-origin calls from the dev web app to the dev API will fail CORS until it's configured, mirroring `apiDomain`'s own "omit it, deploy without the domain" fallback.
+
+#### Tagged subdomains (`tagDomain`)
+
+Instead of a separate `frontendDomain` per tag, supply one **`context.tagDomain`** and every tagged
+deploy (`-c tag=<tag>`) gets `<tag>.<baseDomain>` (e.g. `dev.fargopolis.com`). Both stacks derive the
+same name from the tag: the frontend stack adds the CloudFront alias and Route 53 record, and the API
+stack adds `https://<tag>.<baseDomain>` to CORS. An explicit `frontendDomain` still wins, and untagged
+(prod) deploys ignore `tagDomain`.
+
+```json
+{
+  "tagDomain": {
+    "baseDomain": "fargopolis.com",
+    "hostedZoneId": "Z0123456789ABCDEFGHIJ",
+    "certificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/…"
+  }
+}
+```
+
+- `certificateArn` must be a **`us-east-1`** wildcard certificate for `*.<baseDomain>`, so one
+  certificate covers every tag.
+- The tag must be a valid DNS label (lowercase letters, digits, hyphens).
+- Delivered like `frontendDomain`: gitignored `cdk.context.json`, or `-c 'tagDomain={…}'`.
 
 ### Python Lambda bundling
 
