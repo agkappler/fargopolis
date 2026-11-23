@@ -38,5 +38,5 @@ Activate with:
 Then in Cursor/VS Code:
   Python: Select Interpreter -> ${VENV_DIR}/bin/python
 
-For \`npx cdk deploy\` / \`npx cdk synth\` (local Lambda asset bundling), keep python3.12 on your PATH — see README.md → Machine setup.
+For \`npx cdk deploy\` / \`npx cdk synth\`, local Lambda asset bundling needs any Python 3.10+ with pip on your PATH (python3.12 preferred); without one it falls back to Docker.
 EOF

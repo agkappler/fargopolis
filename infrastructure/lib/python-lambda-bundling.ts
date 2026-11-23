@@ -50,24 +50,54 @@ const PIP_INSTALL_FLAGS = [
     '--python-version',
     '3.12',
     '--only-binary=:all:',
+    // Skip .pyc files: they'd be compiled for the bundling interpreter, not the 3.12 runtime.
+    '--no-compile',
 ];
 
 /**
- * A `python3.12` on PATH whose reported version is exactly 3.12 — matches the Lambda runtime.
- * `pip install --platform ... --only-binary=:all:` only downloads prebuilt wheels for the target
- * platform (never compiles), so running it with this interpreter is safe on any host OS.
+ * Interpreters to try for local bundling, best match first. 3.12 matches the Lambda runtime, but any
+ * Python 3.10+ works: `PIP_INSTALL_FLAGS` pins `--python-version 3.12`, the arm64 manylinux platform
+ * and `--only-binary=:all:`, so pip downloads the same prebuilt 3.12 wheels whichever interpreter
+ * runs it, and nothing is compiled. (`handler.py` and `shared/` are copied as-is.)
  */
-function findLocalPython312(): string | undefined {
-    try {
-        const version = execFileSync('python3.12', ['-c', 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")'], {
-            stdio: ['ignore', 'pipe', 'ignore'],
-        })
-            .toString()
-            .trim();
-        return version === '3.12' ? 'python3.12' : undefined;
-    } catch {
-        return undefined;
+const LOCAL_PYTHON_CANDIDATES = [
+    'python3.12',
+    ...Array.from({ length: 8 }, (_, i) => `python3.${13 + i}`), // python3.13 … python3.20
+    'python3.11',
+    'python3.10',
+    'python3',
+];
+const MIN_LOCAL_PYTHON_MINOR = 10;
+
+let cachedLocalPython: string | null | undefined;
+
+/**
+ * First Python 3.10+ on PATH that has `pip` (see {@link LOCAL_PYTHON_CANDIDATES}), or `undefined` to fall
+ * back to Docker. Requiring `pip` here skips interpreters that would only fail later at install time.
+ */
+function findLocalPython(): string | undefined {
+    if (cachedLocalPython !== undefined) {
+        return cachedLocalPython ?? undefined;
     }
+    cachedLocalPython = null;
+    for (const candidate of LOCAL_PYTHON_CANDIDATES) {
+        try {
+            const [major, minor] = execFileSync(candidate, ['-c', 'import sys, pip; print(sys.version_info.major, sys.version_info.minor)'], {
+                stdio: ['ignore', 'pipe', 'ignore'],
+            })
+                .toString()
+                .trim()
+                .split(' ')
+                .map(Number);
+            if (major === 3 && minor >= MIN_LOCAL_PYTHON_MINOR) {
+                cachedLocalPython = candidate;
+                break;
+            }
+        } catch {
+            // Not on PATH, or no pip; try the next candidate.
+        }
+    }
+    return cachedLocalPython ?? undefined;
 }
 
 function pipInstallLocal(python: string, requirementsFile: string, targetDir: string): void {
@@ -91,14 +121,14 @@ function copySharedInto(lambdasRoot: string, shared: PythonLambdaSharedInBundle,
 }
 
 /**
- * Tries local `python3.12` first (same manylinux-wheel-only `pip install` as Docker — see
- * {@link findLocalPython312}); returns `false` on any failure (no `python3.12` on PATH, or the
+ * Tries a local Python 3.10+ first (same manylinux-wheel-only `pip install` as Docker — see
+ * {@link findLocalPython}); returns `false` on any failure (no suitable Python on PATH, or the
  * install itself failing) so CDK falls back to {@link dockerBundleBashForPythonHandler}.
  */
 function localBundlingForPythonHandler(lambdasRoot: string, layout: PythonHandlerInLambdasLayout): ILocalBundling {
     return {
         tryBundle(outputDir: string): boolean {
-            const python = findLocalPython312();
+            const python = findLocalPython();
             if (!python) {
                 return false;
             }
@@ -141,7 +171,7 @@ export function dockerBundleBashForPythonHandler(layout: PythonHandlerInLambdasL
 }
 
 /**
- * Bundling for `lambda.Code.fromAsset(lambdasRoot, { bundling })`. Tries local `python3.12` first
+ * Bundling for `lambda.Code.fromAsset(lambdasRoot, { bundling })`. Tries a local Python 3.10+ first
  * (no Docker needed — see {@link localBundlingForPythonHandler}); falls back to Docker
  * (`Runtime.PYTHON_3_12` + manylinux arm64 wheels) when it's not on `PATH` or fails, so the result
  * is the same either way.
@@ -168,7 +198,7 @@ export const PYTHON_312_LAYER_SITE_PACKAGES = 'python/lib/python3.12/site-packag
 function localBundlingForPythonSharedLayer(lambdasRoot: string): ILocalBundling {
     return {
         tryBundle(outputDir: string): boolean {
-            const python = findLocalPython312();
+            const python = findLocalPython();
             if (!python) {
                 return false;
             }
@@ -200,7 +230,7 @@ export function dockerBashForPythonSharedLayer(): string {
 
 /**
  * Bundles `lambdas/shared` + `shared/requirements.txt` into a Python 3.12 / ARM64–compatible layer.
- * Tries local `python3.12` first, falls back to Docker — see {@link bundlingForPythonHandlerInLambdasTree}.
+ * Tries a local Python 3.10+ first, falls back to Docker — see {@link bundlingForPythonHandlerInLambdasTree}.
  */
 export function bundlingForPythonSharedLayer(lambdasRoot: string): BundlingOptions {
     return {
