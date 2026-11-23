@@ -61,8 +61,12 @@ deploy-web:
 deploy-dev-web:
 	cd infrastructure && npx cdk deploy FargopolisFrontend-dev -c tag=dev
 
+# The dev frontend has no custom frontendDomain, so allow its raw CloudFront domain for CORS.
+# Stable for the life of the FargopolisFrontend-dev distribution; update if that stack is ever recreated.
+DEV_FRONTEND_ORIGIN := https://d18ezxys6spqk3.cloudfront.net
+
 deploy-dev-api:
-	cd infrastructure && npx cdk deploy FargopolisApi-dev -c tag=dev
+	cd infrastructure && npx cdk deploy FargopolisApi-dev -c tag=dev -c extraCorsOrigins=$(DEV_FRONTEND_ORIGIN)
 
 deploy-prod-content: install-web
 	api_url=$$(aws cloudformation describe-stacks --stack-name FargopolisApi --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text) && \

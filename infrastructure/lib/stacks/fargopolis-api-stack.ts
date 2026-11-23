@@ -36,6 +36,11 @@ export interface FargopolisApiStackProps extends cdk.StackProps {
     tag?: string;
     /** Resolved frontend custom-domain name (if any), appended to CORS `extraAllowOrigins` as `https://<name>`. */
     frontendDomainName?: string;
+    /**
+     * Additional full origins (e.g. `https://dxxxx.cloudfront.net`) appended to CORS `extraAllowOrigins`.
+     * Used by `make deploy-dev-api` to allow the dev frontend's raw CloudFront domain.
+     */
+    extraCorsOrigins?: string[];
 }
 
 /**
@@ -96,6 +101,9 @@ export class FargopolisApiStack extends cdk.Stack {
         const extraAllowOrigins: string[] = [];
         if (props?.frontendDomainName) {
             extraAllowOrigins.push(`https://${props.frontendDomainName}`);
+        }
+        for (const origin of props?.extraCorsOrigins ?? []) {
+            if (!extraAllowOrigins.includes(origin)) extraAllowOrigins.push(origin);
         }
 
         this.httpApiGateway = new FargopolisHttpApiConstruct(this, 'HttpApiGateway', {

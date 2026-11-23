@@ -15,6 +15,20 @@ const suffix = tag ? `-${tag}` : '';
 const frontendDomain = parseFrontendDomainContext(app.node.tryGetContext('frontendDomain'));
 const hasFrontendDomainConfig = resolveHasFrontendDomainConfig(frontendDomain); // throws on partial config
 
+// Optional extra CORS origins for the API, as a comma-separated string or JSON array of full origins
+// (e.g. `-c extraCorsOrigins=https://dxxxx.cloudfront.net`). `make deploy-dev-api` uses it to allow the
+// dev frontend's raw CloudFront domain, which has no custom `frontendDomain`.
+function parseExtraCorsOrigins(raw: unknown): string[] {
+    if (raw === undefined || raw === null || raw === '') return [];
+    const list = Array.isArray(raw)
+        ? raw
+        : String(raw).trim().startsWith('[')
+          ? (JSON.parse(String(raw)) as unknown[])
+          : String(raw).split(',');
+    return list.map((o) => String(o).trim().replace(/\/+$/, '')).filter((o) => o.length > 0);
+}
+const extraCorsOrigins = parseExtraCorsOrigins(app.node.tryGetContext('extraCorsOrigins'));
+
 new FrontendStack(app, `FargopolisFrontend${suffix}`, {
     description: 'Fargopolis frontend: S3 origin + CloudFront',
     tag,
@@ -25,6 +39,7 @@ new FargopolisApiStack(app, `FargopolisApi${suffix}`, {
     description: 'Fargopolis API: DynamoDB, Lambda, API Gateway (bounties first)',
     tag,
     frontendDomainName: hasFrontendDomainConfig ? frontendDomain.domainName : undefined,
+    extraCorsOrigins,
 });
 
 app.synth();
