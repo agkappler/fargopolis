@@ -19,12 +19,14 @@ import type { HitPointsTracker } from "./useHitPointsTracker";
 interface CombatVitalsCardProps {
     character: Character;
     tracker: HitPointsTracker;
+    /** Optional top strip (character identity + page actions) rendered inside the card, above HP and stats. */
+    header?: React.ReactNode;
 }
 
 const LOCKED_TITLE = "Sign in to track HP";
 
 /** The always-visible combat strip on the Play page: HP tracker + AC / Initiative / Speed / PB / Passive Perception. */
-export const CombatVitalsCard: React.FC<CombatVitalsCardProps> = ({ character, tracker }) => {
+export const CombatVitalsCard: React.FC<CombatVitalsCardProps> = ({ character, tracker, header }) => {
     const { rollD20 } = useRoller();
     const navigate = useNavigate();
     const [keypadOpen, setKeypadOpen] = useState(false);
@@ -137,8 +139,25 @@ export const CombatVitalsCard: React.FC<CombatVitalsCardProps> = ({ character, t
     );
 
     return (
+        <Box {...surfaceBorderProps} overflow="hidden">
+        {header && (
+            <Flex
+                align="center"
+                justify="space-between"
+                gap="2"
+                flexWrap="wrap"
+                px="3"
+                py="1.5"
+                minH="12"
+                bg="bg.sunk"
+                borderBottomWidth="1px"
+                borderBottomStyle="solid"
+                borderBottomColor="border"
+            >
+                {header}
+            </Flex>
+        )}
         <Box
-            {...surfaceBorderProps}
             p="3"
             display="flex"
             flexDir="column"
@@ -174,6 +193,7 @@ export const CombatVitalsCard: React.FC<CombatVitalsCardProps> = ({ character, t
                 <StatTile value={formatModifier(pb)} label="Prof. Bonus" />
                 <StatTile value={passivePerception} label="Passive Perception" />
             </Grid>
+        </Box>
         </Box>
     );
 };

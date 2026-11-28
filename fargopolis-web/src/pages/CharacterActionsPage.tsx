@@ -15,7 +15,6 @@ import { RollLogProvider } from "@/components/dnd/rolls/RollLogProvider";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ImageBox } from "@/components/ui/ImageBox";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { Condition } from "@/constants/Conditions";
 import { PLAY_SHELL_BREAK } from "@/constants/Media";
 import {
@@ -33,8 +32,8 @@ import Ability from "@/models/Ability";
 import Character from "@/models/Character";
 import KnownSpell from "@/models/KnownSpell";
 import Weapon from "@/models/Weapon";
-import { Box, Button, Flex, Link, Text } from "@chakra-ui/react";
-import { Moon, ScrollText } from "lucide-react";
+import { Box, Button, Flex, Heading, Link, Text } from "@chakra-ui/react";
+import { ChevronLeft, Moon, ScrollText } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link as RouterLink, useParams } from "react-router-dom";
 import useSWR from "swr";
@@ -164,35 +163,66 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
             minW="0"
             css={{ [SHELL]: { height: "calc(100dvh - var(--chakra-sizes-fp-nav))", overflow: "hidden" } }}
         >
-            <Box flexShrink="0">
-                <PageHeader
-                    title={character.name}
-                    back={{ label: "Back to Character", url: `/dnd/${id}` }}
-                    avatar={<ImageBox fileId={character.avatarId} altText="Character avatar" size={{ base: 48, sm: 64 }} />}
-                    rightContainer={<>
-                        <ConditionsPopover active={conditions} onToggle={toggleCondition} />
-                        <Button variant="outline" size="md" minH="10" onClick={openLog}>
-                            <ScrollText size={16} aria-hidden="true" />
-                            Roll log ({entries.length})
-                        </Button>
-                        <Button
-                            variant="primary"
-                            size="md"
-                            minH="10"
-                            disabled={tracker.locked}
-                            title={tracker.locked ? "Sign in to track HP" : undefined}
-                            onClick={onLongRest}
-                        >
-                            <Moon size={16} aria-hidden="true" />
-                            Long Rest
-                        </Button>
+            <Box flexShrink="0" maxW="fp.container" w="full" mx="auto" px="4" pt="3">
+                <CombatVitalsCard
+                    character={character}
+                    tracker={tracker}
+                    header={<>
+                        <Flex align="center" gap="2" minW="0" flex="1 1 280px">
+                            <Link
+                                asChild
+                                aria-label="Back to character"
+                                title="Back to character"
+                                color="brand"
+                                display="inline-flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                boxSize="8"
+                                flexShrink="0"
+                                borderRadius="md"
+                                _hover={{ bg: "bg.raised" }}
+                            >
+                                <RouterLink to={`/dnd/${id}`}><ChevronLeft size={20} aria-hidden="true" /></RouterLink>
+                            </Link>
+                            <Box flexShrink="0" borderRadius="full" overflow="hidden">
+                                <ImageBox fileId={character.avatarId} altText="Character avatar" size={32} />
+                            </Box>
+                            <Heading
+                                as="h1"
+                                fontFamily="display"
+                                fontWeight="500"
+                                fontSize="xl"
+                                lineHeight="1.1"
+                                truncate
+                                flexShrink="0"
+                                maxW="50%"
+                            >
+                                {character.name}
+                            </Heading>
+                            <Box minW="0" truncate css={{ "& p": { fontSize: "sm" } }}>
+                                <CharacterSubtitle character={character} />
+                            </Box>
+                        </Flex>
+                        <Flex gap="1.5" flexWrap="wrap" flexShrink="0">
+                            <ConditionsPopover active={conditions} onToggle={toggleCondition} />
+                            <Button variant="outline" size="sm" minH="9" onClick={openLog}>
+                                <ScrollText size={16} aria-hidden="true" />
+                                Roll log ({entries.length})
+                            </Button>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                minH="9"
+                                disabled={tracker.locked}
+                                title={tracker.locked ? "Sign in to track HP" : undefined}
+                                onClick={onLongRest}
+                            >
+                                <Moon size={16} aria-hidden="true" />
+                                Long Rest
+                            </Button>
+                        </Flex>
                     </>}
-                >
-                    <CharacterSubtitle character={character} />
-                </PageHeader>
-                <Box maxW="fp.container" mx="auto" px="4" pt="4">
-                    <CombatVitalsCard character={character} tracker={tracker} />
-                </Box>
+                />
             </Box>
 
             <Box

@@ -11,7 +11,7 @@ interface ConditionsPopoverProps {
 export const ConditionsPopover: React.FC<ConditionsPopoverProps> = ({ active, onToggle }) => (
     <Popover.Root positioning={{ placement: "bottom-end" }} lazyMount>
         <Popover.Trigger asChild>
-            <Button variant="outline" size="md" minH="10">
+            <Button variant="outline" size="sm" minH="9">
                 <ShieldAlert size={16} aria-hidden="true" />
                 Conditions{active.length > 0 ? ` (${active.length})` : ""}
             </Button>
