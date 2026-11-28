@@ -7,7 +7,10 @@ import { hasAnySlots, lowestAvailableSlotLevel, ordinal, remaining } from "@/hel
 import { weaponAttack } from "@/helpers/WeaponAttack";
 import Character from "@/models/Character";
 import { Box, chakra, Flex, Text } from "@chakra-ui/react";
-import { PropsWithChildren, ReactNode } from "react";
+import { Info } from "lucide-react";
+import { PropsWithChildren, ReactNode, useState } from "react";
+import { AbilityDetailsModal } from "../abilities/AbilityDetailsModal";
+import { SpellDetailsModal } from "../spells/SpellDetailsModal";
 import { useRoller } from "../rolls/rollContext";
 import { rollButtonProps } from "../rollStyle";
 import type { SpellSlotsState } from "./useSpellSlots";
@@ -67,10 +70,12 @@ interface RowShellProps {
     tags?: ReactNode;
     meta?: string;
     actions?: ReactNode;
+    /** When set, the name becomes a button that opens the full details (spell or ability modal). */
+    onOpenDetails?: () => void;
 }
 
 /** Shared row layout: name + tags over a one-line muted meta, buttons on the right (wrapping under on phones). */
-const RowShell: React.FC<RowShellProps> = ({ name, tags, meta, actions }) => (
+const RowShell: React.FC<RowShellProps> = ({ name, tags, meta, actions, onOpenDetails }) => (
     <Flex
         as="li"
         align="center"
@@ -84,7 +89,33 @@ const RowShell: React.FC<RowShellProps> = ({ name, tags, meta, actions }) => (
     >
         <Box flex="1 1 220px" minW="0">
             <Flex align="center" gap="1.5" flexWrap="wrap">
-                <Text fontWeight="600" fontSize="xs">{name}</Text>
+                {onOpenDetails ? (
+                    <chakra.button
+                        type="button"
+                        onClick={onOpenDetails}
+                        aria-label={`${name} details`}
+                        title="Show details"
+                        display="inline-flex"
+                        alignItems="center"
+                        gap="1"
+                        fontWeight="600"
+                        fontSize="xs"
+                        textAlign="left"
+                        cursor="pointer"
+                        color="fg"
+                        textDecorationLine="underline"
+                        textDecorationStyle="dotted"
+                        textDecorationColor="border.strong"
+                        textUnderlineOffset="3px"
+                        _hover={{ color: "ember.700", textDecorationColor: "ember.500" }}
+                        _focusVisible={{ outline: "2px solid", outlineColor: "ember.500", outlineOffset: "2px", borderRadius: "sm" }}
+                    >
+                        {name}
+                        <Info size={12} aria-hidden="true" style={{ opacity: 0.6, flexShrink: 0 }} />
+                    </chakra.button>
+                ) : (
+                    <Text fontWeight="600" fontSize="xs">{name}</Text>
+                )}
                 {tags}
             </Flex>
             {meta && <Text fontSize="2xs" color="fg.muted" truncate title={meta}>{meta}</Text>}
@@ -178,6 +209,7 @@ interface SpellRowProps {
 
 export const SpellActionRow: React.FC<SpellRowProps> = ({ row, slots, onCast }) => {
     const { knownSpell, details } = row;
+    const [detailsOpen, setDetailsOpen] = useState(false);
     const level = details?.level ?? knownSpell.spellLevel ?? 0;
     const name = details?.name ?? knownSpell.spellName;
     const meta = details
@@ -185,8 +217,10 @@ export const SpellActionRow: React.FC<SpellRowProps> = ({ row, slots, onCast }) 
         : "Loading…";
 
     return (
+        <>
         <RowShell
             name={name}
+            onOpenDetails={() => setDetailsOpen(true)}
             tags={<>
                 <Tag tone={level === 0 ? "stone" : "pine"}>{level === 0 ? "Cantrip" : `${ordinal(level)} level`}</Tag>
                 {details?.concentration && <Tag tone="ember">Concentration</Tag>}
@@ -201,6 +235,20 @@ export const SpellActionRow: React.FC<SpellRowProps> = ({ row, slots, onCast }) 
                 <SlotButton verb="Cast" name={name} minLevel={level} slots={slots} onUse={() => onCast(row)} />
             )}
         />
+        {detailsOpen && (
+            <SpellDetailsModal
+                isOpen={detailsOpen}
+                onClose={() => setDetailsOpen(false)}
+                spell={{
+                    index: knownSpell.spellKey,
+                    name,
+                    level,
+                    url: details?.url ?? `/api/2014/spells/${encodeURIComponent(knownSpell.spellKey)}`,
+                }}
+                canEdit={false}
+            />
+        )}
+        </>
     );
 };
 
@@ -216,10 +264,13 @@ export const AbilityActionRow: React.FC<AbilityRowProps> = ({ row, slots, onUseS
     const diceText = findDiceInText(ability.description);
     const dice = diceText ? parseDiceExpression(diceText) : undefined;
     const usesSlot = abilityUsesSlot(ability);
+    const [detailsOpen, setDetailsOpen] = useState(false);
 
     return (
+        <>
         <RowShell
             name={ability.name}
+            onOpenDetails={() => setDetailsOpen(true)}
             tags={<Tag tone={toneForChip(getColorForAbilitySource(ability.source))}>{getLabelForAbilitySource(ability.source)}</Tag>}
             meta={ability.description}
             actions={<>
@@ -240,5 +291,9 @@ export const AbilityActionRow: React.FC<AbilityRowProps> = ({ row, slots, onUseS
                 )}
             </>}
         />
+        {detailsOpen && (
+            <AbilityDetailsModal isOpen={detailsOpen} onClose={() => setDetailsOpen(false)} ability={ability} />
+        )}
+        </>
     );
 };

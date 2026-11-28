@@ -57,6 +57,10 @@ vi.mock("@/api/dnd5eapi", () => ({
             spell_slots_level_5: 0, spell_slots_level_6: 0, spell_slots_level_7: 0, spell_slots_level_8: 0, spell_slots_level_9: 0,
         } },
     ]),
+    getRelativeUrlInfo: (url: string) => Promise.resolve({
+        index: url.split("/").pop(), name: "Magic Missile", level: 1, casting_time: "1 action", range: "120 feet",
+        duration: "Instantaneous", desc: ["Three glowing darts of magical force."],
+    }),
     getSpellDetails: (index: string) => Promise.resolve(index === "shield"
         ? { index, name: "Shield", url: "", level: 1, casting_time: "1 reaction", concentration: false, ritual: false, range: "Self", duration: "1 round" }
         : { index, name: "Magic Missile", url: "", level: 1, casting_time: "1 action", concentration: false, ritual: false, range: "120 feet", duration: "Instantaneous" }),
@@ -103,6 +107,25 @@ describe("CharacterActionsPage", () => {
         expect(screen.getByRole("button", { name: "1st-level slot 1 of 4, spent. Tap to restore" })).toBeInTheDocument();
         expect(JSON.parse(window.localStorage.getItem("fargopolis.spellSlotsUsed.c1") ?? "[]")[0]).toBe(1);
         expect(screen.getByRole("button", { name: /Roll log \(1\)/ })).toBeInTheDocument();
+    });
+
+    it("opens the spell details modal from a spell row name", async () => {
+        renderPage();
+        const action = await screen.findByRole("region", { name: "Action" });
+        fireEvent.click(await within(action).findByRole("button", { name: "Magic Missile details" }));
+        const dialog = await screen.findByRole("dialog");
+        expect(await within(dialog).findByText("Three glowing darts of magical force.")).toBeInTheDocument();
+        // Read-only here: no add/remove known spell buttons on the Play page.
+        expect(within(dialog).queryByRole("button", { name: /known spells/ })).not.toBeInTheDocument();
+    });
+
+    it("opens the ability details modal from an ability row name", async () => {
+        renderPage();
+        const passive = await screen.findByRole("region", { name: "Passive & Free" });
+        fireEvent.click(within(passive).getByRole("button", { name: "Arcane Recovery details" }));
+        const dialog = await screen.findByRole("dialog");
+        expect(within(dialog).getByText("Recover slots")).toBeInTheDocument();
+        expect(within(dialog).getByText("Recovery: Long rest")).toBeInTheDocument();
     });
 
     it("filters to a single section", async () => {
