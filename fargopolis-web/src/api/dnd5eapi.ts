@@ -180,3 +180,24 @@ export async function getSubraces(race: string): Promise<BaseDndResponse> {
 export async function getSubraceTraits(subrace: string): Promise<BaseDndResponse> {
     return fetch(BASE_URL + "/subraces/" + subrace + "/traits").then((response) => response.json());
 }
+/// SPELLS
+export interface SpellDetails extends DndItem {
+    level: number;
+    casting_time: string;
+    concentration: boolean;
+    ritual: boolean;
+    range: string;
+    duration: string;
+    desc?: string[];
+    /** Present on spell-attack spells (e.g. Fire Bolt). */
+    attack_type?: "melee" | "ranged";
+    /** Present on saving-throw spells (e.g. Burning Hands): the save ability and what a success does. */
+    dc?: { dc_type: { index: string; name: string }; dc_success?: string };
+}
+
+export async function getSpellDetails(index: string): Promise<SpellDetails> {
+    return fetch(BASE_URL + "/spells/" + encodeURIComponent(index)).then((response) => {
+        if (!response.ok) throw new Error(`Spell ${index} not found`);
+        return response.json();
+    });
+}

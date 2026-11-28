@@ -1,4 +1,4 @@
-import { AbilitySource } from "@/constants/Abilities";
+import { ABILITY_SOURCE_ORDER } from "@/constants/Abilities";
 import RequestManager from "@/helpers/RequestManager";
 import Ability from "@/models/Ability";
 import { Box, Grid, GridItem, Text } from "@chakra-ui/react";
@@ -24,11 +24,9 @@ export const AbilityInfo: React.FC<AbilityInfoProps> = ({ characterId, canEdit =
     );
 
     const sortAbilitiesByType = (abilities: Ability[]) => {
-        const sourceOrder = [AbilitySource.Class, AbilitySource.Race, AbilitySource.Feat, AbilitySource.Other];
-
-        return abilities.sort((a, b) => {
-            const aIndex = sourceOrder.indexOf(a.source);
-            const bIndex = sourceOrder.indexOf(b.source);
+        return [...abilities].sort((a, b) => {
+            const aIndex = ABILITY_SOURCE_ORDER.indexOf(a.source);
+            const bIndex = ABILITY_SOURCE_ORDER.indexOf(b.source);
 
             if (aIndex !== bIndex) {
                 return aIndex - bIndex;

@@ -9,14 +9,13 @@ import {
     spellSaveDc,
 } from "@/helpers/DndMath";
 import Character from "@/models/Character";
-import { chakra, Flex, Grid, Text } from "@chakra-ui/react";
-import { ReactNode } from "react";
-import { rollAndToast } from "./roll";
+import { Grid } from "@chakra-ui/react";
 import { RollableStatRow } from "./RollableStatRow";
-import { rollButtonProps } from "./rollStyle";
+import { useRoller } from "./rolls/rollContext";
 import { StatBox } from "./StatBox";
 import { StatEmptyState } from "./StatEmptyState";
 import { StatRow } from "./StatRow";
+import { RollStatTile, StatTile } from "./StatTile";
 
 interface CombatStatsBlockProps {
     character: Character;
@@ -24,30 +23,12 @@ interface CombatStatsBlockProps {
     onEdit?: () => void;
 }
 
-const tileProps = {
-    display: "flex",
-    flexDir: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "1",
-    minH: "16",
-    py: "2",
-    px: "1",
-    borderRadius: "md",
-} as const;
-
-const TileValue: React.FC<{ children: ReactNode }> = ({ children }) => (
-    <Text as="span" fontFamily="mono" fontSize="24px" lineHeight="1">{children}</Text>
-);
-const TileLabel: React.FC<{ children: ReactNode }> = ({ children }) => (
-    <Text as="span" textStyle="label" color="fg.muted">{children}</Text>
-);
-
 /**
  * Vitals card: AC / Initiative (rollable) / Speed tiles, then Prof. Bonus and Passive Perception,
  * plus Spell Save DC and Spell Attack for spellcasting classes. Shared by the Details and Actions pages.
  */
 export const CombatStatsBlock: React.FC<CombatStatsBlockProps> = ({ character, onEdit }) => {
+    const { rollD20 } = useRoller();
     if (vitalsAreUnset(character)) {
         return (
             <StatBox title="Vitals">
@@ -70,24 +51,14 @@ export const CombatStatsBlock: React.FC<CombatStatsBlockProps> = ({ character, o
     return (
         <StatBox title="Vitals">
             <Grid templateColumns="repeat(3, 1fr)" gap="2" mb="2">
-                <Flex {...tileProps} bg="bg.sunk">
-                    <TileValue>{c.armorClass > 0 ? c.armorClass : "—"}</TileValue>
-                    <TileLabel>AC</TileLabel>
-                </Flex>
-                <chakra.button
-                    type="button"
-                    aria-label={`Roll initiative, ${formatModifier(init)}`}
-                    onClick={() => rollAndToast("Initiative", init)}
-                    {...rollButtonProps}
-                    {...tileProps}
-                >
-                    <TileValue>{formatModifier(init)}</TileValue>
-                    <TileLabel>Initiative</TileLabel>
-                </chakra.button>
-                <Flex {...tileProps} bg="bg.sunk">
-                    <TileValue>{c.speed > 0 ? `${c.speed} ft` : "—"}</TileValue>
-                    <TileLabel>Speed</TileLabel>
-                </Flex>
+                <StatTile value={c.armorClass > 0 ? c.armorClass : "—"} label="AC" />
+                <RollStatTile
+                    value={formatModifier(init)}
+                    label="Initiative"
+                    ariaLabel={`Roll initiative, ${formatModifier(init)}`}
+                    onClick={() => rollD20("Initiative", init)}
+                />
+                <StatTile value={c.speed > 0 ? `${c.speed} ft` : "—"} label="Speed" />
             </Grid>
             <StatRow label="Prof. Bonus" value={formatModifier(pb)} />
             <StatRow label="Passive Perception" value={passivePerception} />

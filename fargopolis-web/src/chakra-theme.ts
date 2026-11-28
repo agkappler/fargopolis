@@ -202,6 +202,17 @@ const config = defineConfig({
                     500: { value: "#4a5d6a" },
                     300: { value: "#7a8b96" },
                 },
+                // Status tints (same values the badge recipe uses for warning / error).
+                amber: {
+                    700: { value: "#6b4910" },
+                    500: { value: "#c79234" },
+                    100: { value: "#f6e8c8" },
+                },
+                garnet: {
+                    700: { value: "#6b1e15" },
+                    500: { value: "#b03a2e" },
+                    100: { value: "#f4d6d2" },
+                },
             },
             fonts: {
                 display: { value: '"Fraunces", "Iowan Old Style", Georgia, serif' },
