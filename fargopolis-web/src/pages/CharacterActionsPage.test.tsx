@@ -43,6 +43,8 @@ vi.mock("@/helpers/RequestManager", () => ({
             if (path === "/character/c1/knownSpells") return Promise.resolve({
                 "magic-missile": { spellKey: "magic-missile", spellName: "Magic Missile", spellLevel: 1, characterId: "c1" },
                 "shield": { spellKey: "shield", spellName: "Shield", spellLevel: 1, characterId: "c1" },
+                "fire-bolt": { spellKey: "fire-bolt", spellName: "Fire Bolt", spellLevel: 0, characterId: "c1" },
+                "burning-hands": { spellKey: "burning-hands", spellName: "Burning Hands", spellLevel: 1, characterId: "c1" },
             });
             return Promise.resolve(undefined);
         },
@@ -61,7 +63,11 @@ vi.mock("@/api/dnd5eapi", () => ({
         index: url.split("/").pop(), name: "Magic Missile", level: 1, casting_time: "1 action", range: "120 feet",
         duration: "Instantaneous", desc: ["Three glowing darts of magical force."],
     }),
-    getSpellDetails: (index: string) => Promise.resolve(index === "shield"
+    getSpellDetails: (index: string) => Promise.resolve(index === "fire-bolt"
+        ? { index, name: "Fire Bolt", url: "", level: 0, casting_time: "1 action", concentration: false, ritual: false, range: "120 feet", duration: "Instantaneous", attack_type: "ranged" }
+        : index === "burning-hands"
+        ? { index, name: "Burning Hands", url: "", level: 1, casting_time: "1 action", concentration: false, ritual: false, range: "Self", duration: "Instantaneous", dc: { dc_type: { index: "dex", name: "DEX" }, dc_success: "half" } }
+        : index === "shield"
         ? { index, name: "Shield", url: "", level: 1, casting_time: "1 reaction", concentration: false, ritual: false, range: "Self", duration: "1 round" }
         : { index, name: "Magic Missile", url: "", level: 1, casting_time: "1 action", concentration: false, ritual: false, range: "120 feet", duration: "Instantaneous" }),
 }));
@@ -130,6 +136,16 @@ describe("CharacterActionsPage", () => {
         const dialog = await screen.findByRole("dialog");
         expect(within(dialog).getByText("Recover slots")).toBeInTheDocument();
         expect(within(dialog).getByText("Recovery: Long rest")).toBeInTheDocument();
+    });
+
+    it("shows a spell attack roll on attack spells and the save DC on save spells", async () => {
+        renderPage();
+        const action = await screen.findByRole("region", { name: "Action" });
+        // INT 16, level 3: attack +5, DC 13.
+        fireEvent.click(await within(action).findByRole("button", { name: "Roll Fire Bolt spell attack, +5" }));
+        expect(screen.getByRole("status")).toHaveTextContent("Fire Bolt spell attack");
+        expect(await within(action).findByText("DC 13 DEX · ½")).toBeInTheDocument();
+        expect(within(action).queryByRole("button", { name: /Burning Hands spell attack/ })).not.toBeInTheDocument();
     });
 
     it("filters to a single section", async () => {

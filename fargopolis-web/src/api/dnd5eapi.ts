@@ -189,6 +189,10 @@ export interface SpellDetails extends DndItem {
     range: string;
     duration: string;
     desc?: string[];
+    /** Present on spell-attack spells (e.g. Fire Bolt). */
+    attack_type?: "melee" | "ranged";
+    /** Present on saving-throw spells (e.g. Burning Hands): the save ability and what a success does. */
+    dc?: { dc_type: { index: string; name: string }; dc_success?: string };
 }
 
 export async function getSpellDetails(index: string): Promise<SpellDetails> {

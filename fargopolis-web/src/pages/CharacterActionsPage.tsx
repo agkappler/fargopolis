@@ -272,36 +272,12 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
                         flex: "1",
                         minHeight: 0,
                         gridTemplateColumns: "minmax(0, 1fr) 320px",
-                        gridTemplateRows: "auto minmax(0, 1fr)",
-                        gridTemplateAreas: '"actions sideTop" "actions sideBottom"',
+                        gridTemplateRows: "minmax(0, 1fr)",
+                        gridTemplateAreas: '"actions side"',
                         columnGap: "16px",
                     },
                 }}
             >
-                <Flex direction="column" gap="3" gridArea="sideTop" minW="0" css={{ "&:empty": { display: "none" } }}>
-                    {(concentratingOn || conditions.length > 0) && (
-                        <Box flexShrink="0">
-                            <StatusCard
-                                concentratingOn={concentratingOn}
-                                conditions={conditions}
-                                onEndConcentration={() => setConcentratingOn(undefined)}
-                                onRemoveCondition={toggleCondition}
-                            />
-                        </Box>
-                    )}
-                    {hasAnySlots(slots.max) && (
-                        <Box flexShrink="0">
-                            <SpellSlotsCard
-                                max={slots.max}
-                                used={slots.used}
-                                onTogglePip={slots.togglePip}
-                                flashLevel={slots.flashLevel}
-                                casting={casting}
-                            />
-                        </Box>
-                    )}
-                </Flex>
-
                 <Box
                     gridArea="actions"
                     minW="0"
@@ -325,6 +301,7 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
                                 hint={sectionHint(section, attacks)}
                                 character={character}
                                 slots={slots}
+                                casting={casting}
                                 onCast={onCast}
                                 onUseSlot={onUseSlot}
                             />
@@ -332,17 +309,61 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
                     </Box>
                 </Box>
 
-                <Flex
-                    direction="column"
-                    gap="3"
-                    gridArea="sideBottom"
-                    minW="0"
-                    css={{ [SHELL]: { overflowY: "auto", minHeight: 0 } }}
+                {/*
+                  * Sidebar. Below the shell breakpoint the wrapper is display:contents, so its two halves land
+                  * in the page grid above (status, slots) and below (checks, skills) the actions list. At the
+                  * shell breakpoint it becomes one column that scrolls on its own next to the actions.
+                  */}
+                <Box
+                    display="contents"
+                    css={{
+                        [SHELL]: {
+                            gridArea: "side",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "12px",
+                            minHeight: 0,
+                            overflowY: "auto",
+                            paddingRight: "2px",
+                        },
+                    }}
                 >
-                    {/* Wrappers keep StatBox's h="full" from stretching each card to the column height. */}
-                    <Box flexShrink="0"><ChecksSavesCard character={character} /></Box>
-                    <Box flexShrink="0"><SkillsCard character={character} /></Box>
-                </Flex>
+                    <Flex direction="column" gap="3" gridArea="sideTop" minW="0" flexShrink="0" css={{ "&:empty": { display: "none" } }}>
+                        {(concentratingOn || conditions.length > 0) && (
+                            <Box flexShrink="0">
+                                <StatusCard
+                                    concentratingOn={concentratingOn}
+                                    conditions={conditions}
+                                    onEndConcentration={() => setConcentratingOn(undefined)}
+                                    onRemoveCondition={toggleCondition}
+                                />
+                            </Box>
+                        )}
+                        {hasAnySlots(slots.max) && (
+                            <Box flexShrink="0">
+                                <SpellSlotsCard
+                                    max={slots.max}
+                                    used={slots.used}
+                                    onTogglePip={slots.togglePip}
+                                    flashLevel={slots.flashLevel}
+                                    casting={casting}
+                                />
+                            </Box>
+                        )}
+                    </Flex>
+
+                    <Flex
+                        direction="column"
+                        gap="3"
+                        gridArea="sideBottom"
+                        minW="0"
+                        flexShrink="0"
+                    >
+                        {/* Wrappers keep StatBox's h="full" from stretching each card to the column height. */}
+                        <Box flexShrink="0"><ChecksSavesCard character={character} /></Box>
+                        <Box flexShrink="0"><SkillsCard character={character} /></Box>
+                    </Flex>
+                </Box>
             </Box>
         </Flex>
     );

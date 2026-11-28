@@ -3,6 +3,7 @@ import { ActionRow, EconomySection, SECTION_LABELS, SectionGroups, sectionSize }
 import Character from "@/models/Character";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { AbilityActionRow, SpellActionRow, WeaponActionRow } from "./ActionRows";
+import type { CastingStats } from "./SpellSlotsCard";
 import type { SpellSlotsState } from "./useSpellSlots";
 
 type SpellRow = Extract<ActionRow, { kind: "spell" }>;
@@ -14,6 +15,8 @@ interface ActionSectionCardProps {
     hint?: string;
     character: Character;
     slots: SpellSlotsState;
+    /** Spell save DC / attack bonus for spell rows (casters only). */
+    casting?: CastingStats;
     onCast: (row: SpellRow) => void;
     onUseSlot: (row: AbilityRow) => void;
 }
@@ -32,7 +35,7 @@ const GROUPS = [
 ] as const;
 
 /** One action-economy section (Action / Bonus Action / Reaction / Passive & Free), rows grouped by source. */
-export const ActionSectionCard: React.FC<ActionSectionCardProps> = ({ section, groups, hint, character, slots, onCast, onUseSlot }) => {
+export const ActionSectionCard: React.FC<ActionSectionCardProps> = ({ section, groups, hint, character, slots, casting, onCast, onUseSlot }) => {
     if (sectionSize(groups) === 0) return null;
 
     const renderRow = (row: ActionRow) => {
@@ -41,7 +44,7 @@ export const ActionSectionCard: React.FC<ActionSectionCardProps> = ({ section, g
             case "opportunity":
                 return <WeaponActionRow key={row.id} row={row} character={character} />;
             case "spell":
-                return <SpellActionRow key={row.id} row={row} slots={slots} onCast={onCast} />;
+                return <SpellActionRow key={row.id} row={row} slots={slots} casting={casting} onCast={onCast} />;
             case "ability":
                 return <AbilityActionRow key={row.id} row={row} slots={slots} onUseSlot={onUseSlot} />;
         }

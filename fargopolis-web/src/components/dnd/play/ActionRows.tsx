@@ -13,6 +13,7 @@ import { AbilityDetailsModal } from "../abilities/AbilityDetailsModal";
 import { SpellDetailsModal } from "../spells/SpellDetailsModal";
 import { useRoller } from "../rolls/rollContext";
 import { rollButtonProps } from "../rollStyle";
+import type { CastingStats } from "./SpellSlotsCard";
 import type { SpellSlotsState } from "./useSpellSlots";
 
 type RowOf<K extends ActionRow["kind"]> = Extract<ActionRow, { kind: K }>;
@@ -204,10 +205,12 @@ const SlotButton: React.FC<SlotButtonProps> = ({ verb, name, minLevel, slots, on
 interface SpellRowProps {
     row: RowOf<"spell">;
     slots: SpellSlotsState;
+    casting?: CastingStats;
     onCast: (row: RowOf<"spell">) => void;
 }
 
-export const SpellActionRow: React.FC<SpellRowProps> = ({ row, slots, onCast }) => {
+export const SpellActionRow: React.FC<SpellRowProps> = ({ row, slots, casting, onCast }) => {
+    const { rollD20 } = useRoller();
     const { knownSpell, details } = row;
     const [detailsOpen, setDetailsOpen] = useState(false);
     const level = details?.level ?? knownSpell.spellLevel ?? 0;
@@ -225,15 +228,30 @@ export const SpellActionRow: React.FC<SpellRowProps> = ({ row, slots, onCast }) 
                 <Tag tone={level === 0 ? "stone" : "pine"}>{level === 0 ? "Cantrip" : `${ordinal(level)} level`}</Tag>
                 {details?.concentration && <Tag tone="ember">Concentration</Tag>}
                 {details?.ritual && <Tag tone="slate">Ritual</Tag>}
+                {casting && details?.dc && (
+                    <Tag tone="amber">{`DC ${casting.saveDc} ${details.dc.dc_type.name}${details.dc.dc_success === "half" ? " · ½" : ""}`}</Tag>
+                )}
             </>}
             meta={meta}
-            actions={level === 0 ? (
-                <chakra.button type="button" {...pillProps} aria-label={`Cast ${name}`} onClick={() => onCast(row)}>
-                    Cast
-                </chakra.button>
-            ) : (
-                <SlotButton verb="Cast" name={name} minLevel={level} slots={slots} onUse={() => onCast(row)} />
-            )}
+            actions={<>
+                {casting && details?.attack_type && (
+                    <chakra.button
+                        type="button"
+                        {...pillProps}
+                        aria-label={`Roll ${name} spell attack, ${formatModifier(casting.attackBonus)}`}
+                        onClick={() => rollD20(`${name} spell attack`, casting.attackBonus)}
+                    >
+                        Hit {formatModifier(casting.attackBonus)}
+                    </chakra.button>
+                )}
+                {level === 0 ? (
+                    <chakra.button type="button" {...pillProps} aria-label={`Cast ${name}`} onClick={() => onCast(row)}>
+                        Cast
+                    </chakra.button>
+                ) : (
+                    <SlotButton verb="Cast" name={name} minLevel={level} slots={slots} onUse={() => onCast(row)} />
+                )}
+            </>}
         />
         {detailsOpen && (
             <SpellDetailsModal
