@@ -26,6 +26,8 @@ import {
     sectionHint,
 } from "@/helpers/ActionGrouping";
 import RequestManager from "@/helpers/RequestManager";
+import { proficiencyBonusForLevel, spellAttackBonus, spellcastingAbilityForClass, spellSaveDc } from "@/helpers/DndMath";
+import { withStatDefaults } from "@/helpers/CharacterStats";
 import { hasAnySlots, ordinal, remaining, slotMaxFromSpellcasting } from "@/helpers/SpellSlots";
 import { successToast } from "@/helpers/Toasts";
 import Ability from "@/models/Ability";
@@ -101,6 +103,16 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
 
     const levelInfo = Array.isArray(levelInfos) ? levelInfos.find(l => l.level === character.level) : undefined;
     const slotMax = useMemo(() => slotMaxFromSpellcasting(levelInfo?.spellcasting), [levelInfo]);
+
+    // Same math as the Detail page's Vitals card (CombatStatsBlock).
+    const casting = useMemo(() => {
+        const c = withStatDefaults(character);
+        const ability = spellcastingAbilityForClass(c.className);
+        if (!ability) return undefined;
+        const pb = proficiencyBonusForLevel(c.level);
+        const score = c.abilityScores[ability];
+        return { ability: ability.toUpperCase(), saveDc: spellSaveDc(score, pb), attackBonus: spellAttackBonus(score, pb) };
+    }, [character]);
 
     const tracker = useHitPointsTracker(character);
     const slots = useSpellSlots(id, slotMax);
@@ -284,6 +296,7 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
                                 used={slots.used}
                                 onTogglePip={slots.togglePip}
                                 flashLevel={slots.flashLevel}
+                                casting={casting}
                             />
                         </Box>
                     )}

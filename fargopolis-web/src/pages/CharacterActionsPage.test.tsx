@@ -100,13 +100,17 @@ describe("CharacterActionsPage", () => {
         expect(screen.getByRole("button", { name: "Roll Dagger attack, +4" })).toBeInTheDocument();
 
         expect(await screen.findByText("Spell Slots")).toBeInTheDocument();
+        // Level 3 wizard, INT 16: DC 8 + 2 + 3 = 13, spell attack +5 (rollable) in the slots header.
+        expect(screen.getByText("DC 13")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: "Roll spell attack, +5" }));
+        expect(screen.getByRole("status")).toHaveTextContent("Spell attack");
         fireEvent.click(within(action).getByRole("button", { name: "Cast Magic Missile using a 1st-level slot" }));
 
         expect(screen.getByRole("status")).toHaveTextContent("Cast Magic Missile");
         expect(screen.getByRole("status")).toHaveTextContent("spent a 1st-level slot, 3 left");
         expect(screen.getByRole("button", { name: "1st-level slot 1 of 4, spent. Tap to restore" })).toBeInTheDocument();
         expect(JSON.parse(window.localStorage.getItem("fargopolis.spellSlotsUsed.c1") ?? "[]")[0]).toBe(1);
-        expect(screen.getByRole("button", { name: /Roll log \(1\)/ })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /Roll log \(2\)/ })).toBeInTheDocument();
     });
 
     it("opens the spell details modal from a spell row name", async () => {

@@ -1,6 +1,17 @@
+import { formatModifier } from "@/helpers/DndMath";
 import { hasAnySlots, ordinal, SlotLevels } from "@/helpers/SpellSlots";
 import { Box, chakra, Flex, Text } from "@chakra-ui/react";
+import { useRoller } from "../rolls/rollContext";
+import { rollButtonProps } from "../rollStyle";
 import { StatBox } from "../StatBox";
+
+/** Spell save DC and spell attack bonus for the character's spellcasting ability. */
+export interface CastingStats {
+    /** Short ability label, e.g. "INT". */
+    ability: string;
+    saveDc: number;
+    attackBonus: number;
+}
 
 interface SpellSlotsCardProps {
     max: SlotLevels;
@@ -8,10 +19,13 @@ interface SpellSlotsCardProps {
     onTogglePip: (level: number, pipIndex: number) => void;
     /** Level that was just spent; its row flashes briefly. */
     flashLevel?: number;
+    /** When set, the header shows the spell save DC and a spell attack roll button. */
+    casting?: CastingStats;
 }
 
 /** Sidebar spell slots: a compact two-column grid of levels with tappable pips (filled = available). */
-export const SpellSlotsCard: React.FC<SpellSlotsCardProps> = ({ max, used, onTogglePip, flashLevel }) => {
+export const SpellSlotsCard: React.FC<SpellSlotsCardProps> = ({ max, used, onTogglePip, flashLevel, casting }) => {
+    const { rollD20 } = useRoller();
     if (!hasAnySlots(max)) return null;
     const levels = max.map((m, i) => ({ level: i + 1, max: m, used: used[i] ?? 0 })).filter(l => l.max > 0);
     const total = levels.reduce((n, l) => n + l.max, 0);
@@ -20,7 +34,46 @@ export const SpellSlotsCard: React.FC<SpellSlotsCardProps> = ({ max, used, onTog
     return (
         <StatBox
             title="Spell Slots"
-            headerRight={<Text fontFamily="mono" fontSize="2xs" color="fg.muted">{left}/{total}</Text>}
+            headerRight={
+                <Flex align="center" gap="1.5">
+                    {casting && (
+                        <>
+                            <Text
+                                as="span"
+                                fontFamily="mono"
+                                fontSize="2xs"
+                                px="2"
+                                h="6"
+                                display="inline-flex"
+                                alignItems="center"
+                                borderRadius="full"
+                                bg="bg.sunk"
+                                color="fg.secondary"
+                                whiteSpace="nowrap"
+                                title={`Spell save DC (${casting.ability})`}
+                            >
+                                DC {casting.saveDc}
+                            </Text>
+                            <chakra.button
+                                type="button"
+                                {...rollButtonProps}
+                                fontFamily="mono"
+                                fontSize="2xs"
+                                px="2"
+                                h="6"
+                                borderRadius="full"
+                                whiteSpace="nowrap"
+                                aria-label={`Roll spell attack, ${formatModifier(casting.attackBonus)}`}
+                                title={`Spell attack (${casting.ability})`}
+                                onClick={() => rollD20("Spell attack", casting.attackBonus)}
+                            >
+                                Atk {formatModifier(casting.attackBonus)}
+                            </chakra.button>
+                        </>
+                    )}
+                    <Text fontFamily="mono" fontSize="2xs" color="fg.muted" title="Slots left">{left}/{total}</Text>
+                </Flex>
+            }
         >
             <Box display="grid" gridTemplateColumns="repeat(2, minmax(0, 1fr))" gap="1">
                 {levels.map(l => (
