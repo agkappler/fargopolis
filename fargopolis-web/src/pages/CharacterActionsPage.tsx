@@ -187,25 +187,42 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
                             <Box flexShrink="0" borderRadius="full" overflow="hidden">
                                 <ImageBox fileId={character.avatarId} altText="Character avatar" size={32} />
                             </Box>
-                            <Heading
-                                as="h1"
-                                fontFamily="display"
-                                fontWeight="500"
-                                fontSize="xl"
-                                lineHeight="1.1"
-                                truncate
-                                flexShrink="0"
-                                maxW="50%"
+                            {/* Phone: name over subtitle. sm+: side by side. */}
+                            <Flex
+                                direction={{ base: "column", sm: "row" }}
+                                align={{ base: "flex-start", sm: "center" }}
+                                gap={{ base: "0", sm: "2" }}
+                                minW="0"
+                                flex="1"
                             >
-                                {character.name}
-                            </Heading>
-                            <Box minW="0" truncate css={{ "& p": { fontSize: "sm" } }}>
-                                <CharacterSubtitle character={character} />
-                            </Box>
+                                <Heading
+                                    as="h1"
+                                    fontFamily="display"
+                                    fontWeight="500"
+                                    fontSize="xl"
+                                    lineHeight="1.1"
+                                    truncate
+                                    maxW={{ base: "full", sm: "50%" }}
+                                    flexShrink="0"
+                                >
+                                    {character.name}
+                                </Heading>
+                                <Box minW="0" maxW="full" truncate css={{ "& p": { fontSize: "var(--chakra-font-sizes-xs)" }, "@media (min-width: 480px)": { "& p": { fontSize: "var(--chakra-font-sizes-sm)" } } }}>
+                                    <CharacterSubtitle character={character} />
+                                </Box>
+                            </Flex>
                         </Flex>
-                        <Flex gap="1.5" flexWrap="wrap" flexShrink="0">
+                        {/* Phone: an even 3-column row, icons hidden so the labels fit. sm+: inline buttons. */}
+                        <Box
+                            display={{ base: "grid", sm: "flex" }}
+                            gridTemplateColumns="repeat(3, minmax(0, 1fr))"
+                            gap="1.5"
+                            w={{ base: "full", sm: "auto" }}
+                            flexShrink="0"
+                            css={{ "@media (max-width: 479px)": { "& button svg": { display: "none" } } }}
+                        >
                             <ConditionsPopover active={conditions} onToggle={toggleCondition} />
-                            <Button variant="outline" size="sm" minH="9" onClick={openLog}>
+                            <Button variant="outline" size="sm" minH="9" px={{ base: "2", sm: "3" }} onClick={openLog}>
                                 <ScrollText size={16} aria-hidden="true" />
                                 Roll log ({entries.length})
                             </Button>
@@ -213,6 +230,7 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
                                 variant="primary"
                                 size="sm"
                                 minH="9"
+                                px={{ base: "2", sm: "3" }}
                                 disabled={tracker.locked}
                                 title={tracker.locked ? "Sign in to track HP" : undefined}
                                 onClick={onLongRest}
@@ -220,7 +238,7 @@ const PlayView: React.FC<{ character: Character }> = ({ character }) => {
                                 <Moon size={16} aria-hidden="true" />
                                 Long Rest
                             </Button>
-                        </Flex>
+                        </Box>
                     </>}
                 />
             </Box>
