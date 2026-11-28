@@ -1,4 +1,4 @@
-import { useFileUrl } from "@/helpers/useFileMetadata";
+import { useFileUrl } from "@/hooks/useFileMetadata";
 import { Box, IconButton } from "@chakra-ui/react";
 import { Star, X } from "lucide-react";
 

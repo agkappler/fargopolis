@@ -32,7 +32,7 @@ pnpm test            # vitest run (component + unit tests)
 pnpm test:watch      # vitest in watch mode
 ```
 
-Component and unit tests use Vitest + Testing Library. They sit next to their source as `*.test.ts(x)` and run with `pnpm test`.
+Component and unit tests use Vitest + Testing Library and run with `pnpm test`. They live in a colocated `__tests__/` folder beside the code they cover (see "File organization" below).
 
 ### Infrastructure (`infrastructure/`)
 
@@ -129,6 +129,18 @@ Tables are per-domain (not single-table design) and use **on-demand capacity**. 
 - `src/helpers/RequestManager.ts` is the single point of contact with the API — route all new API calls through it rather than calling `fetch` directly.
 - `src/components/` is organized by vertical (`bounties/`, `recipes/`, `dnd/`, `about/`, `home/`, `navigation/`, `inputs/`, `ui/`), mirroring the API's vertical split.
 - `src/api/` holds clients for *external* third-party APIs (`dnd5eapi.ts`, `open5e.ts`) — distinct from `RequestManager`, which talks to this repo's own API.
+
+### File organization
+
+Group files by feature, and keep everything that belongs to one feature together. Before adding a file, look at where its neighbours live and follow that; don't drop it at the top level of a vertical out of habit.
+
+- **Group by feature, not by file type.** Inside a vertical, give each feature its own subfolder (for example `components/dnd/character/`, `components/dnd/play/`, `components/dnd/spells/`). A child flow nests under its parent (`components/dnd/character/wizard/`). Only components shared across several features in a vertical stay at the vertical's root.
+- **Pages follow the same split.** Pages for a vertical with more than one page go in `src/pages/<vertical>/` (for example `pages/dnd/`). A vertical with a single page can stay at `src/pages/`.
+- **Tests go in a colocated `__tests__/` folder** next to the code they cover: `play/__tests__/HpKeypad.test.tsx` tests `play/HpKeypad.tsx`. Don't leave `*.test.ts(x)` files beside the source, and don't gather tests into one top-level test directory. Import the code under test by relative path (`../HpKeypad`).
+- **Test-only helpers live in `__tests__/` too** (fixtures, builders, render wrappers such as `components/dnd/__tests__/testCharacter.ts`). Put a shared fixture in the `__tests__/` folder of the closest common parent, and import it from deeper tests by relative path (`../../__tests__/testCharacter`). Never import test helpers from production code. App-wide test setup (`setup.ts`, `renderWithProviders`) stays in `src/test/`.
+- **Hooks go in a colocated `hooks/` folder** inside the feature that uses them (`play/hooks/useSpellSlots.ts`, `character/wizard/hooks/useRaceSpeed.ts`). Move a hook up to a shared parent's `hooks/` only once a second feature needs it. Hooks used across verticals go in `src/hooks/` (for example `useFileMetadata.ts`), not in `src/helpers/`, which is for plain non-hook functions.
+- **Create a subfolder once a group forms.** When a feature folder gets three or more files for one concern (one sub-flow, one card family, several hooks), move them into a subfolder rather than letting the parent folder grow flat.
+- **Moving files is part of the change.** When you move or regroup files, update every import (including `App.tsx` routes and relative test imports), then run `pnpm build` and `pnpm test` to confirm nothing still points at the old path.
 
 ## Environment configuration
 

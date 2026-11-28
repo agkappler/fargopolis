@@ -4,7 +4,7 @@ import Character from "@/models/Character";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { AbilityActionRow, SpellActionRow, WeaponActionRow } from "./ActionRows";
 import type { CastingStats } from "./SpellSlotsCard";
-import type { SpellSlotsState } from "./useSpellSlots";
+import type { SpellSlotsState } from "./hooks/useSpellSlots";
 
 type SpellRow = Extract<ActionRow, { kind: "spell" }>;
 type AbilityRow = Extract<ActionRow, { kind: "ability" }>;

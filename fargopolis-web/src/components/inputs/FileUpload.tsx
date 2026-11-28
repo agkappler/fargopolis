@@ -1,6 +1,6 @@
 import { FileRole } from "@/constants/FileRole";
 import RequestManager from "@/helpers/RequestManager";
-import { useFileMetadata } from "@/helpers/useFileMetadata";
+import { useFileMetadata } from "@/hooks/useFileMetadata";
 import FileMetadata from "@/models/FileMetadata";
 import { useAuth } from "@clerk/react";
 import { Avatar, Button, Flex, IconButton } from "@chakra-ui/react";

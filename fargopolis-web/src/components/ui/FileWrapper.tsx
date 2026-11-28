@@ -1,4 +1,4 @@
-import { useFileMetadata } from "@/helpers/useFileMetadata";
+import { useFileMetadata } from "@/hooks/useFileMetadata";
 import { Link } from "@chakra-ui/react";
 import { File } from "lucide-react";
 import { LoadingWrapper } from "./LoadingWrapper";

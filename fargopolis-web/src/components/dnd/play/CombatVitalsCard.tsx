@@ -14,7 +14,7 @@ import { StatEmptyState } from "../StatEmptyState";
 import { RollStatTile, StatTile } from "../StatTile";
 import { TempHpPill } from "../TempHpPill";
 import { HpKeypad, HpKeypadMode } from "./HpKeypad";
-import type { HitPointsTracker } from "./useHitPointsTracker";
+import type { HitPointsTracker } from "./hooks/useHitPointsTracker";
 
 interface CombatVitalsCardProps {
     character: Character;
@@ -140,60 +140,60 @@ export const CombatVitalsCard: React.FC<CombatVitalsCardProps> = ({ character, t
 
     return (
         <Box {...surfaceBorderProps} overflow="hidden">
-        {header && (
-            <Flex
-                align="center"
-                justify="space-between"
-                gap="2"
-                flexWrap="wrap"
-                px="3"
-                py="1.5"
-                minH="12"
-                bg="bg.sunk"
-                borderBottomWidth="1px"
-                borderBottomStyle="solid"
-                borderBottomColor="border"
-            >
-                {header}
-            </Flex>
-        )}
-        <Box
-            p="3"
-            display="flex"
-            flexDir="column"
-            gap="3"
-            css={{
-                [`@media (min-width: ${PLAY_SHELL_BREAK})`]: { flexDirection: "row", alignItems: "stretch" },
-            }}
-        >
+            {header && (
+                <Flex
+                    align="center"
+                    justify="space-between"
+                    gap="2"
+                    flexWrap="wrap"
+                    px="3"
+                    py="1.5"
+                    minH="12"
+                    bg="bg.sunk"
+                    borderBottomWidth="1px"
+                    borderBottomStyle="solid"
+                    borderBottomColor="border"
+                >
+                    {header}
+                </Flex>
+            )}
             <Box
-                minW="0"
+                p="3"
                 display="flex"
                 flexDir="column"
-                css={{ [`@media (min-width: ${PLAY_SHELL_BREAK})`]: { flex: "0 0 auto", minWidth: "300px" } }}
+                gap="3"
+                css={{
+                    [`@media (min-width: ${PLAY_SHELL_BREAK})`]: { flexDirection: "row", alignItems: "stretch" },
+                }}
             >
-                {hpColumn}
+                <Box
+                    minW="0"
+                    display="flex"
+                    flexDir="column"
+                    css={{ [`@media (min-width: ${PLAY_SHELL_BREAK})`]: { flex: "0 0 auto", minWidth: "300px" } }}
+                >
+                    {hpColumn}
+                </Box>
+                <Grid
+                    flex="1"
+                    minW="0"
+                    gap="2"
+                    alignContent="center"
+                    templateColumns="repeat(3, minmax(0, 1fr))"
+                    css={{ [`@media (min-width: ${PLAY_SHELL_BREAK})`]: { gridTemplateColumns: "repeat(5, minmax(0, 1fr))" } }}
+                >
+                    <StatTile value={!noVitals && c.armorClass > 0 ? c.armorClass : "—"} label="AC" />
+                    <RollStatTile
+                        value={formatModifier(init)}
+                        label="Initiative"
+                        ariaLabel={`Roll initiative, ${formatModifier(init)}`}
+                        onClick={() => rollD20("Initiative", init)}
+                    />
+                    <StatTile value={!noVitals && c.speed > 0 ? `${c.speed} ft` : "—"} label="Speed" />
+                    <StatTile value={formatModifier(pb)} label="Prof. Bonus" />
+                    <StatTile value={passivePerception} label="Passive Perception" />
+                </Grid>
             </Box>
-            <Grid
-                flex="1"
-                minW="0"
-                gap="2"
-                alignContent="center"
-                templateColumns="repeat(3, minmax(0, 1fr))"
-                css={{ [`@media (min-width: ${PLAY_SHELL_BREAK})`]: { gridTemplateColumns: "repeat(5, minmax(0, 1fr))" } }}
-            >
-                <StatTile value={!noVitals && c.armorClass > 0 ? c.armorClass : "—"} label="AC" />
-                <RollStatTile
-                    value={formatModifier(init)}
-                    label="Initiative"
-                    ariaLabel={`Roll initiative, ${formatModifier(init)}`}
-                    onClick={() => rollD20("Initiative", init)}
-                />
-                <StatTile value={!noVitals && c.speed > 0 ? `${c.speed} ft` : "—"} label="Speed" />
-                <StatTile value={formatModifier(pb)} label="Prof. Bonus" />
-                <StatTile value={passivePerception} label="Passive Perception" />
-            </Grid>
-        </Box>
         </Box>
     );
 };

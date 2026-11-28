@@ -6,12 +6,12 @@ import { AboutPage } from "@/pages/AboutPage";
 import { BountiesPage } from "@/pages/BountiesPage";
 import { CampingPage } from "@/pages/CampingPage";
 import { CampsiteDetailPage } from "@/pages/CampsiteDetailPage";
-import { CharacterActionsPage } from "@/pages/CharacterActionsPage";
-import { CharacterDetailPage } from "@/pages/CharacterDetailPage";
-import { DndGlossaryClassesPage } from "@/pages/DndGlossaryClassesPage";
-import { DndGlossaryPage } from "@/pages/DndGlossaryPage";
-import { DndGlossaryRacesPage } from "@/pages/DndGlossaryRacesPage";
-import { DndPage } from "@/pages/DndPage";
+import { CharacterActionsPage } from "@/pages/dnd/CharacterActionsPage";
+import { CharacterDetailPage } from "@/pages/dnd/CharacterDetailPage";
+import { DndGlossaryClassesPage } from "@/pages/dnd/DndGlossaryClassesPage";
+import { DndGlossaryPage } from "@/pages/dnd/DndGlossaryPage";
+import { DndGlossaryRacesPage } from "@/pages/dnd/DndGlossaryRacesPage";
+import { DndPage } from "@/pages/dnd/DndPage";
 import { HomePage } from "@/pages/HomePage";
 import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
 import { ProjectsPage } from "@/pages/ProjectsPage";
@@ -24,38 +24,38 @@ import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 function AppShell() {
-  return (
-    <SwrConfigWrapper>
-      <ThemeRegistry>
-        <Navbar />
-        <Box as="main" flex="1">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/bounties" element={<BountiesPage />} />
-            <Route path="/quests" element={<QuestsPage />} />
-            <Route path="/camping" element={<CampingPage />} />
-            <Route path="/camping/:id" element={<CampsiteDetailPage />} />
-            <Route path="/split-check" element={<SplitCheckPage />} />
-            <Route path="/dnd" element={<DndPage />} />
-            <Route path="/dnd/glossary" element={<DndGlossaryPage />} />
-            <Route path="/dnd/glossary/classes" element={<DndGlossaryClassesPage />} />
-            <Route path="/dnd/glossary/races" element={<DndGlossaryRacesPage />} />
-            <Route path="/dnd/:id" element={<CharacterDetailPage />} />
-            <Route path="/dnd/:id/actions" element={<CharacterActionsPage />} />
-            <Route path="/recipes" element={<RecipesPage />} />
-            <Route path="/recipes/:id" element={<RecipeDetailPage />} />
-            <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/projects/:id" element={<ProjectDetailPage />} />
-          </Routes>
-        </Box>
-        <Footer />
-      </ThemeRegistry>
-      <ToastContainer />
-    </SwrConfigWrapper>
-  );
+    return (
+        <SwrConfigWrapper>
+            <ThemeRegistry>
+                <Navbar />
+                <Box as="main" flex="1">
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/about" element={<AboutPage />} />
+                        <Route path="/bounties" element={<BountiesPage />} />
+                        <Route path="/quests" element={<QuestsPage />} />
+                        <Route path="/camping" element={<CampingPage />} />
+                        <Route path="/camping/:id" element={<CampsiteDetailPage />} />
+                        <Route path="/split-check" element={<SplitCheckPage />} />
+                        <Route path="/dnd" element={<DndPage />} />
+                        <Route path="/dnd/glossary" element={<DndGlossaryPage />} />
+                        <Route path="/dnd/glossary/classes" element={<DndGlossaryClassesPage />} />
+                        <Route path="/dnd/glossary/races" element={<DndGlossaryRacesPage />} />
+                        <Route path="/dnd/:id" element={<CharacterDetailPage />} />
+                        <Route path="/dnd/:id/actions" element={<CharacterActionsPage />} />
+                        <Route path="/recipes" element={<RecipesPage />} />
+                        <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+                        <Route path="/projects" element={<ProjectsPage />} />
+                        <Route path="/projects/:id" element={<ProjectDetailPage />} />
+                    </Routes>
+                </Box>
+                <Footer />
+            </ThemeRegistry>
+            <ToastContainer />
+        </SwrConfigWrapper>
+    );
 }
 
 export default function App() {
-  return <AppShell />;
+    return <AppShell />;
 }
