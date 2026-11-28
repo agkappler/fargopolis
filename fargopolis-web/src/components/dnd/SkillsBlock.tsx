@@ -15,6 +15,11 @@ interface SkillsBlockProps {
      * "compact" (Play sidebar): two columns of dense chips, proficient skills only unless toggled.
      */
     variant?: "full" | "compact";
+    /**
+     * Compact only: control "show all 18" from outside (e.g. a toggle in the card header).
+     * When set, the inline toggle button below the grid is not rendered.
+     */
+    showAll?: boolean;
 }
 
 const ProfDot: React.FC<{ prof: boolean }> = ({ prof }) => (
@@ -42,11 +47,13 @@ const chipProps = {
     _focusVisible: { outline: "2px solid", outlineColor: "ember.500", outlineOffset: "2px" },
 } as const;
 
-export const SkillsBlock: React.FC<SkillsBlockProps> = ({ character, variant = "full" }) => {
+export const SkillsBlock: React.FC<SkillsBlockProps> = ({ character, variant = "full", showAll: showAllProp }) => {
     const c = withStatDefaults(character);
     const pb = proficiencyBonusForLevel(c.level);
     const { rollD20 } = useRoller();
-    const [showAll, setShowAll] = useState(false);
+    const [showAllState, setShowAll] = useState(false);
+    const controlled = showAllProp !== undefined;
+    const showAll = controlled ? showAllProp : showAllState;
 
     const skills = SKILLS.map(s => {
         const prof = c.skillProficiencies.includes(s.key);
@@ -87,7 +94,7 @@ export const SkillsBlock: React.FC<SkillsBlockProps> = ({ character, variant = "
                         </chakra.button>
                     ))}
                 </SimpleGrid>
-                {hasProficient && (
+                {hasProficient && !controlled && (
                     <Button variant="ghost" size="xs" mt="1" px="1" onClick={() => setShowAll(v => !v)}>
                         {showAll ? "Proficient only" : `Show all ${SKILLS.length}`}
                     </Button>
