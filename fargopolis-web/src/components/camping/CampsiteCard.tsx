@@ -1,4 +1,4 @@
-import { useFileUrl } from "@/helpers/useFileMetadata";
+import { useFileUrl } from "@/hooks/useFileMetadata";
 import Campsite from "@/models/Campsite";
 import { useAuth } from "@clerk/react";
 import { Badge, Box, Flex, Text } from "@chakra-ui/react";

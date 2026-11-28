@@ -14,7 +14,7 @@ import { SpellDetailsModal } from "../spells/SpellDetailsModal";
 import { useRoller } from "../rolls/rollContext";
 import { rollButtonProps } from "../rollStyle";
 import type { CastingStats } from "./SpellSlotsCard";
-import type { SpellSlotsState } from "./useSpellSlots";
+import type { SpellSlotsState } from "./hooks/useSpellSlots";
 
 type RowOf<K extends ActionRow["kind"]> = Extract<ActionRow, { kind: K }>;
 
@@ -221,51 +221,51 @@ export const SpellActionRow: React.FC<SpellRowProps> = ({ row, slots, casting, o
 
     return (
         <>
-        <RowShell
-            name={name}
-            onOpenDetails={() => setDetailsOpen(true)}
-            tags={<>
-                <Tag tone={level === 0 ? "stone" : "pine"}>{level === 0 ? "Cantrip" : `${ordinal(level)} level`}</Tag>
-                {details?.concentration && <Tag tone="ember">Concentration</Tag>}
-                {details?.ritual && <Tag tone="slate">Ritual</Tag>}
-                {casting && details?.dc && (
-                    <Tag tone="amber">{`DC ${casting.saveDc} ${details.dc.dc_type.name}${details.dc.dc_success === "half" ? " · ½" : ""}`}</Tag>
-                )}
-            </>}
-            meta={meta}
-            actions={<>
-                {casting && details?.attack_type && (
-                    <chakra.button
-                        type="button"
-                        {...pillProps}
-                        aria-label={`Roll ${name} spell attack, ${formatModifier(casting.attackBonus)}`}
-                        onClick={() => rollD20(`${name} spell attack`, casting.attackBonus)}
-                    >
-                        Hit {formatModifier(casting.attackBonus)}
-                    </chakra.button>
-                )}
-                {level === 0 ? (
-                    <chakra.button type="button" {...pillProps} aria-label={`Cast ${name}`} onClick={() => onCast(row)}>
-                        Cast
-                    </chakra.button>
-                ) : (
-                    <SlotButton verb="Cast" name={name} minLevel={level} slots={slots} onUse={() => onCast(row)} />
-                )}
-            </>}
-        />
-        {detailsOpen && (
-            <SpellDetailsModal
-                isOpen={detailsOpen}
-                onClose={() => setDetailsOpen(false)}
-                spell={{
-                    index: knownSpell.spellKey,
-                    name,
-                    level,
-                    url: details?.url ?? `/api/2014/spells/${encodeURIComponent(knownSpell.spellKey)}`,
-                }}
-                canEdit={false}
+            <RowShell
+                name={name}
+                onOpenDetails={() => setDetailsOpen(true)}
+                tags={<>
+                    <Tag tone={level === 0 ? "stone" : "pine"}>{level === 0 ? "Cantrip" : `${ordinal(level)} level`}</Tag>
+                    {details?.concentration && <Tag tone="ember">Concentration</Tag>}
+                    {details?.ritual && <Tag tone="slate">Ritual</Tag>}
+                    {casting && details?.dc && (
+                        <Tag tone="amber">{`DC ${casting.saveDc} ${details.dc.dc_type.name}${details.dc.dc_success === "half" ? " · ½" : ""}`}</Tag>
+                    )}
+                </>}
+                meta={meta}
+                actions={<>
+                    {casting && details?.attack_type && (
+                        <chakra.button
+                            type="button"
+                            {...pillProps}
+                            aria-label={`Roll ${name} spell attack, ${formatModifier(casting.attackBonus)}`}
+                            onClick={() => rollD20(`${name} spell attack`, casting.attackBonus)}
+                        >
+                            Hit {formatModifier(casting.attackBonus)}
+                        </chakra.button>
+                    )}
+                    {level === 0 ? (
+                        <chakra.button type="button" {...pillProps} aria-label={`Cast ${name}`} onClick={() => onCast(row)}>
+                            Cast
+                        </chakra.button>
+                    ) : (
+                        <SlotButton verb="Cast" name={name} minLevel={level} slots={slots} onUse={() => onCast(row)} />
+                    )}
+                </>}
             />
-        )}
+            {detailsOpen && (
+                <SpellDetailsModal
+                    isOpen={detailsOpen}
+                    onClose={() => setDetailsOpen(false)}
+                    spell={{
+                        index: knownSpell.spellKey,
+                        name,
+                        level,
+                        url: details?.url ?? `/api/2014/spells/${encodeURIComponent(knownSpell.spellKey)}`,
+                    }}
+                    canEdit={false}
+                />
+            )}
         </>
     );
 };
@@ -286,32 +286,32 @@ export const AbilityActionRow: React.FC<AbilityRowProps> = ({ row, slots, onUseS
 
     return (
         <>
-        <RowShell
-            name={ability.name}
-            onOpenDetails={() => setDetailsOpen(true)}
-            tags={<Tag tone={toneForChip(getColorForAbilitySource(ability.source))}>{getLabelForAbilitySource(ability.source)}</Tag>}
-            meta={ability.description}
-            actions={<>
-                {dice && (
-                    <chakra.button
-                        type="button"
-                        {...pillProps}
-                        aria-label={`Roll ${ability.name}, ${formatDiceExpression(dice)}`}
-                        onClick={() => rollDice(ability.name, dice)}
-                    >
-                        {formatDiceExpression(dice)}
-                    </chakra.button>
-                )}
-                {usesSlot ? (
-                    <SlotButton verb="Use" name={ability.name} minLevel={1} slots={slots} onUse={() => onUseSlot(row)} />
-                ) : (
-                    <Tag tone="stone">{abilityRecoveryTag(ability)}</Tag>
-                )}
-            </>}
-        />
-        {detailsOpen && (
-            <AbilityDetailsModal isOpen={detailsOpen} onClose={() => setDetailsOpen(false)} ability={ability} />
-        )}
+            <RowShell
+                name={ability.name}
+                onOpenDetails={() => setDetailsOpen(true)}
+                tags={<Tag tone={toneForChip(getColorForAbilitySource(ability.source))}>{getLabelForAbilitySource(ability.source)}</Tag>}
+                meta={ability.description}
+                actions={<>
+                    {dice && (
+                        <chakra.button
+                            type="button"
+                            {...pillProps}
+                            aria-label={`Roll ${ability.name}, ${formatDiceExpression(dice)}`}
+                            onClick={() => rollDice(ability.name, dice)}
+                        >
+                            {formatDiceExpression(dice)}
+                        </chakra.button>
+                    )}
+                    {usesSlot ? (
+                        <SlotButton verb="Use" name={ability.name} minLevel={1} slots={slots} onUse={() => onUseSlot(row)} />
+                    ) : (
+                        <Tag tone="stone">{abilityRecoveryTag(ability)}</Tag>
+                    )}
+                </>}
+            />
+            {detailsOpen && (
+                <AbilityDetailsModal isOpen={detailsOpen} onClose={() => setDetailsOpen(false)} ability={ability} />
+            )}
         </>
     );
 };

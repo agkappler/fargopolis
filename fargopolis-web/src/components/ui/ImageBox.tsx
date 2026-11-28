@@ -1,4 +1,4 @@
-import { useFileMetadata } from "@/helpers/useFileMetadata";
+import { useFileMetadata } from "@/hooks/useFileMetadata";
 import { Avatar, Box } from "@chakra-ui/react";
 import { LoadingWrapper } from "./LoadingWrapper";
 

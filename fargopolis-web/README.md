@@ -40,7 +40,7 @@ pnpm test          # run once
 pnpm test:watch    # watch mode
 ```
 
-- **Where tests go:** next to their source as `*.test.ts` / `*.test.tsx` under `src/`. Shared setup lives in `src/test/` (`setup.ts` adds `jest-dom` matchers, RTL cleanup, mock/global-stub restoring after each test, and jsdom stubs Chakra needs such as `ResizeObserver` and `matchMedia`).
+- **Where tests go:** in a colocated `__tests__/` folder beside the code they cover, as `*.test.ts` / `*.test.tsx` (for example `components/dnd/play/__tests__/HpKeypad.test.tsx`). Test-only fixtures for a feature go in that same `__tests__/` folder. App-wide setup lives in `src/test/` (`setup.ts` adds `jest-dom` matchers, RTL cleanup, mock/global-stub restoring after each test, and jsdom stubs Chakra needs such as `ResizeObserver` and `matchMedia`).
 - **Rendering components:** use `renderWithProviders` from `@/test/renderWithProviders` so the component renders inside the Chakra theme (`ThemeRegistry`).
 - **Mocking Clerk:** mock `@clerk/react` with `vi.mock` and keep the auth state in `vi.hoisted` so each test can change it:
 
@@ -49,7 +49,7 @@ pnpm test:watch    # watch mode
   vi.mock("@clerk/react", () => ({ useAuth: () => authState }));
   ```
 
-- **Stubbing `fetch`:** `vi.stubGlobal("fetch", vi.fn())` in a `beforeEach`. `setup.ts` undoes stubs and mocks after each test; a Node-environment test that doesn't import it should call `vi.unstubAllGlobals()` in its own `afterEach` (see `RequestManager.test.ts`).
+- **Stubbing `fetch`:** `vi.stubGlobal("fetch", vi.fn())` in a `beforeEach`. `setup.ts` undoes stubs and mocks after each test; a Node-environment test that doesn't import it should call `vi.unstubAllGlobals()` in its own `afterEach` (see `helpers/__tests__/RequestManager.test.ts`).
 - Tests are type-checked by `pnpm build` and linted by `pnpm lint`; `vite build` never bundles them.
 
 ## More documentation
