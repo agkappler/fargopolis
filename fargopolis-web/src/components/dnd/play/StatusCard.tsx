@@ -1,5 +1,6 @@
 import type { Condition } from "@/constants/Conditions";
-import { CloseButton, Flex, Text } from "@chakra-ui/react";
+import { chakra, Flex, Text } from "@chakra-ui/react";
+import { X } from "lucide-react";
 import { StatBox } from "../StatBox";
 
 interface StatusCardProps {
@@ -15,9 +16,9 @@ const Chip: React.FC<{ label: string; tone: "ember" | "slate"; removeLabel: stri
     <Flex
         align="center"
         gap="1"
-        pl="2"
-        pr="0.5"
-        py="0.5"
+        h="7"
+        pl="2.5"
+        pr="1"
         borderRadius="full"
         borderWidth="1px"
         borderStyle="solid"
@@ -27,7 +28,24 @@ const Chip: React.FC<{ label: string; tone: "ember" | "slate"; removeLabel: stri
         minW="0"
     >
         <Text as="span" fontSize="2xs" fontWeight="600" truncate>{label}</Text>
-        <CloseButton size="2xs" aria-label={removeLabel} onClick={onRemove} />
+        <chakra.button
+            type="button"
+            aria-label={removeLabel}
+            title={removeLabel}
+            onClick={onRemove}
+            flexShrink="0"
+            boxSize="5"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            borderRadius="full"
+            color="inherit"
+            cursor="pointer"
+            _hover={{ bg: "blackAlpha.100" }}
+            _focusVisible={{ outline: "2px solid", outlineColor: "ember.500", outlineOffset: "1px" }}
+        >
+            <X size={12} strokeWidth={2.5} aria-hidden />
+        </chakra.button>
     </Flex>
 );
 
