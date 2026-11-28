@@ -35,6 +35,18 @@ if (!window.matchMedia) {
         dispatchEvent: () => false,
     })) as unknown as typeof window.matchMedia;
 }
+// Newer Node versions ship their own global `localStorage`/`Storage` (undefined without
+// --localstorage-file), which shadow jsdom's. Point them back at the jsdom window's.
+const jsdomWindow = (globalThis as { jsdom?: { window?: Window & typeof globalThis } }).jsdom?.window;
+if (jsdomWindow) {
+    for (const name of ["localStorage", "sessionStorage", "Storage"] as const) {
+        Object.defineProperty(globalThis, name, {
+            configurable: true,
+            writable: true,
+            value: jsdomWindow[name],
+        });
+    }
+}
 if (!Element.prototype.scrollTo) {
     Element.prototype.scrollTo = (() => {}) as unknown as typeof Element.prototype.scrollTo;
 }

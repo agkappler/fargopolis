@@ -9,19 +9,21 @@ import { ErrorWrapper } from "@/components/ui/ErrorWrapper";
 import { LoadingWrapper } from "@/components/ui/LoadingWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { MOBILE_BREAK } from "@/constants/Media";
+import { readCachedQuests, writeCachedQuests } from "@/helpers/QuestCache";
+import { sortQuestsByPointValue } from "@/helpers/QuestSort";
 import RequestManager from "@/helpers/RequestManager";
 import Quest from "@/models/Quest";
 import QuestLedgerEntry from "@/models/QuestLedgerEntry";
 import QuestReward from "@/models/QuestReward";
 import { useAuth } from "@clerk/react";
 import { Box, Switch, Tabs, Text, useMediaQuery } from "@chakra-ui/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 
 type QuestsSection = "quests" | "rewards" | "history";
 
 export function QuestsPage() {
-    const { getToken, isLoaded, isSignedIn } = useAuth();
+    const { getToken, isLoaded, isSignedIn, userId } = useAuth();
     const [isMobile] = useMediaQuery([`(max-width: ${MOBILE_BREAK})`], { fallback: [false] });
 
     const [isQuestFormOpen, setIsQuestFormOpen] = useState(false);
@@ -37,12 +39,36 @@ export function QuestsPage() {
     const questsUrl = showArchived ? "/quests?includeInactive=true" : "/quests";
     const rewardsUrl = showArchived ? "/questRewards?includeInactive=true" : "/questRewards";
 
+    // Quests are persisted per signed-in user + URL so a cold open can render the last-known list
+    // while revalidating. Nothing is read or shown until Clerk has loaded and a user is signed in.
+    const questsUserId = canFetch && userId ? userId : null;
+    const persistedQuests = useMemo(
+        () => (questsUserId ? readCachedQuests(questsUserId, questsUrl) : undefined),
+        [questsUserId, questsUrl],
+    );
+
+    // userId is part of the SWR key so SWR's in-memory cache is per user, too.
+    const questsKey: [string, string] | null = questsUserId ? [questsUrl, questsUserId] : null;
     const {
-        data: quests,
+        data: swrQuests,
         error: questsError,
         isLoading: isLoadingQuests,
         mutate: mutateQuests,
-    } = useSWR(canFetch ? questsUrl : null, () => RequestManager.get<Quest[]>(questsUrl, getToken));
+    } = useSWR(
+        questsKey,
+        async ([url, uid]: [string, string]) => {
+            const result = await RequestManager.get<Quest[]>(url, getToken);
+            // Persist only real successful responses.
+            if (Array.isArray(result)) writeCachedQuests(uid, url, result);
+            return result;
+        },
+        { fallbackData: persistedQuests, revalidateOnMount: true },
+    );
+    // Never show quests without a signed-in user: guards sign-out / not-yet-loaded auth.
+    const quests = questsUserId ? (swrQuests ?? persistedQuests) : undefined;
+    // Spinner only when there is nothing for this exact user+URL (no SWR cache, no persisted copy).
+    const showQuestsSpinner = isLoadingQuests && quests === undefined;
+    const sortedQuests = useMemo(() => (quests ? sortQuestsByPointValue(quests) : []), [quests]);
 
     const {
         data: balance,
@@ -141,11 +167,11 @@ export function QuestsPage() {
             )}
 
             {(!isMobile || activeSection === "quests") && (
-                <LoadingWrapper isLoading={isLoadingQuests}>
+                <LoadingWrapper isLoading={showQuestsSpinner}>
                     <ErrorWrapper error={questsError} errorMessage="Failed to load quests.">
                         <CardGrid>
                             <AddModelCard onClick={() => setIsQuestFormOpen(true)} title="Add Quest" />
-                            {quests?.map((quest) => (
+                            {sortedQuests.map((quest) => (
                                 <QuestCard
                                     key={quest.questId}
                                     quest={quest}
